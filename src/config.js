@@ -2,6 +2,10 @@ export const GAME = {
   title: 'Giochino Jackanal',
   width: 960,
   height: 540,
+  portraitWidth: 540,
+  portraitHeight: 960,
+  landscapeZoom: 1.0,
+  portraitZoom: 1.5,
   backgroundColor: '#14100c',
   pixelArt: true,
   roundPixels: true,
@@ -28,5 +32,25 @@ export const GAME = {
   },
   font: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif'
 };
+
+export function isPortraitMode() {
+  return typeof window !== 'undefined' && window.innerHeight > window.innerWidth;
+}
+
+export function getGameResolution() {
+  if (isPortraitMode()) {
+    return {
+      width: GAME.portraitWidth,
+      height: GAME.portraitHeight,
+      zoom: GAME.portraitZoom
+    };
+  }
+
+  return {
+    width: GAME.width,
+    height: GAME.height,
+    zoom: GAME.landscapeZoom
+  };
+}
 
 export const DEFAULT_ROOM_ID = 'sala-prove';

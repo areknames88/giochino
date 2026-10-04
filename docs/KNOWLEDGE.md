@@ -287,6 +287,28 @@ Verifiche fatte (headless, Edge; dita emulate via CDP `Input.dispatchTouchEvent`
   centrato e legenda da touch;
 - `pointclick.mjs`: **49/49**, nessuna regressione sul click-per-interagire.
 
+### 2026-10-04 — Sessione 5: modalità portrait con risoluzione dinamica e telecamera adattiva
+
+Fatto:
+
+- **Risoluzione dinamica e cambio di orientamento istantaneo**:
+  - `src/config.js` espone `isPortraitMode()` e `getGameResolution()` con risoluzioni dedicate: `960 × 540` (zoom 1.0) per landscape e `540 × 960` (zoom 1.5) per portrait.
+  - In `src/main.js`, Phaser si avvia con la risoluzione corrispondente all'orientamento dello schermo all'apertura (`window.innerHeight > window.innerWidth`).
+  - Gli eventi `resize` e `orientationchange` su `window` aggiornano al volo `game.scale.setGameSize(...)` senza ricaricare la pagina o perdere lo stato del gioco.
+- **Telecamera adattiva in `RoomScene`**:
+  - In landscape: la stanza (larghezza 960 px) entra per intero in orizzontale, la telecamera segue il giocatore in verticale (altezza 540 px vs 640 px di stanza).
+  - In portrait: la stanza (altezza 640 px) entra per intero in verticale (`960 / 1.5 = 640` px di mondo visibile), la telecamera segue il giocatore in orizzontale (`540 / 1.5 = 360` px di mondo visibile). Nessuna banda nera o vuoto fuori dai muri della stanza.
+  - Al resize, `RoomScene` aggiorna lo zoom della telecamera (1.5 in portrait, 1.0 in landscape).
+- **Interfaccia e riquadro dialoghi responsive**:
+  - `DialogueBox`: la larghezza si adatta dinamicamente (`boxWidth <= 500` in portrait, `760` in landscape) e l'altezza aumenta leggermente (170 px) per il testo a capo; il riquadro è centrato e posizionato sul fondo dello schermo.
+  - `HudScene`: targa coordinate, hint, legenda e toast ricalcolano la propria posizione ad ogni evento di resize (`layoutElements()`).
+
+Verifiche fatte:
+- `test_orientation.mjs`: **13/13** (avvio diretto portrait 390×844, zoom 1.5, tocco arredo e apertura dialogo responsivo, rotazione dinamica a landscape 960×540 e ritorno a portrait).
+- `pointclick.mjs`: **49/49** (pathfinding, aggiramento ostacoli, tap e arrivo a destinazione sia in landscape che in portrait).
+- `held.mjs`: **29/29** (drag continuo mouse e touch, tap secco per arredo, annullamento da tastiera).
+- `prod2.mjs`: **15/15** su `dist-single/index.html`.
+
 ## Come continuare
 
 Checklist per la prossima sessione:

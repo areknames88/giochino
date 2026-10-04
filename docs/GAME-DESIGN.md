@@ -58,9 +58,10 @@ Regole che tengono il gioco semplice:
 - Titolo e descrizione di un arredo appaiono **nello stesso momento**: niente effetto macchina da
   scrivere, così si legge tutto con un colpo d'occhio.
 
-Su schermi piccoli la finestra di gioco resta 960 × 540 logici e si adatta con letterbox: il gioco
-è pensato per essere tenuto in orizzontale. Tutto il canvas è attivo, anche la metà destra, perché
-non esistono zone dedicate a controlli separati.
+Su smartphone la visualizzazione si adatta automaticamente all'orientamento del dispositivo:
+in orizzontale la risoluzione è 960 × 540 con telecamera a zoom 1.0 (stanza intera in larghezza);
+in verticale passa a 540 × 960 con zoom 1.5 (stanza intera in altezza, telecamera che segue il
+personaggio in orizzontale e dialoghi adattati). Tutto il canvas resta attivo senza controlli separati.
 
 ## Cosa NON c'è (di proposito)
 

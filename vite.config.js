@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
     base: './',
     define: singleFile ? { 'import.meta.env.DEV': 'false' } : {},
     build: {
-      outDir: singleFile ? 'dist-single' : 'dist',
+      outDir: singleFile ? 'docs/dist-single' : 'dist',
       assetsDir: 'assets',
       target: 'es2020',
       sourcemap: false,

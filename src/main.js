@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEFAULT_ROOM_ID, GAME } from './config.js';
+import { DEFAULT_ROOM_ID, GAME, getGameResolution } from './config.js';
 import { ROOMS } from './game/rooms.js';
 import BootScene from './scenes/BootScene.js';
 import HudScene from './scenes/HudScene.js';
@@ -16,11 +16,13 @@ function hideBootMessage() {
   window.setTimeout(() => node.remove(), 500);
 }
 
+const initialResolution = getGameResolution();
+
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'app',
-  width: GAME.width,
-  height: GAME.height,
+  width: initialResolution.width,
+  height: initialResolution.height,
   backgroundColor: GAME.backgroundColor,
   scale: {
     mode: Phaser.Scale.FIT,
@@ -55,6 +57,19 @@ const game = new Phaser.Game({
         game.canvas.style.maxWidth = `${size.width}px`;
         game.canvas.style.maxHeight = `${size.height}px`;
       });
+
+      const handleOrientation = () => {
+        const target = getGameResolution();
+        if (
+          game.scale.gameSize.width !== target.width ||
+          game.scale.gameSize.height !== target.height
+        ) {
+          game.scale.setGameSize(target.width, target.height);
+        }
+      };
+
+      window.addEventListener('resize', handleOrientation);
+      window.addEventListener('orientationchange', handleOrientation);
     }
   }
 });

@@ -19,16 +19,22 @@ export default class HudScene extends Phaser.Scene {
   create() {
     this.touchFirst = isTouchPrimary();
     this.dialogue = new DialogueBox(this);
+    this.dialogue.setDepth(100);
 
     this.buildRoomPlate();
     this.buildHint();
     this.buildLegend();
     this.buildToast();
+    this.layoutElements();
 
     this.input.on('pointerdown', () => {
       if (uiState.dialogueOpen) {
         emit(Events.DIALOGUE_ADVANCE);
       }
+    });
+
+    this.scale.on(Phaser.Scale.Events.RESIZE, () => {
+      this.layoutElements();
     });
 
     this.unsubscribe = [
@@ -47,6 +53,25 @@ export default class HudScene extends Phaser.Scene {
     });
 
     uiState.ready = true;
+  }
+
+  layoutElements() {
+    const isPortrait = this.scale.height > this.scale.width;
+    if (this.coordinates) {
+      this.coordinates.setPosition(this.scale.width - 18, 22);
+    }
+    if (this.hint) {
+      this.hint.setPosition(this.scale.width / 2, this.scale.height - (isPortrait ? 210 : 190));
+    }
+    if (this.legend) {
+      this.legend.setPosition(this.scale.width - 16, this.scale.height - 16);
+    }
+    if (this.toast) {
+      this.toast.setPosition(this.scale.width / 2, 96);
+    }
+    if (this.dialogue) {
+      this.dialogue.layout();
+    }
   }
 
   buildRoomPlate() {
@@ -88,7 +113,7 @@ export default class HudScene extends Phaser.Scene {
       ? ['tocca dove vuoi andare', 'tocca un oggetto per esaminarlo', 'tocca il testo per andare avanti']
       : ['WASD / frecce  muoviti', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'G  griglia e collisioni'];
 
-    this.add
+    this.legend = this.add
       .text(this.scale.width - 16, this.scale.height - 16, lines.join('\n'), {
         ...PANEL_STYLE,
         fontSize: '12px',

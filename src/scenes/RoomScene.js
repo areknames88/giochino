@@ -129,7 +129,12 @@ export default class RoomScene extends Phaser.Scene {
     const camera = this.cameras.main;
     camera.setBounds(0, 0, this.layout.pixelWidth, this.layout.pixelHeight);
     camera.setRoundPixels(true);
+    camera.setZoom(this.scale.height > this.scale.width ? GAME.portraitZoom : GAME.landscapeZoom);
     camera.startFollow(this.player, true, 0.14, 0.14);
+
+    this.scale.on(Phaser.Scale.Events.RESIZE, (gameSize) => {
+      camera.setZoom(gameSize.height > gameSize.width ? GAME.portraitZoom : GAME.landscapeZoom);
+    });
   }
 
   createInput() {

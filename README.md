@@ -30,11 +30,11 @@ npm install       # installa le dipendenze
 npm run dev       # server di sviluppo con HMR su http://localhost:5173
 npm run build     # genera il sito statico in dist/ (per GitHub Pages)
 npm run preview   # serve dist/ su http://localhost:4173
-npm run build:single  # genera dist-single/index.html, apribile con doppio clic
+npm run build:single  # genera docs/dist-single/index.html, apribile con doppio clic
 npm run lint      # ESLint
 ```
 
-### Aprire la build: `dist/` oppure `dist-single/`?
+### Aprire la build: `dist/` oppure `docs/dist-single/`?
 
 `dist/index.html` **non** si apre con un doppio clic. Su `file://` i browser bloccano gli script
 modulo ES (CORS), quindi la pagina resta su "caricamento". Per guardare la build normale:
@@ -50,7 +50,7 @@ metterlo in una cartella), usa:
 npm run build:single
 ```
 
-`dist-single/index.html` è un file unico da ~1,2 MB con dentro tutto il gioco: si apre con
+`docs/dist-single/index.html` è un file unico da ~1,2 MB con dentro tutto il gioco: si apre con
 doppio clic, su qualsiasi sistema, senza server. Per GitHub Pages va benissimo anche questo, ma
 la build normale è più comoda da servire perché separa codice e HTML.
 
@@ -83,9 +83,10 @@ non succede nient'altro. Per esaminare un arredo serve un tocco secco.
 
 ### Smartphone e tablet
 
-Su un telefono il gioco occupa la larghezza dello schermo e mantiene i 960 × 540 logici: in
-orizzontale si vede tutto, in verticale resta una fascia nera sopra e sotto (è un gioco pensato per
-l'orizzontale, quindi basta ruotare il telefono).
+Il gioco supporta nativamente sia la modalità **orizzontale (landscape)** sia **verticale (portrait)**:
+
+- in **landscape**: risoluzione 960 × 540, zoom 1.0, stanza visibile per intero in larghezza e telecamera che segue in verticale;
+- in **portrait**: risoluzione 540 × 960, zoom 1.5, stanza visibile per intero in altezza e telecamera che scorre orizzontalmente al movimento del personaggio; il riquadro di dialogo e l'interfaccia si adattano alla larghezza dello schermo.
 
 Ogni punto del canvas è attivo: basta toccare la metà destra, il basso o l'alto, non serve
 mirare una zona particolare. Il tap sugli arredi funziona come sul desktop: non esiste un bottone
@@ -104,8 +105,8 @@ un computer, apri il gioco con `?touch=1` in fondo all'indirizzo
 ├── vite.config.js                # build statico con base './' + build single-file
 ├── public/                       # file copiati alla root dell'output (.nojekyll, favicon)
 ├── dist/                         # output di npm run build   (non versionato)
-├── dist-single/                  # output di npm run build:single (non versionato)
 ├── docs/
+│   ├── dist-single/              # output di npm run build:single (index.html)
 │   ├── KNOWLEDGE.md              # log delle sessioni, decisioni, trabocchetti Phaser
 │   └── GAME-DESIGN.md            # concept, specifica della stanza, idee per il futuro
 └── src/
