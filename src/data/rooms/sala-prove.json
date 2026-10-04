@@ -1,0 +1,84 @@
+{
+  "id": "sala-prove",
+  "name": "Sala Prove",
+  "tagline": "Il posto dove il suono fa da parete",
+  "description": "Sala prove in legno: il parquet è lucido, la batteria è montata e gli amplificatori sono già accesi.",
+  "tileSize": 32,
+  "columns": 30,
+  "rows": 20,
+  "seed": 20261004,
+  "palette": {
+    "floor": {
+      "base": "#8b5a2b",
+      "light": "#a8703a",
+      "dark": "#6b4220",
+      "seam": "#4a2d15"
+    },
+    "wall": {
+      "top": "#b0793f",
+      "light": "#d9a765",
+      "face": "#7c4e28",
+      "dark": "#5b361b",
+      "seam": "#3a2110"
+    }
+  },
+  "walls": [
+    { "x": 0, "y": 0, "w": 30, "h": 1 },
+    { "x": 0, "y": 19, "w": 30, "h": 1 },
+    { "x": 0, "y": 0, "w": 1, "h": 20 },
+    { "x": 29, "y": 0, "w": 1, "h": 20 }
+  ],
+  "openings": [
+    { "x": 14, "y": 19, "w": 2, "h": 1 }
+  ],
+  "spawn": {
+    "x": 15,
+    "y": 17,
+    "facing": "up"
+  },
+  "props": [
+    {
+      "type": "drum-kit",
+      "x": 15,
+      "y": 6,
+      "label": "Batteria",
+      "prompt": "Esamina",
+      "description": "Un kit completo in legno d'acero: rullante, due tom, floor tom, charleston e due piatti. Le pelli sono un po' consumate dal tempo."
+    },
+    {
+      "type": "amp",
+      "variant": "guitar",
+      "x": 8,
+      "y": 4.5,
+      "label": "Amplificatore chitarra (sx)",
+      "prompt": "Esamina",
+      "description": "Combo da 30 watt, telaio color panna, griglia in tessuto. Il volume è già al massimo: si sente fin dalla porta."
+    },
+    {
+      "type": "amp",
+      "variant": "guitar",
+      "x": 22,
+      "y": 4.5,
+      "label": "Amplificatore chitarra (dx)",
+      "prompt": "Esamina",
+      "description": "Gemello del primo, ma con il jack scollegato e un fazzoletto piegato sopra per coprire la polvere."
+    },
+    {
+      "type": "amp",
+      "variant": "bass",
+      "x": 26.5,
+      "y": 11,
+      "label": "Amplificatore basso",
+      "prompt": "Esamina",
+      "description": "Cassa a quattro vie con pannello arancione. Il cono da 12 è stato sostituito di recente: le viti sono ancora lucide."
+    },
+    {
+      "type": "door",
+      "x": 15,
+      "y": 20,
+      "label": "Porta della sala",
+      "prompt": "Esamina",
+      "description": "Una porta di legno massello con maniglia in ottone. Dall'altra parte si sente il rumore del corridoio."
+    }
+  ]
+}

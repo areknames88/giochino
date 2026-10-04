@@ -1,0 +1,259 @@
+# Giochino Jackanal
+
+Boilerplate per un gioco **RPG visto dall'alto** in **Phaser 3 + JavaScript**, pensato per essere
+pubblicato come sito statico su **GitHub Pages**.
+
+La reference di stile è [Office Town](https://phaser.io/news/2026/09/office-town-phaser-coworking-game):
+stanza reale, arredi leggibili, personaggio che ci si muove dentro, niente HUD invasivo.
+
+> Il nome del progetto è un placeholder preso dal nome della cartella: cambiarlo è una questione di
+> `GAME.title` in `src/config.js` e del `<title>` in `index.html`.
+
+## Stato attuale
+
+Una sola stanza, la **Sala Prove**: parquet e muri in legno, una batteria, due amplificatori per
+chitarra e uno per basso, più la porta. Il personaggio si muove, la camera lo segue, gli arredi
+ostacolano e si possono ispezionare.
+
+Non c'è ancora nessuna meccanica di gioco: l'interazione è **sola lettura** (descrizioni testuali),
+come da specifica di partenza.
+
+## Requisiti
+
+- Node.js 20 o superiore
+- npm 10 o superiore
+
+## Comandi
+
+```bash
+npm install       # installa le dipendenze
+npm run dev       # server di sviluppo con HMR su http://localhost:5173
+npm run build     # genera il sito statico in dist/ (per GitHub Pages)
+npm run preview   # serve dist/ su http://localhost:4173
+npm run build:single  # genera dist-single/index.html, apribile con doppio clic
+npm run lint      # ESLint
+```
+
+### Aprire la build: `dist/` oppure `dist-single/`?
+
+`dist/index.html` **non** si apre con un doppio clic. Su `file://` i browser bloccano gli script
+modulo ES (CORS), quindi la pagina resta su "caricamento". Per guardare la build normale:
+
+```bash
+npm run preview     # poi apri http://localhost:4173
+```
+
+Se invece serve un file che si apre direttamente dal disco (per provarlo, mandarlo a qualcuno,
+metterlo in una cartella), usa:
+
+```bash
+npm run build:single
+```
+
+`dist-single/index.html` è un file unico da ~1,2 MB con dentro tutto il gioco: si apre con
+doppio clic, su qualsiasi sistema, senza server. Per GitHub Pages va benissimo anche questo, ma
+la build normale è più comoda da servire perché separa codice e HTML.
+
+Entrambe le build hanno `base: './'`, quindi funzionano sia come `username.github.io` sia come
+`username.github.io/repo`.
+
+## Controlli
+
+Il gioco si gioca con un dito o con il mouse: **dove punti, il personaggio va**. Non ci sono
+joystick né pulsanti da premere.
+
+Tieni premuto e trascina: il personaggio continua a camminare seguendo il dito o il mouse, e
+non succede nient'altro. Per esaminare un arredo serve un tocco secco.
+
+| Gesto | Azione |
+| --- | --- |
+| Click o tap sul pavimento | Il personaggio cammina fino a quel punto, aggirando gli arredi |
+| Click o tap su un arredo | Il personaggio gli va vicino e lo esamina |
+| Tenere premuto e trascinare | Il personaggio segue il puntatore; nessuna interazione parte |
+| Tap durante un dialogo | Avanza il testo |
+
+### Tastiera
+
+| Tasto | Azione |
+| --- | --- |
+| `WASD` / frecce | Movimento (annulla una destinazione impostata col mouse o col tocco) |
+| `SHIFT` | Correre |
+| `E` / `INVIO` / `SPAZIO` | Interagisci con l'arredo più vicino (e avanza i dialoghi) |
+| `G` | Griglia delle tile e corpi di collisione |
+
+### Smartphone e tablet
+
+Su un telefono il gioco occupa la larghezza dello schermo e mantiene i 960 × 540 logici: in
+orizzontale si vede tutto, in verticale resta una fascia nera sopra e sotto (è un gioco pensato per
+l'orizzontale, quindi basta ruotare il telefono).
+
+Ogni punto del canvas è attivo: basta toccare la metà destra, il basso o l'alto, non serve
+mirare una zona particolare. Il tap sugli arredi funziona come sul desktop: non esiste un bottone
+`E` da premere.
+
+La legenda in basso a destra cambia da sola se il puntatore principale è un dito. Per provarla su
+un computer, apri il gioco con `?touch=1` in fondo all'indirizzo
+(esempio: `http://localhost:5173/?touch=1`): su un telefono il parametro non serve.
+
+## Struttura del progetto
+
+```
+.
+├── .github/workflows/pages.yml   # deploy automatico su GitHub Pages
+├── index.html                    # shell della pagina, overlay di caricamento
+├── vite.config.js                # build statico con base './' + build single-file
+├── public/                       # file copiati alla root dell'output (.nojekyll, favicon)
+├── dist/                         # output di npm run build   (non versionato)
+├── dist-single/                  # output di npm run build:single (non versionato)
+├── docs/
+│   ├── KNOWLEDGE.md              # log delle sessioni, decisioni, trabocchetti Phaser
+│   └── GAME-DESIGN.md            # concept, specifica della stanza, idee per il futuro
+└── src/
+    ├── main.js                   # configurazione di Phaser e avvio delle scene
+    ├── config.js                 # dimensioni, controlli, velocità, font
+    ├── core/
+    │   ├── eventBus.js           # bus di eventi condiviso fra le scene
+    │   ├── input.js              # costruzione dei tasti + riconoscimento del touch
+    │   └── uiState.js            # stato della UI letto dal gameplay
+    ├── data/rooms/               # una stanza = un JSON
+    │   └── sala-prove.json
+    ├── game/
+    │   ├── rooms.js              # registro delle stanze
+    │   ├── roomLayout.js         # da JSON a griglia di cellule solide + corpi di collisione
+    │   ├── navigation.js         # griglia camminabile e percorso (A*) per il click
+    │   ├── collision.js          # corpi statici + costanti di profondità (DEPTHS)
+    │   ├── propTypes.js          # texture e ingombro per tipo di arredo
+    ├── gfx/
+    │   ├── textureFactory.js     # texture generate a runtime (arredi, personaggio)
+    │   ├── roomTextures.js       # parquet e muri disegnati su canvas
+    │   └── rng.js                # rumore deterministico, utilità colore
+    ├── entities/
+    │   ├── Player.js             # sprite fisico: tastiera, destinazione e animazioni
+    │   └── Prop.js               # arredo: ombra + sprite + corpo statico
+    ├── systems/
+    │   └── interaction.js        # arredo più vicino, hit test col dito e "esamina"
+    ├── ui/
+    │   └── DialogueBox.js        # riquadro di testo, mostra tutto il messaggio subito
+    └── scenes/
+        ├── BootScene.js          # genera le texture e lancia le altre scene
+        ├── RoomScene.js          # costruisce la stanza da JSON, camera, input, update
+        └── HudScene.js           # HUD, hint contestuale, dialoghi
+```
+
+## Come funziona
+
+1. **BootScene** genera tutte le texture a runtime (nessun file PNG nel repo) e lancia
+   `RoomScene` + `HudScene`.
+2. **RoomScene** legge il JSON della stanza, disegna parquet e muri su canvas, ricava la griglia
+   delle celle solide e ne crea i corpi statici, poi posiziona arredi e personaggio.
+3. La camera segue il personaggio e si ferma ai bordi della stanza.
+4. L'ordinamento in profondità è **per Y**: ogni arredo e il personaggio hanno `depth = y`, quindi
+   chi è più in basso nel disegno. Pavimento e muri stanno dietro a tutto.
+5. Un click o un tap viene tradotto in un punto del mondo con
+   `cameras.main.getWorldPoint(...)`. Se il punto cade sull'ingombro di un arredo, l'arredo diventa
+   il bersaglio; altrimenti è il pavimento.
+6. `RoomScene` calcola il percorso con `navigation.js`: una griglia di celle camminabili (muri fuori,
+   ingombri degli arredi gonffiati del raggio del personaggio) e una ricerca A* che produce una
+   sequenza di waypoint. Il tap su un muro porta il personaggio davanti al muro invece di farlo
+   restare incastrato.
+7. `Player` segue i waypoint; `RoomScene.resolvePending()` apre il dialogo quando il personaggio
+   entra nella portata dell'arredo bersaglio, o appena arriva sul posto.
+8. **HudScene** ascolta il bus di eventi e mostra nome stanza, coordinate, hint contestuale e
+   dialoghi. Non conosce il gameplay, e il gameplay non conosce l'HUD.
+9. La tastiera ha la precedenza: se premi un tasto durante una camminata, la destinazione viene
+   annullata.
+
+## Formato della stanza (JSON)
+
+Ogni stanza è un file in `src/data/rooms/`. Non serve toccare il codice per cambiare arredi.
+
+| Campo | Tipo | Descrizione |
+| --- | --- | --- |
+| `id` | stringa | Identificativo univoco, usato anche nei nomi delle texture |
+| `name` | stringa | Nome mostrato nella targa in alto a sinistra |
+| `tagline` | stringa | Frase sotto il nome |
+| `description` | stringa | Testo mostrato dal riquadro dialoghi all'ingresso |
+| `tileSize` | numero | Dimensione della tile in pixel (32) |
+| `columns` / `rows` | numero | Dimensione della stanza in tile (30 × 20 = 960 × 640 px) |
+| `seed` | numero | Seme del rumore: same stanza, stesso parquet, sempre |
+| `palette.floor` | colori | `base`, `light`, `dark`, `seam` del parquet |
+| `palette.wall` | colori | `top`, `light`, `face`, `dark`, `seam` dei muri |
+| `walls` | array di rect | Rettangoli di celle solide, in coordinate tile (`x`, `y`, `w`, `h`) |
+| `openings` | array di rect | Buchi nei muri (porte, finestre): vengono sottratti ai muri |
+| `spawn` | oggetto | `x`, `y` in tile e `facing` (`up`/`down`/`left`/`right`) |
+| `props` | array | Gli arredi (vedi sotto) |
+
+### Arredi (`props`)
+
+```json
+{
+  "type": "amp",
+  "variant": "guitar",
+  "x": 8,
+  "y": 4.5,
+  "label": "Amplificatore chitarra (sx)",
+  "prompt": "Esamina",
+  "description": "Combo da 30 watt, telaio color panna, griglia in tessuto."
+}
+```
+
+- `x` e `y` sono in **tile** e possono essere decimali. `y` è il punto in cui l'arredo tocca il
+  pavimento: è anche il suo `depth`.
+- `type` e `variant` determinano texture e ingombro (vedi `src/game/propTypes.js`).
+- Tipi disponibili: `drum-kit`, `amp` (`guitar` / `bass`), `door`.
+- Se l'arredo ha un ingombro, diventa automaticamente un ostacolo.
+- `description` non vuota = arredo ispezionabile.
+
+## Aggiungere cose
+
+### Un nuovo tipo di arredo
+
+1. Disegna la texture in `src/gfx/textureFactory.js` e generane la chiave `prop-<nome>`.
+2. Registra chiave e ingombro in `src/game/propTypes.js`.
+3. Usalo nel JSON della stanza.
+
+### Una nuova stanza
+
+1. Crea `src/data/rooms/<id>.json`.
+2. Registrala in `src/game/rooms.js`.
+3. Per cambiararla a runtime: `scene.get('Room').changeRoom('<id>')`.
+
+### La grafica vera
+
+Le texture generate a runtime sono un traliccio: i nomi delle chiavi sono già quelli che
+serviranno ai PNG reali. Sostituire una texture significa disegnarla in un file e caricarla con
+`this.load.image(...)` invece di chiamare il relativo disegno in `textureFactory.js`: il resto del
+codice non cambia.
+
+## Pubblicare su GitHub Pages
+
+Il repository è già predisposto: `vite.config.js` usa `base: './'`, `public/.nojekyll` impedisce a
+Jekyll di ignorare i file che iniziano con `_`, e `.github/workflows/pages.yml` fa build + deploy.
+
+1. Metti su GitHub e rendi `main` il branch di default.
+2. In **Settings → Pages → Build and deployment**, scegli **Source: GitHub Actions**.
+3. Fai push su `main`: il workflow pubblica `dist/` e ti dà l'URL.
+
+Il sito funziona sia come `username.github.io` sia come project site `username.github.io/repo`,
+perché tutti i percorsi sono relativi.
+
+Nota: il workflow usa `npm ci`, quindi `package-lock.json` deve essere committato.
+
+## Limiti noti
+
+- L'interazione è solo descrittiva: nessuna meccanica (niente ancora, niente suonare).
+- Il movimento non è bloccato mentre un dialogo è aperto, ma con il dialogo aperto il tocco
+  avanza il testo invece di muovere il personaggio.
+- Il percorso è calcolato sulla griglia delle tile: non attraversa gli angoli stretti, quindi
+  qualche arredo contro muro resta irraggiungibile con un singolo tap (basta toccarlo due volte).
+- Su telefono il gioco si adatta alla larghezza dello schermo mantenendo i 960 × 540 logici: in
+  verticale resta letterboxed, è previsto per il gioco in orizzontale.
+- Le texture sono placeholder: disegnate a runtime, non ancora ottime.
+- Nessun salvataggio, nessun audio, nessun multiplayer.
+- Il bundle non è code-split: ~330 kB gzip, va bene per un gioco statico.
+
+## Documentazione
+
+- [`docs/KNOWLEDGE.md`](docs/KNOWLEDGE.md) — cosa è stato fatto, perché, e i trabocchetti di Phaser
+  incontrati. **Da leggere prima di modificare qualsiasi cosa.**
+- [`docs/GAME-DESIGN.md`](docs/GAME-DESIGN.md) — concept, specifica della stanza, roadmap.
