@@ -13,6 +13,10 @@ export default class InteractionSystem {
   }
 
   touchRadius(item) {
+    if (typeof item.touchRadius === 'number') {
+      return item.touchRadius;
+    }
+
     if (!item.footprint) {
       return DEFAULT_TOUCH_RADIUS + TOUCH_PADDING;
     }
@@ -75,7 +79,12 @@ export default class InteractionSystem {
       return false;
     }
 
-    emit(Events.DIALOGUE_SAY, item.describe());
+    const payload = item.describe();
+    const pages = Array.isArray(payload) ? payload : [payload];
+
+    for (const page of pages) {
+      emit(Events.DIALOGUE_SAY, page);
+    }
 
     return true;
   }

@@ -30,6 +30,10 @@ export const GAME = {
     bodyHeight: 12,
     interactRange: 78
   },
+  selection: {
+    spriteScale: 3,
+    selectedSpriteScale: 3.15
+  },
   font: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif'
 };
 
@@ -54,3 +58,6 @@ export function getGameResolution() {
 }
 
 export const DEFAULT_ROOM_ID = 'sala-prove';
+
+/** Personaggio usato quando nessuno è stato scelto (o quando la scelta non esiste). */
+export const DEFAULT_CHARACTER_ID = 'luca';

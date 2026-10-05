@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 export const Events = {
   BOOT_READY: 'boot:ready',
+  CHARACTER_SELECTED: 'character:selected',
   ROOM_READY: 'room:ready',
   HINT_CHANGED: 'hint:changed',
   DIALOGUE_SAY: 'dialogue:say',

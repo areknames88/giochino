@@ -1,3 +1,5 @@
+import { getUrlParam } from './urlParams.js';
+
 export function createControls(keyboard, definitions) {
   const controls = {};
 
@@ -22,7 +24,7 @@ export function isTouchPrimary() {
     return false;
   }
 
-  if (new URLSearchParams(window.location.search).get('touch') === '1') {
+  if (getUrlParam('touch') === '1') {
     return true;
   }
 

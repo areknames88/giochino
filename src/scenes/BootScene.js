@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import { createCharacterAnimations, createProceduralTextures } from '../gfx/textureFactory.js';
+import { createPropsTextures, createSoftTextures } from '../gfx/textureFactory.js';
+import { ensureCharacterAssets } from '../gfx/characterArt.js';
+import { listPlayableCharacters } from '../game/characters.js';
 import { Events, emit } from '../core/eventBus.js';
 
 export default class BootScene extends Phaser.Scene {
@@ -8,12 +10,15 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    createProceduralTextures(this);
-    createCharacterAnimations(this);
+    createPropsTextures(this);
+    createSoftTextures(this);
+
+    for (const character of listPlayableCharacters()) {
+      ensureCharacterAssets(this, character);
+    }
 
     emit(Events.BOOT_READY, { textures: this.textures.getTextureKeys().length });
 
-    this.scene.launch('Hud');
-    this.scene.start('Room', { roomId: this.registry.get('currentRoomId') });
+    this.scene.start('CharacterSelect');
   }
 }

@@ -14,10 +14,21 @@ sulla griglia (A*). Nessun joystick, nessun bottone touch: su telefono si usa la
 desktop. Build statica pubblicabile su GitHub Pages. Nessuna meccanica di gioco ancora: è un
 impianto, non un gioco.
 
-Ultima verifica: 4 ottobre 2026 — `npm run lint` pulito, `npm run build` ok, `npm run build:single`
-ok e aperto da `file://`; 49/49 verifiche sul dev server (click, percorso attorno agli arredi,
-tastiera che annulla la destinazione, tap in landscape e portrait con dita emulate via CDP) e
-15/15 smoke test sulla build single-file da `file://`.
+**Personaggi data-driven**: `src/gfx/characterArt.js` ha un solo `drawCharacterCell(g, cx, feetY,
+look, facing, phase)` che disegna chiunque, e tutto l'aspetto arriva dai JSON in
+`src/data/characters/playable/` e `src/data/characters/npc/`. `src/game/characters.js` è il registro:
+valida, completa i valori mancanti e produce le chiavi `character-<id>` e
+`character-<id>-{idle,walk}-<facing>`. `Player` non sa più nulla del personaggio: prende una texture,
+un prefisso di animazioni e la scala dell'ombra.
+
+**Schermata di scelta** (`CharacterSelectScene`): quattro schede con l'anteprima disegnata dagli
+stessi dati del gioco, in landscape 4×1 e in portrait 2×2. Si conferma col bottone, con `INVIO`,
+`SPAZIO` o `E`; `?char=<id>` la salta. La scelta resta nel registry, non viene salvata.
+
+Ultima verifica: 5 ottobre 2026 — `npm run lint` pulito, `npm run build` ok, `npm run build:single`
+ok; 16/16 verifiche funzionali sul dev server (scelta col click, ingresso in stanza, texture e
+animazioni del personaggio scelto, movimento, `?char=`, layout portrait) e 48/48 verifiche grafiche
+sui pixel delle celle dei 6 personaggi.
 
 ## Vincoli e desideri (dal brief iniziale)
 
@@ -57,6 +68,14 @@ tastiera che annulla la destinazione, tap in landscape e portrait con dita emula
 | **Un tasto premuto annulla la destinazione** | La tastiera vince sempre sul click: dopo un tocco si può correggere la rotta senza dover prima completare il cammino. |
 | **Il dialogo aperto "mangia" il tocco** | Con un dialogo aperto il tocco avanza il testo e non imposta nuove destinazioni: la regola è identica a `E`/`INVIO` da tastiera, e il gameplay non si blocca (decisione già presa: il movimento resta libero). |
 | **`Events.INTERACT_REQUESTED` rimosso** | Serviva solo al bottone touch. Ora l'interazione parte da `pointerdown` in `RoomScene` o dalla tastiera: due punti di ingresso nella scena, nessun evento bus che attraversa l'HUD per arrivare al gameplay. |
+| **Personaggi descritti dai JSON, non scritti a mano** | Un `drawCharacterCell` generico con una `look` risolta (`palette`, `build`, stile capelli, stile outfit, effetti) tiene insieme corpo e accessori: aggiungere un personaggio o un look nuovo non tocca il codice, e lo stesso disegno serve per le anteprime e per il gioco. |
+| **`playable/` e `npc/` come cartelle** | La differenza fra un personaggio scelto dal giocatore e uno che sta in stanza è una proprietà dei dati, quindi sta nei dati. I giocabili si generano tutti in `BootScene` (servono alle anteprime), gli NPC su richiesta, così gli asset non sprecati non si generano. |
+| **Un file per personaggio** | Quattro righe di `characters.js` per un personaggio nuovo, e ogni JSON si può modificare da solo senza toccare gli altri. Gli id duplicati fanno fallire il boot, non producono texture sovrapposte. |
+| **La `look` tiene i colori come stringhe `#rrggbb`** | I JSON sono dati: un colore leggibile e copiabile vale più di un numero. Chi disegna converte con `tint()` (`Phaser.Display.Color.HexStringToColor`), perché `fillStyle` con una stringa non dà errore, dà una cella **vuota** (trabocchetto 17). |
+| **Celle 32×56 con i piedi a 3 px dal fondo** | I piedi restano fermi fra le direzioni (servono a `depth = y` e all'ombra) e l'altezza extra sopra la testa fa stare capelli lunghi e berretti anche sul personaggio più alto (`build.height` 1.15). |
+| **Fasi `[0, +SWING, 0, -SWING]` e camminata `1,2,3,2`** | Le quattro celle della riga sono: fermo, passo destro, centro, passo sinistro. Prendendo solo `1,2,3` la clip finisce con due pose di contatto opposte e zoppica: il ritorno alla cella 2 prima di ripetere è la posizione di passaggio. |
+| **Schermata di scelta con lo stesso disegno del gioco** | L'anteprima non è una foto statica: usa `drawCharacterCell` con la `look` del personaggio, quindi non può divergere da quello che si vede poi in stanza. La selezione è per sessione (registry), senza `localStorage`: lo stato del giocatore non è ancora modello. |
+| **`?char=<id>` come override della scelta** | Provare i quattro personaggi senza cliccare quattro volte, e poter controllare in un colpo solo che le texture esistono tutte. Se l'id non è un giocabile, si ignora e parte il default. |
 
 ## Trapphigli di Phaser incontrati (leggere prima di debuggare)
 
@@ -139,6 +158,44 @@ tastiera che annulla la destinazione, tap in landscape e portrait con dita emula
     camera si è fermata, altrimenti lo schermo è ancora quello vecchio e il test clicca il punto
     sbagliato. Meglio aspettare che `scrollX/scrollY` siano stabili prima di convertire le
     coordinate.
+
+17. **`fillStyle` con un colore in stringa non dà errore: dà una cella vuota.** I colori dei JSON
+    sono `#rrggbb`; passati diretti a `fillStyle`/`lineStyle` diventano una tinta `NaN` e **non viene
+    disegnato niente**, senza eccezioni e senza errori in console. Il sintomo è subdolo: texture
+    creata, animazioni create, personaggio "presente" ma invisibile, e `getSourceImage()` che
+    restituisce una canvas vuota. Convertire sempre con `Phaser.Display.Color.HexStringToColor(c).color`
+    (`tint()` in `src/gfx/characterArt.js`).
+
+18. **`Container` non ha `setOrigin`.** Le schede della scelta personaggio sono dentro un `Container`
+    centrato con `setPosition` e figli posizionati a mano: chiamare `container.setOrigin(0.5, 0.5)`
+    fallisce a runtime. L'origin si imposta sui figli.
+
+19. **Per leggere i pixel di una texture generata, `getSourceImage()` non va bene in WebGL.** Se la
+    texture è stata creata da `textures.createCanvas` il `getSourceImage()` **è** la
+    `HTMLCanvasElement` e si legge con `getContext('2d')`; se è passata da `generateTexture` con
+    accelerazione, non c'è una `getCanvas()` e il controllo restituisce "zero pixel" **perché non ha
+    guardato niente**. Il metodo affidabile per una verifica pixel è: disegnare il personaggio in un
+    `Graphics` con `add: false`, chiamare `generateTexture('probe', ...)` e leggere la canvas
+    risultante. Nello stesso file, `getSourceImage().getCanvas?.()` restituendo `undefined` è la
+    spia che il controllo è vuoto, non che il disegno lo sia.
+
+20. **`renderer.snapshotPixel(x, y, cb)` può non chiamare mai la callback.** La richiesta viene
+    schedulata per il frame successivo: se lo script di verifica non aspetta (o chiude il browser
+    prima), non arriva nulla e il timeout sembra un bug del gioco. Per misurare il rendering conviene
+    lo screenshot a pagina intera (trabocchetto 12) oppure il bake di una texture di prova
+    (trabocchetto 19).
+
+21. **`save()`/`translateCanvas()`/`scaleCanvas()`/`restore()` funzionano anche dentro
+    `generateTexture`.** Il dubbio naturale è che il percorso canvas (`renderCanvas`) e quello WebGL
+    trattino le trasformazioni in modo diverso e che la corporatura si perda: non è così, e
+    `g.scaleCanvas(build.width, build.height)` con `translateCanvas` attorno al punto dei piedi scala
+    il personaggio attorno a sé, come voluto, nelle due pipeline.
+
+22. **`Phaser.Input.Keyboard.JustDown(key)` richiede `key.isDown === true` nel frame di `update()`.**
+    Se un tasto viene premuto e rilasciato velocemente (o inviato via script di test) prima del
+    tick del render loop, `JustDown` restituisce `false` e il tocco va perso. Per comandi discreti
+    (navigazione a schede, conferma con INVIO, interazioni con tasti specifici) usare sempre
+    `this.input.keyboard.on('keydown-KEY', ...)` che risponde immediatamente all'evento DOM.
 
 ## Log delle sessioni
 
@@ -309,8 +366,77 @@ Verifiche fatte:
 - `held.mjs`: **29/29** (drag continuo mouse e touch, tap secco per arredo, annullamento da tastiera).
 - `prod2.mjs`: **15/15** su `dist-single/index.html`.
 
-## Come continuare
+### 2026-10-05 — Sessione 6: personaggi dai JSON e schermata di scelta
 
+Fatto:
+
+- **`drawCharacterCell` generico** (`src/gfx/characterArt.js`): firma
+  `(g, cx, feetY, look, facing, phase)`, corpo modulare, capelli (`short`, `long`, `bun`,
+  `ponytail`, `curly`, `bald`), outfit (`tee`, `hoodie`, `jacket`, `dress`, `sleeveless`) e
+  accessori (`glasses`, `beard`, `mustache`, `hat`, `headphones`, `scarf`, `strap`). Fuori da
+  `textureFactory.js`, che ora contiene solo arredi e ombre.
+- **Registro personaggi** (`src/game/characters.js`): importa i JSON di `src/data/characters/`,
+  rifiuta id duplicati, normalizza i colori (`#rgb` e `#rrggbb`), completa i campi mancanti con
+  avviso in console, blocca `build` fra 0.85 e 1.15, e espone le chiavi
+  `character-<id>` / `character-<id>-{idle,walk}-<facing>`.
+- **Dati**: quattro giocabili (`luca`, `mara`, `theo`, `nina`, segnaposto da sostituire) e due NPC
+  (`basso`, `batterista`).
+- **Celle 32 × 56** con i piedi a 3 px dal fondo, al posto delle vecchie 32 × 40: l'altezza extra
+  serve a non tagliare i berretti e i capelli lunghi sul personaggio più alto.
+- **Camminata con quattro pose**: le fasi sono `[0, +SWING, 0, -SWING]` e la clip usa i frame
+  `1,2,3,2`, così il ciclo torna sulla posizione di passaggio invece di zoppicare.
+- **`Player` generico**: texture, prefisso delle animazioni (`animPrefix`) e scala dell'ombra
+  (`shadowScale`) arrivano dalla `look`; la camera e le collisioni non cambiano.
+- **`CharacterSelectScene`**: schede con anteprima disegnata dagli stessi dati del gioco, 4 colonne
+  in landscape e 2 in portrait, conferma col bottone o con `INVIO`/`SPAZIO`/`E`, scelta messa nel
+  registry (`currentCharacterId`) e avvio di `RoomScene` + `HudScene`.
+- **`?char=<id>`** salta la scelta (`src/core/urlParams.js`), utile per le prove e per gli smoke test.
+- `BootScene` genera i fogli dei soli giocabili; gli NPC vengono generati quando servono.
+- **NPC in stanza (`src/entities/Npc.js`)**: Il bassista e La batterista posizionati nella sala prove
+  con etichetta nome e ruolo sopra la testa, animazione idle coerente con la direzione dello spawn,
+  corpo solido integrato in collisioni e pathfinding `buildWalkableGrid`.
+- **Dialoghi a più battute**: `InteractionSystem.js` supporta `describe()` restituente array di
+  pagine, inviando più `DIALOGUE_SAY` in coda al `DialogueBox`.
+- **Input tastiera su `CharacterSelectScene`**: gestione con listener di evento `keydown` (frecce,
+  WASD, INVIO, SPAZIO, E) anziché polling `JustDown`, prevenendo eventi persi tra frame.
+
+Due difetti trovati e corretti in questa sessione:
+
+- **`fillStyle` con colori in stringa**: nessuna delle celle era disegnata, il personaggio era
+  invisibile in gioco e non usciva nessun errore. Corretto con `tint()` in `characterArt.js`
+  (trabocchetto 17).
+- **Camminata a due pose**: `generateFrameNumbers(start+1, end+3)` dava tre frame di cui il primo e
+  il terzo erano la stessa posizione neutra; il ciclo zoppicava. Ora i frame sono espliciti
+  (`1,2,3,2`).
+- **Vista laterale completa per sinistra e destra (`drawProfileCell`)**: prima le direzioni sinistra e
+  destra riusavano lo stesso corpo frontale (gambe affiancate, busto largo 16 px, scarpe frontali),
+  cambiando solo la posizione degli occhi. Ora `drawProfileCell` disegna il personaggio di profilo:
+  busto stretto a 11 px, braccio e gamba posteriori dietro al corpo che oscillano all'indietro, braccio
+  e gamba anteriori in primo piano con scarpe che puntano chiaramente nella direzione di camminata
+  (`head.dir`), naso ed orecchio visibili, e accessori sagomati lateralmente. Le coordinate speculari
+  garantiscono simmetria perfetta (0 pixel di differenza di forma in `art.mjs`).
+
+Verifiche fatte:
+
+- `check.mjs`: **16/16** — scena di selezione attiva, 4 texture e 32 animazioni, click sulla terza
+  scheda e ingresso in stanza, texture/animazioni del personaggio scelto, animazione di camminata e
+  movimento reale, `?char=nina`, layout portrait con le schede dentro lo schermo, nessun errore in
+  console.
+- `art.mjs`: **48/48** — bake delle celle e lettura dei pixel: nessun personaggio tagliato ai lati o
+  in alto, piedi dentro la cella, tutti i colori del JSON presenti nel disegno, corporatura
+  verificata con la stessa identità e `build` 0.85/1.00/1.15, sinistra e destra con la stessa forma,
+  tre pose di camminata diverse, sei disegni tutti diversi.
+- `test_npc.mjs`: **20/20** — scelta del personaggio da tastiera, spawn in stanza con texture
+  corretta, presenza dei 2 NPC (`basso` e `batterista`) con sprite/ombra/etichetta nome/ruolo, corpo
+  solido anticollisione, hint interattivo `[E] Parla con`, dialogo a due battute sequenziali con
+  avanzamento `E`/tap, pathfinding che guida il giocatore fino alla batterista e apre il dialogo.
+- `npm run lint` pulito, `npm run build` ok (37 moduli), `npm run build:single` ok.
+
+Nota per le prossime sessioni: i quattro giocabili sono **segnaposto** (nome, corporatura e
+palette). Quando arrivano le descrizioni definitive basta sostituire i JSON, senza toccare il
+codice.
+
+## Come continuare
 Checklist per la prossima sessione:
 
 1. Leggere questo file e `README.md`.
@@ -357,5 +483,11 @@ legenda), oppure `?touch=1` nell'URL forza le parole da touch.
 - **Cella camminabile**: tile libera dove il personaggio ci sta davvero (muri esclusi, ingombri
   gonfiati del suo raggio). È la griglia su cui gira l'A* di `navigation.js`.
 - **Waypoint**: un punto della sequenza che il personaggio segue; `Player` li consuma uno alla volta.
+- **Personaggio**: un JSON in `src/data/characters/`; `playable/` per chi si sceglie all'inizio,
+  `npc/` per chi sta in stanza.
+- **Look**: la `look` di un personaggio, cioè il JSON completato con i valori di default e le
+  sfumature derivate (`skinShade`, `shirtLight`, ...): è ciò che `drawCharacterCell` disegna.
+- **Foglio del personaggio**: texture 128 × 224 con 4 direzioni × 4 frame in celle 32 × 56, chiave
+  `character-<id>`.
 - **Profondità (`depth`)**: ordine di disegno. Pavimento −2000, muri −1000, arredi e personaggio il
   proprio `y`.

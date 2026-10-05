@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { DEFAULT_ROOM_ID, GAME, getGameResolution } from './config.js';
+import { resolveStartupCharacterId } from './game/characters.js';
 import { ROOMS } from './game/rooms.js';
 import BootScene from './scenes/BootScene.js';
+import CharacterSelectScene from './scenes/CharacterSelectScene.js';
 import HudScene from './scenes/HudScene.js';
 import RoomScene from './scenes/RoomScene.js';
 
@@ -44,12 +46,13 @@ const game = new Phaser.Game({
   input: {
     keyboard: true
   },
-  scene: [BootScene, RoomScene, HudScene],
+  scene: [BootScene, CharacterSelectScene, RoomScene, HudScene],
   callbacks: {
     preBoot(game) {
       game.registry.set('title', GAME.title);
       game.registry.set('rooms', ROOMS);
       game.registry.set('currentRoomId', DEFAULT_ROOM_ID);
+      game.registry.set('currentCharacterId', resolveStartupCharacterId());
     },
     postBoot(game) {
       game.events.once(Phaser.Core.Events.POST_RENDER, () => hideBootMessage());

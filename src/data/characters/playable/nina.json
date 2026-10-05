@@ -1,0 +1,20 @@
+{
+  "id": "nina",
+  "kind": "playable",
+  "name": "Nina",
+  "tagline": "Chignon e gonna",
+  "build": { "height": 0.92, "width": 0.9 },
+  "palette": {
+    "skin": "#d8a179",
+    "hair": "#1f1a17",
+    "shirt": "#e0c46a",
+    "pants": "#b8557a",
+    "shoes": "#7a2f3f",
+    "eye": "#2a201a"
+  },
+  "hair": { "style": "bun" },
+  "outfit": { "style": "dress" },
+  "effects": [
+    { "type": "scarf", "color": "#f0e2c6" }
+  ]
+}

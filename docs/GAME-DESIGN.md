@@ -32,6 +32,24 @@ Coordinate attuali nel JSON (tile da 32 px, stanza 30×20):
 | Porta | 15 | 20 | Nell'apertura del muro sud, non è un ostacolo |
 | Spawn | 15 | 17 | Davanti alla porta, rivolto in alto |
 
+## I personaggi
+
+Il giocatore è **una persona scelta all'inizio**, non un'icona: quattro personaggi, ognuno con
+nome, corporatura, capelli, outfit e accessori. La schermata iniziale mostra le schede con
+l'anteprima reale del personaggio (disegnata dagli stessi dati che userà il gioco), e la scelta
+conduce alla stanza.
+
+- I quattro giocabili attuali (`luca`, `mara`, `theo`, `nina`) sono **segnaposto**: servono a far
+  girare il codice, i nomi e i look definitivi arrivano dopo. Sono dati, non codice: si sostituiscono
+  toccando i JSON in `src/data/characters/playable/`.
+- Gli NPC (`basso`, `batterista`) stanno nella stessa forma e si distinguono solo per la cartella:
+  non si giocano, ma si disegnano con lo stesso metodo.
+- Le differenze fra un personaggio e l'altro sono **leggibili a colpo d'occhio**: corporatura,
+  capelli, colore degli abiti. Devono stare nella silhouette e nei due colori principali, non nei
+  dettagli.
+
+Non c'è ancora dialogo fra personaggi né salvataggio: la scelta vale per la sessione.
+
 ## Come si gioca
 
 Un solo gesto: **dove punti, il personaggio va**. Mouse e dito sono equivalenti, non ci sono
@@ -39,6 +57,7 @@ joystick né pulsanti da schivare.
 
 | | Tastiera e mouse | Touch |
 | --- | --- | --- |
+| Scegliere il personaggio | Click sulla scheda, frecce o `WASD`, poi bottone o `INVIO` / `SPAZIO` / `E` | Tap sulla scheda, poi sul bottone |
 | Muoversi | Tasto premuto e trascinamento, oppure `WASD` / frecce | Dito premuto e trascinamento |
 | Correre | `SHIFT` durante il cammino | — |
 | Esaminare | Click sull'arredo, oppure `E` / `INVIO` / `SPAZIO` | Tap sull'arredo |
@@ -65,26 +84,29 @@ personaggio in orizzontale e dialoghi adattati). Tutto il canvas resta attivo se
 
 ## Cosa NON c'è (di proposito)
 
-Nessun dialogo fra personaggi, nessun nemico, nessun oggetto raccolto, nessuna missione, nessun
-salvataggio. Il brief chiedeva una stanza e un impianto: aggiungere roba senza sapere dove si
-vuole andare è il modo più veloce di buttare via un boilerplate.
+Nessun combattimento, nessun nemico, nessun oggetto raccolto, nessuna missione, nessun
+salvataggio su disco. Il brief chiedeva una stanza viva e un impianto pulito: aggiungere complessità
+senza una direzione chiara è il modo più rapido di appesantire il gioco.
 
 ## Roadmap
 
 Ordine consigliato. Ogni passo è piccolo e indipendente dagli altri.
 
-1. **Personaggio con diritti** — sostituire il foglio generato con PNG veri, in 4 direzioni,
-   e aggiungere varianti colore pelle/capelli.
-2. **Salire e sedersi** — interazione vera: `E` davanti alla batteria o agli ampli, il personaggio
+1. **I quattro personaggi definitivi** — sostituire i JSON segnaposto con nomi, corporature e look
+   veri. Nessuna modifica al codice: è un lavoro di dati, e per farlo servono le descrizioni.
+2. **Personaggio con diritti** — sostituire il foglio generato con PNG veri, in 4 direzioni,
+   e aggiungere varianti colore pelle/capelli. Le chiavi esistono già: `character-<id>`.
+3. **Salire e sedersi** — interazione vera: `E` davanti alla batteria o agli ampli, il personaggio
    ci sale e ci resta. È il primo test serio per il depth sorting con gli arredi.
-3. **Suonare** — un semplice sistema di minigame/ritmo, o audio statico + animazione, che lega
+4. **Suonare** — un semplice sistema di minigame/ritmo, o audio statico + animazione, che lega
    l'interazione a un risultato.
-4. **Più stanze e corridoi** — il JSON è già pronto; serve un meccanismo di passaggio fra stanze
+5. **Più stanze e corridoi** — il JSON è già pronto; serve un meccanismo di passaggio fra stanze
    (`changeRoom` esiste) e una zona di triggers.
-5. **Dialoghi fra personaggi** — un NPC fermo con nome, ruolo e due righe di testo.
-6. **Luce e ora del giorno** — un overlay di colore sulla stanza, ora diurna e notturna.
-7. **Salvataggio** — `localStorage` con posizione, stanza e stato degli arredi.
-8. **Audio** — chitarra, basso e batteria come loop, con volume regolabile.
+6. **Altre interazioni NPC e dialoghi ramificati** — scelte di risposta o reazioni in base allo
+   strumento esaminato.
+7. **Luce e ora del giorno** — un overlay di colore sulla stanza, ora diurna e notturna.
+8. **Salvataggio** — `localStorage` con personaggio scelto, posizione, stanza e stato degli arredi.
+9. **Audio** — chitarra, basso e batteria come loop, con volume regolabile.
 
 ## Principi di design da mantenere
 
@@ -94,3 +116,5 @@ Ordine consigliato. Ogni passo è piccolo e indipendente dagli altri.
   un editor di layout, che sia un form dentro il JSON, non codice.
 - **Il placeholder grafico si sostituisce, non si riscrive.** Le chiavi texture esistono già per
   accogliere i PNG.
+- **L'aspetto è dato, non codice.** Un personaggio si cambia scrivendo un JSON: se per cambiare
+  l'aspetto serve toccare `characterArt.js`, il vocabolario dei look è troppo chiuso.

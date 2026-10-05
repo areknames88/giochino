@@ -1,6 +1,8 @@
-export const CHARACTER_FRAME_WIDTH = 32;
-export const CHARACTER_FRAME_HEIGHT = 40;
-export const CHARACTER_FRAMES_PER_ROW = 4;
+/**
+ * Texture degli arredi, disegnate a runtime. Il personaggio non è qui: sta in
+ * `src/gfx/characterArt.js`, che lo disegna a partire dai JSON in
+ * `src/data/characters/`.
+ */
 
 const CHROME = 0xc3cad1;
 const CHROME_DARK = 0x8b939b;
@@ -10,15 +12,7 @@ const CREAM = 0xefe6d2;
 const CREAM_SHADE = 0xd6c9ac;
 const WOOD = 0xc6904a;
 const WOOD_DARK = 0x8a5a2b;
-const SKIN = 0xe8b98f;
-const HAIR = 0x4a3121;
-const SHIRT = 0xb8443c;
-const SHIRT_DARK = 0x8f332e;
-const PANTS = 0x35486b;
-const SHOE = 0x2a1f18;
-const EYE = 0x241f1b;
-
-const CELL_BOTTOM_INSET = 3;
+const RUBBER = 0x2a1f18;
 
 function fillRounded(g, x, y, w, h, r, color, alpha = 1) {
   g.fillStyle(color, alpha);
@@ -81,8 +75,8 @@ function drum(g, x, y, radius, headColor = CREAM) {
 }
 
 function drawAmpGuitar(g) {
-  fillRect(g, 8, 44, 10, 4, SHOE);
-  fillRect(g, 34, 44, 10, 4, SHOE);
+  fillRect(g, 8, 44, 10, 4, RUBBER);
+  fillRect(g, 34, 44, 10, 4, RUBBER);
 
   fillQuad(g, [{ x: 4, y: 15 }, { x: 10, y: 6 }, { x: 48, y: 6 }, { x: 44, y: 15 }], 0xe3cfa4);
   fillQuad(g, [{ x: 44, y: 15 }, { x: 48, y: 6 }, { x: 48, y: 39 }, { x: 44, y: 46 }], 0xa08a68);
@@ -117,8 +111,8 @@ function drawAmpGuitar(g) {
 }
 
 function drawAmpBass(g) {
-  fillRect(g, 10, 54, 11, 4, SHOE);
-  fillRect(g, 47, 54, 11, 4, SHOE);
+  fillRect(g, 10, 54, 11, 4, RUBBER);
+  fillRect(g, 47, 54, 11, 4, RUBBER);
 
   fillQuad(g, [{ x: 4, y: 18 }, { x: 11, y: 7 }, { x: 63, y: 7 }, { x: 58, y: 18 }], 0x4a443f);
   fillQuad(g, [{ x: 58, y: 18 }, { x: 63, y: 7 }, { x: 63, y: 45 }, { x: 58, y: 56 }], 0x2e2926);
@@ -195,9 +189,9 @@ function drawDrumKit(g) {
   drum(g, 36, 72, 18);
   drum(g, 124, 88, 13);
 
-  fillRect(g, 42, 110, 3, 8, SHOE);
-  fillRect(g, 22, 110, 3, 8, SHOE);
-  fillRect(g, 31, 116, 3, 4, SHOE);
+  fillRect(g, 42, 110, 3, 8, RUBBER);
+  fillRect(g, 22, 110, 3, 8, RUBBER);
+  fillRect(g, 31, 116, 3, 4, RUBBER);
   fillEllipse(g, 28, 106, 28, 12, 0x7a3b2a);
   fillEllipse(g, 28, 103, 28, 12, 0x9c4c34);
   fillEllipse(g, 24, 101, 10, 4, 0xb8664a, 0.6);
@@ -224,52 +218,6 @@ function drawDoor(g) {
   fillRect(g, 8, 43, 48, 1, GOLD);
 }
 
-function drawCharacterCell(g, cx, bottomY, facing, phase) {
-  const swing = Math.sin(phase) * 2.6;
-  const bob = Math.abs(Math.cos(phase)) * 1;
-  const legLeft = swing;
-  const legRight = -swing;
-
-  fillRounded(g, cx - 7, bottomY - 12 + legRight, 6, 10, 2, PANTS);
-  fillRounded(g, cx + 1, bottomY - 12 + legLeft, 6, 10, 2, PANTS);
-  fillRect(g, cx - 7.5, bottomY - 3 + legRight, 7, 3, SHOE);
-  fillRect(g, cx + 0.5, bottomY - 3 + legLeft, 7, 3, SHOE);
-
-  fillRounded(g, cx - 8, bottomY - 26 + bob, 16, 15, 4, SHIRT);
-  fillRect(g, cx - 8, bottomY - 26 + bob, 16, 2, 0xd05a4f, 0.7);
-
-  fillRounded(g, cx - 11, bottomY - 24 + bob + legLeft * 0.7, 4, 9, 2, SHIRT_DARK);
-  fillRounded(g, cx + 7, bottomY - 24 + bob + legRight * 0.7, 4, 9, 2, SHIRT_DARK);
-  fillRect(g, cx - 11, bottomY - 16 + bob + legLeft * 0.7, 4, 3, SKIN);
-  fillRect(g, cx + 7, bottomY - 16 + bob + legRight * 0.7, 4, 3, SKIN);
-
-  const headY = bottomY - 32 + bob;
-
-  if (facing === 'up') {
-    fillCircle(g, cx, headY, 7.2, HAIR);
-    fillCircle(g, cx - 3, headY + 3, 2.4, HAIR);
-  } else if (facing === 'left') {
-    fillCircle(g, cx + 2, headY - 0.5, 6.8, HAIR);
-    fillCircle(g, cx - 1, headY, 6.4, SKIN);
-    fillRect(g, cx - 5, headY - 1, 2, 2, EYE);
-    fillRect(g, cx - 7, headY + 2, 2, 3, SKIN);
-  } else if (facing === 'right') {
-    fillCircle(g, cx - 2, headY - 0.5, 6.8, HAIR);
-    fillCircle(g, cx + 1, headY, 6.4, SKIN);
-    fillRect(g, cx + 3, headY - 1, 2, 2, EYE);
-    fillRect(g, cx + 5, headY + 2, 2, 3, SKIN);
-  } else {
-    fillCircle(g, cx, headY, 7, SKIN);
-    fillRect(g, cx - 7, headY - 8, 14, 7, HAIR);
-    fillRect(g, cx - 7, headY - 8, 14, 2, 0x5c3d28);
-    fillRect(g, cx - 7.5, headY - 2, 3, 5, HAIR);
-    fillRect(g, cx + 4.5, headY - 2, 3, 5, HAIR);
-    fillRect(g, cx - 4, headY - 2, 2, 2, EYE);
-    fillRect(g, cx + 2, headY - 2, 2, 2, EYE);
-    fillRect(g, cx - 2, headY + 3, 4, 1, 0xc98f6a, 0.8);
-  }
-}
-
 function buildPropsTexture(scene) {
   const g = scene.make.graphics({ x: 0, y: 0, add: false });
 
@@ -292,42 +240,6 @@ function buildPropsTexture(scene) {
   g.destroy();
 }
 
-function buildCharacterTexture(scene) {
-  const g = scene.make.graphics({ x: 0, y: 0, add: false });
-  const width = CHARACTER_FRAME_WIDTH * CHARACTER_FRAMES_PER_ROW;
-  const height = CHARACTER_FRAME_HEIGHT * 4;
-  const facings = ['down', 'left', 'right', 'up'];
-
-  for (let row = 0; row < facings.length; row += 1) {
-    for (let col = 0; col < CHARACTER_FRAMES_PER_ROW; col += 1) {
-      const cx = col * CHARACTER_FRAME_WIDTH + CHARACTER_FRAME_WIDTH / 2;
-      const bottomY = row * CHARACTER_FRAME_HEIGHT + CHARACTER_FRAME_HEIGHT - CELL_BOTTOM_INSET;
-      const phase = col === 0 ? 0 : (col / CHARACTER_FRAMES_PER_ROW) * Math.PI * 2;
-      drawCharacterCell(g, cx, bottomY, facings[row], phase);
-    }
-  }
-
-  g.generateTexture('player', width, height);
-  g.clear();
-  g.destroy();
-
-  const texture = scene.textures.get('player');
-  const total = facings.length * CHARACTER_FRAMES_PER_ROW;
-
-  for (let index = 0; index < total; index += 1) {
-    const col = index % CHARACTER_FRAMES_PER_ROW;
-    const row = Math.floor(index / CHARACTER_FRAMES_PER_ROW);
-    texture.add(
-      index,
-      0,
-      col * CHARACTER_FRAME_WIDTH,
-      row * CHARACTER_FRAME_HEIGHT,
-      CHARACTER_FRAME_WIDTH,
-      CHARACTER_FRAME_HEIGHT
-    );
-  }
-}
-
 function buildSoftTextures(scene) {
   const g = scene.make.graphics({ x: 0, y: 0, add: false });
 
@@ -344,35 +256,11 @@ function buildSoftTextures(scene) {
   g.destroy();
 }
 
-export function createProceduralTextures(scene) {
+export function createPropsTextures(scene) {
   buildPropsTexture(scene);
-  buildCharacterTexture(scene);
+}
+
+export function createSoftTextures(scene) {
   buildSoftTextures(scene);
 }
 
-export function createCharacterAnimations(scene) {
-  if (scene.anims.exists('player-walk-down')) {
-    return;
-  }
-
-  const facings = ['down', 'left', 'right', 'up'];
-
-  for (let row = 0; row < facings.length; row += 1) {
-    const base = row * CHARACTER_FRAMES_PER_ROW;
-    const facing = facings[row];
-
-    scene.anims.create({
-      key: `player-walk-${facing}`,
-      frames: scene.anims.generateFrameNumbers('player', { start: base + 1, end: base + 3 }),
-      frameRate: 9,
-      repeat: -1
-    });
-
-    scene.anims.create({
-      key: `player-idle-${facing}`,
-      frames: scene.anims.generateFrameNumbers('player', { start: base, end: base }),
-      frameRate: 1,
-      repeat: -1
-    });
-  }
-}

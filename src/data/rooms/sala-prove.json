@@ -80,5 +80,19 @@
       "prompt": "Esamina",
       "description": "Una porta di legno massello con maniglia in ottone. Dall'altra parte si sente il rumore del corridoio."
     }
+  ],
+  "characters": [
+    {
+      "id": "batterista",
+      "x": 18,
+      "y": 6.5,
+      "facing": "left"
+    },
+    {
+      "id": "basso",
+      "x": 24,
+      "y": 11.5,
+      "facing": "down"
+    }
   ]
 }

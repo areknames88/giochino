@@ -4,6 +4,8 @@ const DIRS = ['down', 'left', 'right', 'up'];
 const ARRIVE_DISTANCE = 5;
 const STUCK_TIMEOUT = 420;
 const STUCK_EPSILON = 1.5;
+const SHADOW_HEIGHT = 7;
+const SHADOW_OFFSET_Y = -2;
 
 function faceFromVector(dx, dy) {
   if (Math.abs(dx) >= Math.abs(dy)) {
@@ -25,13 +27,16 @@ function faceFromVector(dx, dy) {
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, spawn, options) {
-    super(scene, spawn.x, spawn.y, 'player');
+    const { textureKey, animPrefix, shadowScale } = options;
+
+    super(scene, spawn.x, spawn.y, textureKey);
 
     const { walkSpeed, sprintSpeed, bodyWidth, bodyHeight, controls } = options;
 
     this.walkSpeed = walkSpeed;
     this.sprintSpeed = sprintSpeed;
     this.controls = controls;
+    this.animPrefix = animPrefix ?? textureKey;
     this.facing = DIRS.includes(spawn.facing) ? spawn.facing : 'down';
     this.moving = false;
     this.path = [];
@@ -48,11 +53,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setOffset((this.width - bodyWidth) / 2, this.height - bodyHeight);
     this.setCollideWorldBounds(true);
     this.setDepth(this.y);
-    this.play(`player-idle-${this.facing}`);
+    this.playIdle();
 
+    this.shadowScale = shadowScale ?? 1;
     this.shadow = scene.add
-      .image(this.x, this.y - 2, 'soft-shadow')
-      .setDisplaySize(20, 7)
+      .image(this.x, this.y + SHADOW_OFFSET_Y, 'soft-shadow')
+      .setDisplaySize(20 * this.shadowScale, SHADOW_HEIGHT)
       .setTint(0x000000)
       .setAlpha(0.3);
   }
@@ -69,6 +75,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.anims.currentAnim?.key !== animKey) {
       this.anims.play(animKey, true);
     }
+  }
+
+  animKey(state) {
+    return `${this.animPrefix}-${state}-${this.facing}`;
+  }
+
+  playIdle() {
+    this.play(this.animKey('idle'));
+  }
+
+  playWalk() {
+    this.play(this.animKey('walk'));
   }
 
   walkTo(x, y) {
@@ -158,7 +176,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (!this.moving) {
       this.body.setVelocity(0, 0);
-      this.play(`player-idle-${this.facing}`);
+      this.playIdle();
       this.finishStep();
       return;
     }
@@ -170,12 +188,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.facing = faceFromVector(direction.x, direction.y) ?? this.facing;
 
-    this.play(`player-walk-${this.facing}`);
+    this.playWalk();
     this.finishStep();
   }
 
   finishStep() {
     this.setDepth(this.y);
-    this.shadow.setPosition(this.x, this.y - 2);
+    this.shadow.setPosition(this.x, this.y + SHADOW_OFFSET_Y);
   }
 }

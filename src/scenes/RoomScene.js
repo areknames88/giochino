@@ -1,14 +1,17 @@
 import Phaser from 'phaser';
-import { DEFAULT_ROOM_ID, GAME } from '../config.js';
+import { DEFAULT_CHARACTER_ID, DEFAULT_ROOM_ID, GAME } from '../config.js';
 import { Events, emit } from '../core/eventBus.js';
 import { createControls } from '../core/input.js';
 import { uiState } from '../core/uiState.js';
 import Player from '../entities/Player.js';
 import Prop from '../entities/Prop.js';
+import Npc from '../entities/Npc.js';
 import { DEPTHS, createSolid } from '../game/collision.js';
+import { characterTextureKey, getCharacter, resolveLook } from '../game/characters.js';
 import { buildRoomLayout } from '../game/roomLayout.js';
 import { getRoom } from '../game/rooms.js';
 import { buildWalkableGrid, cellsToPoints, findPath, nearestWalkableCell } from '../game/navigation.js';
+import { ensureCharacterAssets } from '../gfx/characterArt.js';
 import { createFloorTexture, createWallTexture } from '../gfx/roomTextures.js';
 import InteractionSystem from '../systems/interaction.js';
 
@@ -51,6 +54,22 @@ export default class RoomScene extends Phaser.Scene {
       }
     }
 
+    this.character = getCharacter(this.registry.get('currentCharacterId') ?? DEFAULT_CHARACTER_ID);
+    this.look = resolveLook(this.character);
+    ensureCharacterAssets(this, this.character);
+
+    this.npcs = (this.room.characters ?? [])
+      .filter((npcData) => npcData.id !== this.character.id)
+      .map((npcData) => {
+        const character = getCharacter(npcData.id);
+        ensureCharacterAssets(this, character);
+        const npc = new Npc(this, npcData, character, this.layout);
+        if (npc.solid) {
+          this.colliders.push(npc.solid);
+        }
+        return npc;
+      });
+
     const spawn = {
       x: this.room.spawn.x * this.layout.tileSize,
       y: this.room.spawn.y * this.layout.tileSize,
@@ -58,6 +77,8 @@ export default class RoomScene extends Phaser.Scene {
     };
 
     this.player = new Player(this, spawn, {
+      textureKey: characterTextureKey(this.character.id),
+      shadowScale: this.look.build.width,
       walkSpeed: GAME.player.walkSpeed,
       sprintSpeed: GAME.player.sprintSpeed,
       bodyWidth: GAME.player.bodyWidth,
@@ -70,13 +91,13 @@ export default class RoomScene extends Phaser.Scene {
 
     this.interactions = new InteractionSystem(
       this,
-      this.props.filter((prop) => prop.description),
+      [...this.props.filter((prop) => prop.description), ...this.npcs],
       GAME.player.interactRange
     );
 
     this.navigation = buildWalkableGrid(
       this.layout,
-      this.props,
+      [...this.props, ...this.npcs],
       Math.max(GAME.player.bodyWidth, GAME.player.bodyHeight) / 2
     );
 

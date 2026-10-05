@@ -15,6 +15,11 @@ Una sola stanza, la **Sala Prove**: parquet e muri in legno, una batteria, due a
 chitarra e uno per basso, più la porta. Il personaggio si muove, la camera lo segue, gli arredi
 ostacolano e si possono ispezionare.
 
+Prima di entrare nella stanza c'è una **schermata di scelta del personaggio**: quattro schede, una
+per personaggio, disegnate a runtime dagli stessi dati che userà il gioco. Ogni personaggio è un
+JSON in `src/data/characters/`, quindi aspetto, corporatura, capelli, outfit e accessori si cambiano
+senza toccare il codice.
+
 Non c'è ancora nessuna meccanica di gioco: l'interazione è **sola lettura** (descrizioni testuali),
 come da specifica di partenza.
 
@@ -96,6 +101,15 @@ La legenda in basso a destra cambia da sola se il puntatore principale è un dit
 un computer, apri il gioco con `?touch=1` in fondo all'indirizzo
 (esempio: `http://localhost:5173/?touch=1`): su un telefono il parametro non serve.
 
+### Parametri dell'indirizzo
+
+| Parametro | Effetto |
+| --- | --- |
+| `?char=<id>` | Salta la schermata di scelta e parte con quel personaggio (`luca`, `mara`, `theo`, `nina`) |
+| `?touch=1` | Forza la legenda da dito anche su un computer |
+
+La scelta vale per la sessione corrente: non viene salvata nel browser.
+
 ## Struttura del progetto
 
 ```
@@ -118,51 +132,65 @@ un computer, apri il gioco con `?touch=1` in fondo all'indirizzo
     │   └── uiState.js            # stato della UI letto dal gameplay
     ├── data/rooms/               # una stanza = un JSON
     │   └── sala-prove.json
+    ├── data/characters/          # un personaggio = un JSON
+    │   ├── playable/             # scelti nella schermata iniziale
+    │   └── npc/                  # personaggi della stanza, non giocabili
     ├── game/
     │   ├── rooms.js              # registro delle stanze
     │   ├── roomLayout.js         # da JSON a griglia di cellule solide + corpi di collisione
     │   ├── navigation.js         # griglia camminabile e percorso (A*) per il click
     │   ├── collision.js          # corpi statici + costanti di profondità (DEPTHS)
     │   ├── propTypes.js          # texture e ingombro per tipo di arredo
+    │   └── characters.js         # registro personaggi: JSON, validazione, chiavi texture/animazioni
     ├── gfx/
-    │   ├── textureFactory.js     # texture generate a runtime (arredi, personaggio)
+    │   ├── textureFactory.js     # texture generate a runtime (arredi, ombre)
+    │   ├── characterArt.js       # disegno del personaggio: corpo, capelli, outfit, accessori
     │   ├── roomTextures.js       # parquet e muri disegnati su canvas
     │   └── rng.js                # rumore deterministico, utilità colore
     ├── entities/
     │   ├── Player.js             # sprite fisico: tastiera, destinazione e animazioni
-    │   └── Prop.js               # arredo: ombra + sprite + corpo statico
+    │   ├── Prop.js               # arredo: ombra + sprite + corpo statico
+    │   └── Npc.js                # personaggio non giocante: ombra, sprite idle, etichetta nome e dialogo
     ├── systems/
     │   └── interaction.js        # arredo più vicino, hit test col dito e "esamina"
     ├── ui/
     │   └── DialogueBox.js        # riquadro di testo, mostra tutto il messaggio subito
     └── scenes/
-        ├── BootScene.js          # genera le texture e lancia le altre scene
+        ├── BootScene.js          # genera le texture e lancia la scelta del personaggio
+        ├── CharacterSelectScene.js  # schede dei giocabili, conferma e avvio della stanza
         ├── RoomScene.js          # costruisce la stanza da JSON, camera, input, update
         └── HudScene.js           # HUD, hint contestuale, dialoghi
 ```
 
 ## Come funziona
 
-1. **BootScene** genera tutte le texture a runtime (nessun file PNG nel repo) e lancia
-   `RoomScene` + `HudScene`.
-2. **RoomScene** legge il JSON della stanza, disegna parquet e muri su canvas, ricava la griglia
-   delle celle solide e ne crea i corpi statici, poi posiziona arredi e personaggio.
-3. La camera segue il personaggio e si ferma ai bordi della stanza.
-4. L'ordinamento in profondità è **per Y**: ogni arredo e il personaggio hanno `depth = y`, quindi
-   chi è più in basso nel disegno. Pavimento e muri stanno dietro a tutto.
-5. Un click o un tap viene tradotto in un punto del mondo con
-   `cameras.main.getWorldPoint(...)`. Se il punto cade sull'ingombro di un arredo, l'arredo diventa
+1. **BootScene** genera tutte le texture a runtime (nessun file PNG nel repo): arredi, ombre e i
+   fogli dei quattro personaggi giocabili, poi lancia `CharacterSelectScene`.
+2. **CharacterSelectScene** mostra una scheda per ogni giocabile, con l'anteprima disegnata con gli
+   stessi dati del gioco. Si sceglie col dito, col mouse o con frecce e `WASD`, si conferma col
+   bottone o con `INVIO` / `SPAZIO` / `E`. La scelta finisce nel registry
+   (`currentCharacterId`) e parte `RoomScene` + `HudScene`.
+3. **RoomScene** legge il JSON della stanza, disegna parquet e muri su canvas, ricava la griglia
+   delle celle solide e ne crea i corpi statici, poi posiziona arredi, NPC definiti nella stanza e il personaggio.
+4. Gli NPC (`src/entities/Npc.js`) hanno ombra, sprite idle, etichetta nome e ruolo sopra la testa,
+   sono corpi solidi considerati da collisioni e pathfinding, e hanno dialoghi a più battute
+   accessibili con `E` o tap diretto.
+5. La camera segue il personaggio e si ferma ai bordi della stanza.
+6. L'ordinamento in profondità è **per Y**: ogni arredo, NPC e il personaggio hanno `depth = y`, quindi
+   chi è più in basso nel disegno viene disegnato sopra. Pavimento e muri stanno dietro a tutto.
+7. Un click o un tap viene tradotto in un punto del mondo con
+   `cameras.main.getWorldPoint(...)`. Se il punto cade sull'ingombro di un arredo o di un NPC, diventa
    il bersaglio; altrimenti è il pavimento.
-6. `RoomScene` calcola il percorso con `navigation.js`: una griglia di celle camminabili (muri fuori,
-   ingombri degli arredi gonffiati del raggio del personaggio) e una ricerca A* che produce una
+8. `RoomScene` calcola il percorso con `navigation.js`: una griglia di celle camminabili (muri fuori,
+   ingombri degli arredi e degli NPC gonfiati del raggio del personaggio) e una ricerca A* che produce una
    sequenza di waypoint. Il tap su un muro porta il personaggio davanti al muro invece di farlo
    restare incastrato.
-7. `Player` segue i waypoint; `RoomScene.resolvePending()` apre il dialogo quando il personaggio
-   entra nella portata dell'arredo bersaglio, o appena arriva sul posto.
-8. **HudScene** ascolta il bus di eventi e mostra nome stanza, coordinate, hint contestuale e
-   dialoghi. Non conosce il gameplay, e il gameplay non conosce l'HUD.
-9. La tastiera ha la precedenza: se premi un tasto durante una camminata, la destinazione viene
-   annullata.
+9. `Player` segue i waypoint; `RoomScene.resolvePending()` apre il dialogo quando il personaggio
+   entra nella portata dell'elemento bersaglio, o appena arriva sul posto.
+10. **HudScene** ascolta il bus di eventi e mostra nome stanza, coordinate, hint contestuale e
+    dialoghi. Non conosce il gameplay, e il gameplay non conosce l'HUD.
+11. La tastiera ha la precedenza: se premi un tasto durante una camminata, la destinazione viene
+    annullata.
 
 ## Formato della stanza (JSON)
 
@@ -205,6 +233,61 @@ Ogni stanza è un file in `src/data/rooms/`. Non serve toccare il codice per cam
 - Se l'arredo ha un ingombro, diventa automaticamente un ostacolo.
 - `description` non vuota = arredo ispezionabile.
 
+## Formato del personaggio (JSON)
+
+Ogni personaggio è un file in `src/data/characters/playable/` (scelti all'inizio) oppure
+`src/data/characters/npc/`. Un JSON nuovo basta per avere un personaggio nuovo: nessuna modifica al
+codice.
+
+```json
+{
+  "id": "theo",
+  "kind": "playable",
+  "name": "Theo",
+  "tagline": "Alto, con le cuffie",
+  "build": { "height": 1.08, "width": 1.06 },
+  "palette": {
+    "skin": "#c98f63",
+    "hair": "#2b2018",
+    "shirt": "#6b5aa0",
+    "pants": "#2f3340",
+    "shoes": "#20242c",
+    "eye": "#1b1713"
+  },
+  "hair": { "style": "curly" },
+  "outfit": { "style": "hoodie" },
+  "effects": [
+    { "type": "headphones", "color": "#33383f" },
+    { "type": "beard", "color": "#3a2b20" }
+  ]
+}
+```
+
+| Campo | Tipo | Descrizione |
+| --- | --- | --- |
+| `id` | stringa | Identificativo univoco: entra nelle chiavi `character-<id>` e nel nome del file |
+| `kind` | stringa | `playable` o `npc`: dice in quale cartella e dove viene usato |
+| `name` | stringa | Nome sulla scheda della scelta iniziale |
+| `tagline` | stringa | Frase sotto il nome sulla scheda |
+| `build.height` / `build.width` | numero | Corporatura, fra 0.85 e 1.15 (taglia il disegno attorno ai piedi) |
+| `palette.*` | colori | `skin`, `hair`, `shirt`, `pants`, `shoes`, `eye`, in `#rrggbb` |
+| `hair.style` | stringa | `short`, `long`, `bun`, `ponytail`, `curly`, `bald` |
+| `outfit.style` | stringa | `tee`, `hoodie`, `jacket`, `dress`, `sleeveless` |
+| `effects` | array | Accessori, nell'ordine in cui vengono disegnati: `glasses`, `beard`, `mustache`, `hat`, `headphones`, `scarf`, `strap` |
+
+- Tutti i campi si possono omettere: what's mancante prende un valore predefinito (`characters.js` lo
+  avvisa una volta sola in console).
+- I colori si possono scrivere come `#rgb` o `#rrggbb`. **`characters.js` li tiene come stringhe**:
+  chi disegna deve convertirli con `Phaser.Display.Color.HexStringToColor` (vedi `tint()` in
+  `characterArt.js`), perché `fillStyle` con una stringa produce una tinta `NaN` e la cella esce
+  vuota.
+- Con `outfit.style: "dress"` le gambe sono scoperte, quindi `palette.pants` non compare nel disegno.
+- Il foglio di ogni personaggio è 4 direzioni × 4 frame in celle 32 × 56, con i piedi a 3 px dal
+  bordo inferiore. Le chiavi sono `character-<id>`, `character-<id>-idle-<facing>` e
+  `character-<id>-walk-<facing>`, con `facing` in `down`, `left`, `right`, `up`.
+- I giocabili vengono generati tutti in `BootScene` (servono alle anteprime); gli NPC vengono
+  generati solo quando qualcuno li usa.
+
 ## Aggiungere cose
 
 ### Un nuovo tipo di arredo
@@ -217,7 +300,17 @@ Ogni stanza è un file in `src/data/rooms/`. Non serve toccare il codice per cam
 
 1. Crea `src/data/rooms/<id>.json`.
 2. Registrala in `src/game/rooms.js`.
-3. Per cambiararla a runtime: `scene.get('Room').changeRoom('<id>')`.
+3. Per cambiarla a runtime: `scene.get('Room').changeRoom('<id>')`.
+
+### Un nuovo personaggio
+
+1. Crea `src/data/characters/playable/<id>.json` (o nella cartella `npc/`).
+2. Importalo e aggiungilo a `PLAYABLE_CHARACTERS` o `NPC_CHARACTERS` in `src/game/characters.js`:
+   l'`id` deve essere unico, altrimenti il registro lo segnala subito.
+3. Se il nuovo look usa uno stile di capelli, un outfit o un accessorio che non esistono ancora,
+   aggiungi il disegno in `HAIR_DRAWERS`, `EFFECT_DRAWERS` o il blocco `outfit` di
+   `src/gfx/characterArt.js`, e il nome nella lista di `characters.js` così i dati sbagliati
+   vengono segnalati.
 
 ### La grafica vera
 
@@ -250,8 +343,10 @@ Nota: il workflow usa `npm ci`, quindi `package-lock.json` deve essere committat
 - Su telefono il gioco si adatta alla larghezza dello schermo mantenendo i 960 × 540 logici: in
   verticale resta letterboxed, è previsto per il gioco in orizzontale.
 - Le texture sono placeholder: disegnate a runtime, non ancora ottime.
+- La scelta del personaggio vale per la sessione: ricaricando la pagina si torna alla schelta iniziale.
+- Gli NPC sono dati e disegno, non ancora entità in stanza: nessuno è ancora collocato nella sala.
 - Nessun salvataggio, nessun audio, nessun multiplayer.
-- Il bundle non è code-split: ~330 kB gzip, va bene per un gioco statico.
+- Il bundle non è code-split: ~336 kB gzip, va bene per un gioco statico.
 
 ## Documentazione
 

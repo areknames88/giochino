@@ -1,0 +1,21 @@
+{
+  "id": "mara",
+  "kind": "playable",
+  "name": "Mara",
+  "tagline": "Caschetto, giacca verde",
+  "build": { "height": 0.97, "width": 0.94 },
+  "palette": {
+    "skin": "#f0c9a2",
+    "hair": "#8a4b22",
+    "shirt": "#4f7a4a",
+    "pants": "#2f4a63",
+    "shoes": "#4a3628",
+    "eye": "#33261c"
+  },
+  "hair": { "style": "long" },
+  "outfit": { "style": "jacket" },
+  "effects": [
+    { "type": "glasses", "color": "#2b2b2b" },
+    { "type": "scarf", "color": "#c9552f" }
+  ]
+}
