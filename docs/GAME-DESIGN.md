@@ -34,21 +34,18 @@ Coordinate attuali nel JSON (tile da 32 px, stanza 30×20):
 
 ## I personaggi
 
-Il giocatore è **una persona scelta all'inizio**, non un'icona: quattro personaggi, ognuno con
-nome, corporatura, capelli, outfit e accessori. La schermata iniziale mostra le schede con
-l'anteprima reale del personaggio (disegnata dagli stessi dati che userà il gioco), e la scelta
-conduce alla stanza.
+Il giocatore sceglie all'inizio **uno dei 4 componenti della band Jackanal**:
+- **Riccardo**, il cantante: capelli corti marroni, frontman al centro della sala;
+- **Concy**, la bassista: capelli biondi alle spalle, vicino all'amplificatore per basso;
+- **Marco**, il chitarrista: capelli corti neri e barba corta, vicino all'ampli per chitarra;
+- **Davide**, il batterista: barba marrone lunga e coppola in testa, vicino alla batteria.
 
-- I quattro giocabili attuali (`luca`, `mara`, `theo`, `nina`) sono **segnaposto**: servono a far
-  girare il codice, i nomi e i look definitivi arrivano dopo. Sono dati, non codice: si sostituiscono
-  toccando i JSON in `src/data/characters/playable/`.
-- Gli NPC (`basso`, `batterista`) stanno nella stessa forma e si distinguono solo per la cartella:
-  non si giocano, ma si disegnano con lo stesso metodo.
-- Le differenze fra un personaggio e l'altro sono **leggibili a colpo d'occhio**: corporatura,
-  capelli, colore degli abiti. Devono stare nella silhouette e nei due colori principali, non nei
-  dettagli.
+Tutti indossano la t-shirt ufficiale blu (`#1172e3`) con il logo bianco Jackanal ricamato all'altezza
+del cuore (da `public/logo-bianco.svg`), jeans scuri e scarpe scure.
 
-Non c'è ancora dialogo fra personaggi né salvataggio: la scelta vale per la sessione.
+Quando il giocatore seleziona uno di loro, **gli altri tre componenti della band compaiono nella stanza
+come NPC interattivi**, posizionati vicino al proprio strumento o amplificatore. Ci si può avvicinare e
+parlare con ciascuno per ascoltare le loro battute.
 
 ## Come si gioca
 

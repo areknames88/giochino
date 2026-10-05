@@ -65,6 +65,10 @@ export default class InteractionSystem {
       return;
     }
 
+    if (this.current && typeof this.current.resetFacing === 'function') {
+      this.current.resetFacing();
+    }
+
     this.current = found;
 
     if (found) {
@@ -77,6 +81,10 @@ export default class InteractionSystem {
   trigger(item = this.current) {
     if (!item) {
       return false;
+    }
+
+    if (typeof item.faceTowards === 'function' && this.scene.player) {
+      item.faceTowards(this.scene.player.x, this.scene.player.y);
     }
 
     const payload = item.describe();

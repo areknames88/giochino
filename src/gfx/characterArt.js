@@ -129,7 +129,7 @@ function drawLegsFrontBack(g, cx, feetY, look, legLeft, legRight) {
   fillRect(g, cx + 0.5, feetY + SHOE_TOP + legLeft, SHOE_WIDTH, 1, look.shoeLight, 0.45);
 }
 
-function drawTorsoFrontBack(g, cx, feetY, look, bob) {
+function drawTorsoFrontBack(g, cx, feetY, look, bob, away) {
   const top = feetY + TORSO_TOP + bob;
   const left = cx - TORSO_WIDTH / 2;
 
@@ -148,6 +148,13 @@ function drawTorsoFrontBack(g, cx, feetY, look, bob) {
     fillRounded(g, cx - 4, top - 2, 8, 3, 1.5, look.shirtLight, 0.5);
   } else if (look.outfitStyle === 'sleeveless') {
     fillRounded(g, left, top, TORSO_WIDTH, 2, 1, look.skinShade, 0.35);
+  } else {
+    // T-shirt: logo Jackanal bianco sul petto a sinistra (altezza cuore)
+    if (!away) {
+      fillRect(g, cx + 1.5, top + 4, 3, 2.5, 0xffffff, 0.95);
+      fillRect(g, cx + 2, top + 6.5, 2, 1, 0xffffff, 0.9);
+      fillRect(g, cx + 2.5, top + 5, 1, 1, tint(look.shirt));
+    }
   }
 
   if (look.outfitStyle === 'dress') {
@@ -329,19 +336,29 @@ const EFFECT_DRAWERS = {
     fillRect(g, head.cx + 1, head.headY - 2, 3.5, 1, 0xffffff, 0.35);
   },
 
-  beard(g, head, effect) {
+  beard(g, head, effect, look) {
     if (head.away) {
       return;
     }
 
+    const isLong = effect.length === 'long' || effect.type === 'beard_long';
+
     if (head.profile) {
-      profileRounded(g, head.cx, head.dir, 0.5, head.headY + 1, 6.5, 7, 3, effect.color);
-      profileRect(g, head.cx, head.dir, 3, head.headY + 3.5, 2, 1, 0x2a1a12, 0.5);
+      profileRounded(g, head.cx, head.dir, 0.5, head.headY + 1, isLong ? 7.5 : 6.5, isLong ? 10.5 : 7, 3, effect.color);
+      if (isLong) {
+        profileRounded(g, head.cx, head.dir, 1, head.headY + 5.5, 6, 4, 2, effect.color);
+      }
+      profileRect(g, head.cx, head.dir, 2.5, head.headY + 2.5, 2.5, 1.5, look?.skinShade ?? 0xd09a72);
+      profileRect(g, head.cx, head.dir, 3.5, head.headY + 3, 1.5, 0.8, 0x8a3830, 0.9);
       return;
     }
 
-    fillRounded(g, head.cx - 5.5, head.headY + 1, 11, 7, 3.5, effect.color);
-    fillRect(g, head.cx - 2, head.headY + 3, 4, 1, 0x2a1a12, 0.55);
+    fillRounded(g, head.cx - 5.5, head.headY + 1, 11, isLong ? 11 : 7, 3.5, effect.color);
+    if (isLong) {
+      fillRounded(g, head.cx - 4, head.headY + 5.5, 8, 4.5, 2.5, effect.color);
+    }
+    fillRounded(g, head.cx - 2, head.headY + 2.5, 4, 1.8, 0.8, look?.skinShade ?? 0xd09a72);
+    fillRect(g, head.cx - 1.5, head.headY + 3, 3, 0.8, 0x8a3830, 0.95);
   },
 
   mustache(g, head, effect) {
@@ -358,16 +375,24 @@ const EFFECT_DRAWERS = {
   },
 
   hat(g, head, effect) {
+    const isCoppola = effect.style === 'coppola' || effect.style === 'flat_cap';
+
     if (head.profile) {
-      profileRounded(g, head.cx, head.dir, -5.5, head.headY - 10, 12, 9, 3.5, effect.color);
-      profileRect(g, head.cx, head.dir, -5.5, head.headY - 2.5, 12, 2, effect.shade);
-      profileRect(g, head.cx, head.dir, 4.5, head.headY - 2.5, 3.5, 1.8, effect.shade);
-      profileRect(g, head.cx, head.dir, -4.5, head.headY - 9, 10, 1.5, 0xffffff, 0.18);
+      const h = isCoppola ? 6.5 : 9;
+      profileRounded(g, head.cx, head.dir, -5.5, head.headY - (isCoppola ? 8 : 10), 12.5, h, 2.5, effect.color);
+      profileRect(g, head.cx, head.dir, -5.5, head.headY - 2.5, 12.5, 2, effect.shade);
+      profileRect(g, head.cx, head.dir, 4.5, head.headY - 2.5, isCoppola ? 4.5 : 3.5, 1.8, effect.shade);
+      profileRect(g, head.cx, head.dir, -4.5, head.headY - (isCoppola ? 7.5 : 9), 10, 1.2, 0xffffff, 0.18);
       return;
     }
-    fillRounded(g, head.cx - 7.5, head.headY - 10, 15, 9, 3.5, effect.color);
-    fillRect(g, head.cx - 8, head.headY - 2.5, 16, 2, effect.shade);
-    fillRect(g, head.cx - 7, head.headY - 9, 14, 1.5, 0xffffff, 0.18);
+
+    const h = isCoppola ? 7 : 9;
+    fillRounded(g, head.cx - (isCoppola ? 8.5 : 7.5), head.headY - (isCoppola ? 8.5 : 10), isCoppola ? 17 : 15, h, 3, effect.color);
+    fillRect(g, head.cx - (isCoppola ? 8.5 : 8), head.headY - 2.5, isCoppola ? 17 : 16, 2, effect.shade);
+    if (isCoppola) {
+      fillRect(g, head.cx - 4.5, head.headY - 2.8, 9, 1.8, effect.shade);
+    }
+    fillRect(g, head.cx - 7, head.headY - (isCoppola ? 8 : 9), 14, 1.5, 0xffffff, 0.18);
   },
 
   headphones(g, head, effect) {
@@ -459,7 +484,7 @@ function drawEffects(g, head, look) {
       continue;
     }
 
-    drawer(g, head, effect);
+    drawer(g, head, effect, look);
   }
 }
 
@@ -515,6 +540,10 @@ function drawProfileCell(g, cx, feetY, look, head, phase, bob) {
     profileRect(g, cx, dir, 4, top, 1.5, TORSO_HEIGHT, look.shirtLight, 0.7);
   } else if (look.outfitStyle === 'sleeveless') {
     profileRounded(g, cx, dir, -3, top, 6, 3, 1.5, look.skinShade, 0.4);
+  } else {
+    // Logo bianco sul petto in vista di profilo
+    profileRect(g, cx, dir, 1, top + 4, 2.5, 2.5, 0xffffff, 0.95);
+    profileRect(g, cx, dir, 1.5, top + 6.5, 1.5, 1, 0xffffff, 0.9);
   }
 
   if (look.outfitStyle === 'dress') {
@@ -551,7 +580,7 @@ function drawFrontBackCell(g, cx, feetY, look, head, phase, bob) {
 
   drawNeck(g, head, look);
   drawLegsFrontBack(g, cx, feetY, look, legLeft, legRight);
-  drawTorsoFrontBack(g, cx, feetY, look, bob);
+  drawTorsoFrontBack(g, cx, feetY, look, bob, head.away);
   drawArmsFrontBack(g, cx, feetY, look, bob, legLeft, legRight);
   drawHead(g, head, look);
   drawEffects(g, head, look);

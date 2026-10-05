@@ -83,15 +83,27 @@
   ],
   "characters": [
     {
-      "id": "batterista",
+      "id": "davide",
       "x": 18,
       "y": 6.5,
       "facing": "left"
     },
     {
-      "id": "basso",
+      "id": "concy",
       "x": 24,
       "y": 11.5,
+      "facing": "down"
+    },
+    {
+      "id": "marco",
+      "x": 9.5,
+      "y": 5.5,
+      "facing": "down"
+    },
+    {
+      "id": "riccardo",
+      "x": 13,
+      "y": 9.5,
       "facing": "down"
     }
   ]

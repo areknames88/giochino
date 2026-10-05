@@ -224,6 +224,9 @@ export default class RoomScene extends Phaser.Scene {
 
     const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
     this.pendingProp = this.interactions.hitTest(point);
+    if (this.pendingProp && typeof this.pendingProp.faceTowards === 'function') {
+      this.pendingProp.faceTowards(this.player.x, this.player.y);
+    }
   }
 
   steerTo(pointer) {
@@ -284,6 +287,9 @@ export default class RoomScene extends Phaser.Scene {
 
     this.pendingProp = null;
     this.player.stopWalking();
+    if (typeof prop.faceTowards === 'function') {
+      prop.faceTowards(this.player.x, this.player.y);
+    }
     this.interactions.trigger(prop);
   }
 

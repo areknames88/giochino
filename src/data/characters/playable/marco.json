@@ -1,0 +1,25 @@
+{
+  "id": "marco",
+  "kind": "playable",
+  "name": "Marco",
+  "role": "Chitarrista",
+  "tagline": "Chitarra e distorsione",
+  "build": { "height": 1.0, "width": 1.02 },
+  "palette": {
+    "skin": "#e0b188",
+    "hair": "#1d1b1a",
+    "shirt": "#1172e3",
+    "pants": "#2b3d5c",
+    "shoes": "#1b1918",
+    "eye": "#1d1b1a"
+  },
+  "hair": { "style": "short" },
+  "outfit": { "style": "tee" },
+  "effects": [
+    { "type": "beard", "color": "#1d1b1a", "length": "short" }
+  ],
+  "lines": [
+    "Ho accordato sia la sei corde che la distorsione sul combo a sinistra.",
+    "Oggi il suono è bello carico: dammi l'attacco e partiamo con il riff."
+  ]
+}

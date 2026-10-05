@@ -1,10 +1,10 @@
 import { DEFAULT_CHARACTER_ID } from '../config.js';
 import { getUrlParam } from '../core/urlParams.js';
 import { shade } from '../gfx/rng.js';
-import luca from '../data/characters/playable/luca.json';
-import mara from '../data/characters/playable/mara.json';
-import theo from '../data/characters/playable/theo.json';
-import nina from '../data/characters/playable/nina.json';
+import riccardo from '../data/characters/playable/riccardo.json';
+import concy from '../data/characters/playable/concy.json';
+import marco from '../data/characters/playable/marco.json';
+import davide from '../data/characters/playable/davide.json';
 import basso from '../data/characters/npc/basso.json';
 import batterista from '../data/characters/npc/batterista.json';
 
@@ -13,7 +13,7 @@ import batterista from '../data/characters/npc/batterista.json';
  * (personaggi della stanza, che non si giocano ma si disegnano con lo stesso
  * metodo). Ogni personaggio è un JSON in `src/data/characters/<kind>/<id>.json`.
  */
-export const PLAYABLE_CHARACTERS = [luca, mara, theo, nina];
+export const PLAYABLE_CHARACTERS = [riccardo, concy, marco, davide];
 export const NPC_CHARACTERS = [basso, batterista];
 
 /** Vocabolario dei disegni: quello che `src/gfx/characterArt.js` sa disegnare. */
@@ -116,7 +116,12 @@ function resolveEffects(character) {
 
     const color = normalizeColor(effect.color, DEFAULT_PALETTE.shirt);
 
-    return [{ type, color, shade: shade(color, -0.3) }];
+    return [{
+      ...effect,
+      type,
+      color,
+      shade: shade(color, -0.3)
+    }];
   });
 }
 

@@ -432,9 +432,44 @@ Verifiche fatte:
   avanzamento `E`/tap, pathfinding che guida il giocatore fino alla batterista e apre il dialogo.
 - `npm run lint` pulito, `npm run build` ok (37 moduli), `npm run build:single` ok.
 
-Nota per le prossime sessioni: i quattro giocabili sono **segnaposto** (nome, corporatura e
-palette). Quando arrivano le descrizioni definitive basta sostituire i JSON, senza toccare il
-codice.
+### 2026-10-05 — Sessione 7: i 4 componenti dei Jackanal e posizionamento dinamico nella stanza
+
+Fatto:
+
+- **Caratterizzazione dei 4 protagonisti** (`src/data/characters/playable/`):
+  - `riccardo`: Cantante, capelli corti marroni.
+  - `concy`: Bassista, capelli biondi alle spalle, tracolla del basso.
+  - `marco`: Chitarrista, capelli corti neri e barba corta.
+  - `davide`: Batterista, barba marrone lunga e coppola in testa.
+- **Outfit band coordinato**: tutti i 4 vestono t-shirt blu `#1172e3` con logo bianco Jackanal ricamato
+  sul petto ad altezza cuore (da `public/logo-bianco.svg`), jeans scuri e scarpe scure.
+- **Logo bianco sul petto**: disegnato sia in vista frontale che di profilo sul torso della t-shirt.
+- **Barba lunga e coppola**: supporto per `effect.length: 'long'` (barba più folta e allungata) e
+  `effect.style: 'coppola'` (sagoma piatta con visiera anteriore accentuata).
+- **Posizionamento dinamico della band in stanza**:
+  - `sala-prove.json` contiene la configurazione per tutti e 4 i musicisti (Davide alla batteria,
+    Concy all'ampli basso, Marco all'ampli chitarra, Riccardo al centro della sala).
+  - `RoomScene.js` assegna il personaggio scelto al giocatore e istanzia automaticamente **gli altri
+    tre come NPC interattivi** nelle loro postazioni strumentali.
+  - Ciascun compagno ha dialoghi personalizzati sul proprio strumento/ruolo.
+- **Definizione della bocca sulle barbe (`EFFECT_DRAWERS.beard`)**: spacco labiale in tono pelle
+  `look.skinShade` e linea della bocca `#8a3830`, chiaramente visibili anche su barbe nere come quella
+  di Marco sia frontalmente che di profilo.
+- **NPC che si girano verso il giocatore (`faceTowards` e `resetFacing`)**: quando il giocatore clicca,
+  tocca o preme `E` su un NPC, questo si orienta immediatamente verso il personaggio giocante
+  (`faceFromVector`). Quando il giocatore si allontana fuori dal raggio di interazione, l'NPC torna
+  automaticamente al facing originale verso il proprio strumento.
+
+Verifiche fatte:
+
+- `test_band.mjs`: **24/24** (4 schede band in selezione, magliette blu `#1172e3`, ingresso con
+  Riccardo e presenza dei 3 compagni NPC Concy/Marco/Davide, dialogo a 2 pagine con Marco, ingresso con
+  Concy e presenza di Riccardo/Marco/Davide).
+- `test_npc_facing.mjs`: **7/7** (rotazione NPC verso destra e verso il basso, ripristino facing
+  all'allontanamento, 12 pixel di bocca visibile sopra la barba nera di Marco).
+- `art.mjs`: **48/48** (0 px discrepanza di forma fra sinistra e destra).
+- `check.mjs`: **16/16**.
+- `npm run lint` pulito, `npm run build` ok (37 moduli), `npm run build:single` ok.
 
 ## Come continuare
 Checklist per la prossima sessione:

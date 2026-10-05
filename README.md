@@ -105,7 +105,7 @@ un computer, apri il gioco con `?touch=1` in fondo all'indirizzo
 
 | Parametro | Effetto |
 | --- | --- |
-| `?char=<id>` | Salta la schermata di scelta e parte con quel personaggio (`luca`, `mara`, `theo`, `nina`) |
+| `?char=<id>` | Salta la schermata di scelta e parte con quel personaggio (`riccardo`, `concy`, `marco`, `davide`) |
 | `?touch=1` | Forza la legenda da dito anche su un computer |
 
 La scelta vale per la sessione corrente: non viene salvata nel browser.

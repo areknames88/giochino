@@ -60,4 +60,4 @@ export function getGameResolution() {
 export const DEFAULT_ROOM_ID = 'sala-prove';
 
 /** Personaggio usato quando nessuno è stato scelto (o quando la scelta non esiste). */
-export const DEFAULT_CHARACTER_ID = 'luca';
+export const DEFAULT_CHARACTER_ID = 'riccardo';

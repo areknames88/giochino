@@ -7,6 +7,24 @@ const SHADOW_OFFSET_Y = -2;
 const NPC_BODY_WIDTH = 20;
 const NPC_BODY_HEIGHT = 12;
 
+function faceFromVector(dx, dy) {
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    if (dx > 0) {
+      return 'right';
+    }
+
+    if (dx < 0) {
+      return 'left';
+    }
+  }
+
+  if (dy > 0) {
+    return 'down';
+  }
+
+  return dy < 0 ? 'up' : null;
+}
+
 /**
  * Personaggio non giocante in stanza.
  * Mostra sprite, animazione idle nella direzione di spawn, ombra,
@@ -23,7 +41,8 @@ export default class Npc extends Phaser.GameObjects.Container {
     this.data = data;
     this.character = character;
     this.look = resolveLook(character);
-    this.facing = data.facing ?? 'down';
+    this.defaultFacing = data.facing ?? 'down';
+    this.facing = this.defaultFacing;
     this.label = character.name;
     this.prompt = 'Parla con';
     this.touchRadius = 42;
@@ -85,6 +104,28 @@ export default class Npc extends Phaser.GameObjects.Container {
     );
     scene.physics.add.existing(this.solid, true);
     this.solid.setVisible(false);
+  }
+
+  faceTowards(targetX, targetY) {
+    const dx = targetX - this.x;
+    const dy = targetY - this.y;
+    const newFacing = faceFromVector(dx, dy);
+
+    if (newFacing) {
+      this.setFacing(newFacing);
+    }
+  }
+
+  resetFacing() {
+    this.setFacing(this.defaultFacing);
+  }
+
+  setFacing(facing) {
+    this.facing = facing;
+    const idleKey = characterAnimKey(this.character.id, 'idle', facing);
+    if (this.sprite.anims.animationManager.exists(idleKey)) {
+      this.sprite.play(idleKey);
+    }
   }
 
   describe() {
