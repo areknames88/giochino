@@ -107,7 +107,16 @@ export default class CharacterSelectScene extends Phaser.Scene {
     this.select(0);
 
     this.input.on('pointerdown', (pointer) => this.handlePointerDown(pointer));
-    this.scale.on(Phaser.Scale.Events.RESIZE, () => this.layout());
+
+    const resizeHandler = () => {
+      if (this.scene.isActive()) {
+        this.layout();
+      }
+    };
+    this.scale.on(Phaser.Scale.Events.RESIZE, resizeHandler);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, resizeHandler);
+    });
   }
 
   registerKeyboard() {
@@ -190,6 +199,10 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   layout() {
+    if (!this.cards || this.cards.length === 0) {
+      return;
+    }
+
     const portrait = this.scale.height > this.scale.width;
     const preset = portrait ? LAYOUTS.portrait : LAYOUTS.landscape;
     const { card, columns } = preset;

@@ -33,26 +33,20 @@ const COLORS = {
 
 const OPTION_STYLE = {
   fontFamily: GAME.font,
-  fontSize: '15px',
-  color: '#efdfc4',
-  lineSpacing: 2
+  color: '#efdfc4'
 };
 
 const EXIT_STYLE = {
   fontFamily: GAME.font,
-  fontSize: '14px',
   color: '#c99b6a',
   fontStyle: 'italic'
 };
 
 const HINT_STYLE = {
   fontFamily: GAME.font,
-  fontSize: '11px',
   color: '#9a7f5e',
   fontStyle: 'bold'
 };
-
-const ROW_GAP = 6;
 
 export default class DialogueBox extends Phaser.GameObjects.Container {
   constructor(scene) {
@@ -123,7 +117,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     scene.input.keyboard?.on('keydown-ESC', this.escapeHandler);
 
     scene.scale.on(Phaser.Scale.Events.RESIZE, () => {
-      if (this.optionsShowing && this.pendingOptions) {
+      if (this.optionsShowing) {
         this.clearOptions();
         this.renderOptions();
       } else {
@@ -141,20 +135,44 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       isPortrait,
       boxWidth: isPortrait ? Math.min(500, width - 24) : Math.min(760, width - 24),
       pad: isPortrait ? 16 : 20,
-      avatarSize: isPortrait ? 66 : 76,
-      minHeight: isPortrait ? 150 : 148
+      avatarSize: isPortrait ? 70 : 76,
+      minHeight: isPortrait ? 156 : 148,
+      bottomOffset: isPortrait ? 24 : 18,
+      speakerFontSize: isPortrait ? '22px' : '18px',
+      bodyFontSize: isPortrait ? '21px' : '16px',
+      bodyLineSpacing: 6,
+      continueMarkFontSize: isPortrait ? '15px' : '13px',
+      optionFontSize: isPortrait ? '19px' : '15px',
+      optionLineSpacing: isPortrait ? 3 : 2,
+      exitFontSize: isPortrait ? '17px' : '14px',
+      badgeFontSize: isPortrait ? '14px' : '13px',
+      badgeSize: isPortrait ? 26 : 20,
+      badgeCenterX: isPortrait ? 22 : 20,
+      labelXOffset: isPortrait ? 48 : 40,
+      hintFontSize: isPortrait ? '13px' : '11px',
+      rowMinHeight: isPortrait ? 44 : 30,
+      rowPaddingY: isPortrait ? 18 : 14,
+      rowGap: isPortrait ? 8 : 6,
+      exitGap: isPortrait ? 12 : 10
     };
   }
 
   layout() {
-    const { isPortrait, boxWidth, pad, avatarSize, minHeight } = this.measure();
+    const metrics = this.measure();
+    const { isPortrait, boxWidth, pad, avatarSize, minHeight, bottomOffset } = metrics;
 
     this.boxWidth = boxWidth;
     this.padding = pad;
     this.avatarSize = avatarSize;
 
     const { width, height } = this.scene.scale;
-    this.setPosition(width / 2, height - (isPortrait ? 24 : 18));
+    this.setPosition(width / 2, height - bottomOffset);
+
+    // Aggiorna le dimensioni tipografiche in base all'orientamento
+    this.speaker.setFontSize(metrics.speakerFontSize);
+    this.body.setFontSize(metrics.bodyFontSize);
+    this.body.setLineSpacing(metrics.bodyLineSpacing);
+    this.continueMark.setFontSize(metrics.continueMarkFontSize);
 
     const left = -boxWidth / 2;
 
@@ -174,9 +192,9 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     const wrapWidth = boxWidth - (this.contentLeft - left) - pad;
     this.body.setWordWrapWidth(wrapWidth);
 
-    const nameH = Math.max(this.speaker.height, 18);
+    const nameH = this.speaker.text ? Math.max(this.speaker.height, isPortrait ? 22 : 18) : 0;
     const bodyH = this.body.height;
-    const textH = nameH + 6 + bodyH;
+    const textH = this.speaker.text ? (nameH + 6 + bodyH) : bodyH;
     const contentH = Math.max(textH, hasAvatar ? avatarSize : 0);
     this.contentH = contentH;
 
@@ -202,7 +220,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     }
 
     this.speaker.setPosition(this.contentLeft, boxTop + pad);
-    this.body.setPosition(this.contentLeft, boxTop + pad + nameH + 6);
+    this.body.setPosition(this.contentLeft, boxTop + pad + (this.speaker.text ? nameH + 6 : 0));
     this.continueMark.setPosition(left + boxWidth - pad - 4, boxTop + boxHeight - 10);
 
     if (this.optionsShowing && this.rows.length > 0) {
@@ -215,13 +233,14 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       return 0;
     }
 
+    const { rowGap, exitGap } = this.measure();
     const options = this.rows.filter((row) => row.kind === 'option');
     const exit = this.rows.find((row) => row.kind === 'exit');
-    const gaps = ROW_GAP * Math.max(0, options.length - 1);
+    const gaps = rowGap * Math.max(0, options.length - 1);
 
     return options.reduce((sum, row) => sum + row.height, 0)
       + gaps
-      + (exit ? (options.length > 0 ? 10 : 0) + exit.height : 0);
+      + (exit ? (options.length > 0 ? exitGap : 0) + exit.height : 0);
   }
 
   drawPanel(nameH) {
@@ -277,29 +296,30 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
   }
 
   layoutRows(left, top) {
-    const pad = this.padding;
-    const labelX = left + pad + 40;
+    const { isPortrait, pad, labelXOffset, badgeCenterX, rowGap, exitGap, boxWidth } = this.measure();
+    const labelX = left + pad + labelXOffset;
+    const badgeX = left + pad + badgeCenterX;
     const optionsCount = this.rows.filter((r) => r.kind === 'option').length;
     let y = top + this.optionsTop + 8;
 
     for (const row of this.rows) {
       if (row.kind === 'exit' && optionsCount > 0) {
-        y += 4;
+        y += (exitGap - rowGap);
       }
 
       const centerY = y + row.height / 2;
       row.hit.setPosition(0, centerY);
 
       if (row.kind === 'option') {
-        row.badge.setPosition(left + pad + 20, centerY);
-        row.badgeText.setPosition(left + pad + 20, centerY + 1);
+        row.badge.setPosition(badgeX, centerY);
+        row.badgeText.setPosition(badgeX, centerY + 1);
         row.text.setPosition(labelX, y + (row.height - row.text.height) / 2);
       } else {
         row.text.setPosition(labelX, y + (row.height - row.text.height) / 2);
-        row.hint.setPosition(left + this.boxWidth - pad - 16, centerY);
+        row.hint.setPosition(left + boxWidth - pad - (isPortrait ? 18 : 16), centerY);
       }
 
-      y += row.height + ROW_GAP;
+      y += row.height + rowGap;
     }
   }
 
@@ -389,8 +409,21 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       return;
     }
 
-    const { boxWidth, pad } = this.measure();
-    const rowWrap = boxWidth - pad * 2 - 48;
+    const {
+      isPortrait,
+      boxWidth,
+      pad,
+      optionFontSize,
+      optionLineSpacing,
+      exitFontSize,
+      badgeFontSize,
+      badgeSize,
+      hintFontSize,
+      rowMinHeight,
+      rowPaddingY
+    } = this.measure();
+
+    const rowWrap = boxWidth - pad * 2 - (isPortrait ? 58 : 48);
     const hitWidth = boxWidth - pad * 2;
 
     this.optionsShowing = true;
@@ -401,9 +434,14 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
 
     options.forEach((label, index) => {
       const text = this.scene.add
-        .text(0, 0, label, { ...OPTION_STYLE, wordWrap: { width: rowWrap } })
+        .text(0, 0, label, {
+          ...OPTION_STYLE,
+          fontSize: optionFontSize,
+          lineSpacing: optionLineSpacing,
+          wordWrap: { width: rowWrap }
+        })
         .setOrigin(0, 0);
-      const height = Math.max(30, text.height + 14);
+      const height = Math.max(rowMinHeight, text.height + rowPaddingY);
 
       const hit = this.scene.add
         .rectangle(0, 0, hitWidth, height, COLORS.rowBg, 0.96)
@@ -414,12 +452,12 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       hit.on('pointerout', () => this.setRowHover(row, false));
 
       const badge = this.scene.add
-        .rectangle(0, 0, 20, 20, COLORS.badgeBg, 1)
+        .rectangle(0, 0, badgeSize, badgeSize, COLORS.badgeBg, 1)
         .setStrokeStyle(1, COLORS.badgeStroke);
       const badgeText = this.scene.add
         .text(0, 0, String(index + 1), {
           fontFamily: GAME.font,
-          fontSize: '13px',
+          fontSize: badgeFontSize,
           color: '#f7e7cf',
           fontStyle: 'bold'
         })
@@ -431,13 +469,15 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       this.add([hit, badge, badgeText, text]);
     });
 
+    const exitWrap = boxWidth - pad * 2 - (isPortrait ? 80 : 70);
     const exitText = this.scene.add
       .text(0, 0, 'Esci dalla conversazione', {
         ...EXIT_STYLE,
-        wordWrap: { width: rowWrap + 14 }
+        fontSize: exitFontSize,
+        wordWrap: { width: exitWrap }
       })
       .setOrigin(0, 0);
-    const exitHeight = Math.max(30, exitText.height + 14);
+    const exitHeight = Math.max(rowMinHeight, exitText.height + rowPaddingY);
 
     const exitHit = this.scene.add
       .rectangle(0, 0, hitWidth, exitHeight, COLORS.exitBg, 0.9)
@@ -448,7 +488,10 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     exitHit.on('pointerout', () => this.setRowHover(exitRow, false));
 
     const exitHint = this.scene.add
-      .text(0, 0, 'ESC', { ...HINT_STYLE })
+      .text(0, 0, 'ESC', {
+        ...HINT_STYLE,
+        fontSize: hintFontSize
+      })
       .setOrigin(1, 0.5);
 
     const exitRow = { kind: 'exit', hit: exitHit, text: exitText, hint: exitHint, height: exitHeight };

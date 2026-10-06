@@ -96,6 +96,7 @@ dei personaggi (`CharacterSelectScene`) al posto dello sprite pixelato da passeg
 | **Avatar generati a runtime (`createAvatarTextures`)** | Generazione procedurale di texture quadrate (`avatar-<id>`) con iniziale e colore camicia dai dati JSON esistenti, più `avatar-generic`: zero asset statici necessari e coerenza immediata con tutti i personaggi presenti nel registro. |
 | **`speakerId` nei payload dei dialoghi** | Permette al `DialogueBox` di identificare la texture dell'avatar sia per gli interlocutori NPC sia per il giocatore quando parla dopo aver scelto un'opzione. Per gli arredi `speakerId` è omesso e l'avatar non viene mostrato. |
 | **Avatar illustrati da `public/Avatars/`** | Precaricamento in `BootScene` con linear filtering delle illustrazioni dei quattro personaggi (`riccardo`, `concy`, `marco`, `davide`); sostituzione dei placeholder procedurali nei dialoghi e del personaggio pixelato nelle schede di `CharacterSelectScene`, mantenendo il fallback automatico per eventuali NPC senza asset. |
+| **Tipografia responsive e target touch nel DialogueBox** | In smartphone portrait (canvas 540×960 scalato a ~0.67–0.72× su schermi 360–390px CSS), i font desktop risultavano illeggibili (10–11px effettivi) e le righe difficili da toccare. Introdotti valori responsive in `measure()`: nome 22px, testo battuta 21px, opzioni 19px, uscita 17px, badge 14px (box 26×26), hint ESC 13px, freccia 15px; altezza minima righe aumentata a 44px con gap di 8px per facilitare il tocco del pollice. In landscape restano le dimensioni compatte calibrate per desktop. |
 
 ## Trapphigli di Phaser incontrati (leggere prima di debuggare)
 
@@ -632,6 +633,41 @@ Verifiche fatte:
   8. Selezione opzione con tasto numerico e turno del giocatore con avatar del giocabile.
   9. Ultima battuta con riga "Esci", protezione dai click sulla mappa (nessun movimento) e chiusura pulita.
   10. Descrizione arredo senza avatar e con movimento libero verificato.
+
+### 2026-10-06 — Sessione 11: tipografia responsive e touch target DialogueBox in modalità mobile portrait
+
+Fatto:
+
+- **Analisi del fattore di scala e problema di leggibilità su mobile**:
+  - In modalità portrait, Phaser scala la risoluzione virtuale di 540×960 px per adattarla ai viewport CSS smartphone (es. ~390px su iPhone, fattore 0.72×; ~360px su Android, fattore 0.67×).
+  - Con font fissi a 14–16px, il testo e le risposte venivano rimpicciolite a 10–11px CSS effettivi, risultando difficilmente leggibili e faticose da premere col pollice (altezza riga originale di 30px corrispondente a soli 21px CSS).
+- **Tipografia responsive dinamica in `DialogueBox.js`**:
+  - Centralizzazione di tutte le metriche responsive nel metodo `measure()`:
+    - **Nome interlocutore**: 22px in portrait (18px in landscape).
+    - **Corpo del testo**: 21px in portrait (16px in landscape), lineSpacing 6.
+    - **Opzioni di risposta**: 19px in portrait (15px in landscape), lineSpacing 3 (2 in landscape).
+    - **Riga "Esci dalla conversazione"**: 17px in portrait (14px in landscape).
+    - **Badge numerici**: 14px in portrait (13px in landscape), dimensione contenitore 26×26 px (20×20 px in landscape).
+    - **Indicatore ESC**: 13px in portrait (11px in landscape).
+    - **Indicatore avanzamento "▼"**: 15px in portrait (13px in landscape).
+  - In `layout()`, aggiornamento dinamico delle dimensioni dei font prima del calcolo dell'altezza e del word wrapping del testo.
+  - In `renderOptions()`, creazione delle etichette e dei pulsanti con le dimensioni calcolate per l'orientamento corrente.
+- **Miglioramento touch target per smartphone**:
+  - Altezza minima di ogni riga opzione ed esci aumentata a 44px logici in portrait (corrispondente a oltre 31px CSS minimi, e ampiezza tocco pari all'intera larghezza del pannello di 468px).
+  - `rowGap` aumentato a 8px in portrait (6px in landscape) ed `exitGap` a 12px (10px in landscape) per evitare tocchi accidentali tra voci adiacenti.
+  - Spaziatura `bottomOffset` portata a 24px in portrait (18px in landscape) per distanziare il riquadro dal bordo inferiore dello schermo/gesture bar.
+- **Robustezza resize dinamico & correzione listener CharacterSelectScene**:
+  - Nel `DialogueBox`, il listener `RESIZE` ricrea ora correttamente le righe opzioni anche quando si tratta del nodo terminale senza scelte (solo riga di uscita).
+  - In `CharacterSelectScene`, corretto il listener di scala globale rimuovendolo all'evento `SHUTDOWN` e verificando la presenza delle card, prevenendo un crash durante la rotazione dello schermo.
+
+Verifiche fatte:
+
+- `npm run lint` pulito (0 errori).
+- `npm run build` ok (44 moduli).
+- `npm run build:single` ok (bundle single-file aggiornato in `docs/dist-single/index.html`).
+- Test automatizzato Playwright end-to-end su Edge headless:
+  - Portrait (viewport 390×844): speaker 22px, body 21px, continueMark 15px, opzioni 19px, riga esci 17px, hint ESC 13px, badge 14px (26×26 px), altezza righe >= 44px.
+  - Rotazione dinamica a Landscape (viewport 960×540): speaker 18px, body 16px, opzioni 15px, riga esci 14px, hint ESC 11px, badge 13px, altezze minime preservate a 30px.
 
 ## Come continuare
 Checklist per la prossima sessione:
