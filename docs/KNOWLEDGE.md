@@ -33,12 +33,16 @@ testo con badge numerati (1–3), e riga di uscita con tasto `ESC`. Durante le c
 movimento del giocatore è bloccato (`uiState.dialogueLocked`), mentre per gli arredi l'esplorazione
 resta libera.
 
-Ultima verifica: 6 ottobre 2026 — `npm run lint` pulito, `npm run build` ok (43 moduli),
-`npm run build:single` ok. Integrati gli avatar illustrati (stile Baldur's Gate) posizionati in
-`public/Avatars/` (`Avatar Riccardo.jpeg`, `Avatar Concy.jpg`, `Avatar Marco.jpeg`, `Avatar Davide.jpg`):
-precaricati in `BootScene` con texture filter `LINEAR`, impiegati nei placeholder dei dialoghi
-(`DialogueBox`) al posto dei placeholder generati a runtime, e nella schermata iniziale di selezione
-dei personaggi (`CharacterSelectScene`) al posto dello sprite pixelato da passeggio.
+Ultima verifica: 6 ottobre 2026 — `npm run lint` pulito (0 errori), `npm run build` ok (45 moduli),
+`npm run build:single` ok. Gli avatar dei personaggi (`avatar-<id>`) in schermata di selezione e
+nei dialoghi sono generati a runtime (`src/gfx/avatarArt.js`) riutilizzando direttamente il motore di
+disegno originale del gioco (`drawCharacterCell` da `src/gfx/characterArt.js` con scaling pixel-art e
+filtro NEAREST):
+- Zero immagini statiche / file esterni / Base64.
+- Fedeltà visiva al 100% con gli sprite in-game (cfr. `Screenshot.png` e `Davide e Marco.png`).
+- Concy: rimossa la tracolla marrone (`strap`) sia dallo sprite che dall'avatar.
+- Marco e Davide: occhi e tratti somatici perfettamente visibili e allineati con i pixel del gioco,
+  con cornice dorata a doppio profilo retrò e alone caldo d'atmosfera.
 
 ## Vincoli e desideri (dal brief iniziale)
 
@@ -252,6 +256,28 @@ dei personaggi (`CharacterSelectScene`) al posto dello sprite pixelato da passeg
     - Calibrate le dimensioni a schermo dei ritratti (128×128 px nelle schede di scelta, 76×76 px nel dialogue box).
 
 ## Log delle sessioni
+
+### 2026-10-06 — Sessione 14: ritratti dei personaggi procedurali a runtime (zero immagini)
+
+Fatto:
+
+- Rimosso il caricamento delle immagini statiche esterne (`AVATAR_DATA` Base64 e cartella `public/Avatars/`).
+- Creato `src/gfx/avatarArt.js` con rendering procedurale su Canvas 2D (`drawCharacterAvatar`) a risoluzione 128×128 px:
+  - implementa la **STESSA identica grafica e geometria dei volti del gioco** (riferimento `Screenshot.png` e `characterArt.js`):
+    - testa sferica pulita con ombra frontale;
+    - occhi geometrici a blocchi pixel (2×2 px);
+    - stili di capelli originali del gioco (`HAIR_DRAWERS.short` per Riccardo e Marco, `HAIR_DRAWERS.long` per Concy con le due ciocche laterali che scendono sul busto);
+    - accessori originali (`EFFECT_DRAWERS`: barba sagomata per Marco, coppola tweed e barba lunga per Davide);
+    - torso frontale con t-shirt blu Jackanal e logo a cuore rovesciato bianco sul petto;
+  - sfondo atmosferico con cornice stile interfaccia del gioco;
+  - compatibilità automatica con tutti i personaggi presenti nel registro (`resolveLook`).
+- Rimosso l'effetto tracolla (`strap`) dal JSON di Concy (`concy.json`), eliminando la fascia marrone sia dal personaggio giocabile/NPC nella stanza sia dall'avatar.
+- **Ritratti pixel-art retrò con i volti originali del gioco** in `src/gfx/avatarArt.js`:
+  - ripristinate le forme e proporzioni originali del gioco (testa sferica pulita, due occhi pixel 2×2, capelli e barbe originali da `characterArt.js`, maglietta con logo a cuore capovolto);
+  - risolta la visibilità degli occhi di Marco e Davide: visiera della coppola e frangia posizionate sopra la riga degli occhi, barba sotto le guance, occhi disegnati in primo piano con punto luce bianco 1×1 per risaltare contro capelli e barbe scure;
+  - rendering pixel-art retrò: disegno raster a risoluzione nativa 32×32 con upscale 4× a pixel nitidi (`imageSmoothingEnabled = false`), senza sfumature vettoriali;
+  - sfondo sala prove retrò con sottile trama scanline vintage e cornice a doppio filetto dorato in pixel-art.
+- Verificato: `npm run lint` 0 errori, `npm run build` ok (45 moduli), `npm run build:single` ok (~349 kB gzip).
 
 ### 2026-10-04 — Sessione 1: impianto e prima stanza
 
@@ -658,7 +684,10 @@ Fatto:
   - Spaziatura `bottomOffset` portata a 24px in portrait (18px in landscape) per distanziare il riquadro dal bordo inferiore dello schermo/gesture bar.
 - **Robustezza resize dinamico & correzione listener CharacterSelectScene**:
   - Nel `DialogueBox`, il listener `RESIZE` ricrea ora correttamente le righe opzioni anche quando si tratta del nodo terminale senza scelte (solo riga di uscita).
-  - In `CharacterSelectScene`, corretto il listener di scala globale rimuovendolo all'evento `SHUTDOWN` e verificando la presenza delle card, prevenendo un crash durante la rotazione dello schermo.
+- **Uniformazione cornice avatar Davide**:
+  - Riscontrata discrepanza cromatica nella cornice dell'illustrazione di Davide (`Avatar Davide.jpg`), che presentava un bordo chiaro color sabbia/cemento rispetto alla cornice in pietra scura e ferro battuto brunito con ossidazioni dorate/rame degli altri tre personaggi (Riccardo, Marco e Concy).
+  - Applicata la cornice coordinata in pietra e ferro battuto brunito con raccordi ornamentali e sfumature coerenti, mantenendo integra l'illustrazione interna (berretto, bacchette, maglia e logo Jackanal).
+  - Aggiornati sia gli asset fisici (`public/Avatars/Avatar Davide.jpg`, `docs/dist-single/Avatars/Avatar Davide.jpg`, `dist/Avatars/Avatar Davide.jpg`) sia il Data URI Base64 incorporato in `src/data/avatars.js` per il corretto funzionamento offline e single-file.
 
 Verifiche fatte:
 

@@ -15,9 +15,7 @@
   },
   "hair": { "style": "long" },
   "outfit": { "style": "tee" },
-  "effects": [
-    { "type": "strap", "color": "#7a2f2a" }
-  ],
+  "effects": [],
   "lines": [
     "Ho appena regolato l'amplificatore: senti che spinta sulle frequenze basse?",
     "Se siamo pronti, facciamo partire il giro di basso e teniamo il tempo."

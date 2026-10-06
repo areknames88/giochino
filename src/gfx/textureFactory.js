@@ -6,6 +6,7 @@
  */
 
 import { listNpcCharacters, listPlayableCharacters } from '../game/characters.js';
+import { createAvatarTexture } from './avatarArt.js';
 
 const CHROME = 0xc3cad1;
 const CHROME_DARK = 0x8b939b;
@@ -267,61 +268,8 @@ export function createSoftTextures(scene) {
   buildSoftTextures(scene);
 }
 
-function roundRectPath(ctx, x, y, w, h, r) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + w, y, x + w, y + h, radius);
-  ctx.arcTo(x + w, y + h, x, y + h, radius);
-  ctx.arcTo(x, y + h, x, y, radius);
-  ctx.arcTo(x, y, x + w, y, radius);
-  ctx.closePath();
-}
-
-/**
- * Avatar dei dialoghi: placeholder quadrato con cornice, colore della maglia
- * del personaggio e iniziale. Il trucco (chiave `avatar-<id>`) resta: quando
- * arriverà il ritratto vero si sostituisce il disegno, non il codice.
- */
-function drawAvatarPlaceholder(ctx, size, { initial, shirt }) {
-  ctx.clearRect(0, 0, size, size);
-
-  ctx.fillStyle = '#1a110a';
-  roundRectPath(ctx, 1, 1, size - 2, size - 2, 14);
-  ctx.fill();
-
-  ctx.fillStyle = shirt;
-  roundRectPath(ctx, 8, 8, size - 16, size - 16, 9);
-  ctx.fill();
-
-  const shade = ctx.createLinearGradient(0, size * 0.35, 0, size - 8);
-  shade.addColorStop(0, 'rgba(0,0,0,0)');
-  shade.addColorStop(1, 'rgba(0,0,0,0.5)');
-  ctx.fillStyle = shade;
-  roundRectPath(ctx, 8, 8, size - 16, size - 16, 9);
-  ctx.fill();
-
-  ctx.font = `bold ${Math.round(size * 0.46)}px "Trebuchet MS", "Segoe UI", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillText(initial, size / 2 + 2, size / 2 + 3);
-  ctx.fillStyle = '#f7ecd9';
-  ctx.fillText(initial, size / 2, size / 2);
-
-  ctx.strokeStyle = '#8b5a2b';
-  ctx.lineWidth = 3;
-  roundRectPath(ctx, 2, 2, size - 4, size - 4, 13);
-  ctx.stroke();
-
-  ctx.strokeStyle = 'rgba(199,151,79,0.5)';
-  ctx.lineWidth = 1;
-  roundRectPath(ctx, 5.5, 5.5, size - 11, size - 11, 10);
-  ctx.stroke();
-}
-
 export function createAvatarTextures(scene) {
-  const size = 96;
+  const size = 128;
   const characters = [...listPlayableCharacters(), ...listNpcCharacters()];
 
   for (const character of characters) {
@@ -331,26 +279,15 @@ export function createAvatarTextures(scene) {
       continue;
     }
 
-    const texture = scene.textures.createCanvas(key, size, size);
-
-    if (!texture) {
-      continue;
-    }
-
-    drawAvatarPlaceholder(texture.getContext(), size, {
-      initial: (character.name ?? character.id).trim().charAt(0).toUpperCase(),
-      shirt: character.palette?.shirt ?? '#5a6472'
-    });
-    texture.refresh();
+    createAvatarTexture(scene, key, size, character);
   }
 
   if (!scene.textures.exists('avatar-generic')) {
-    const texture = scene.textures.createCanvas('avatar-generic', size, size);
-
-    if (texture) {
-      drawAvatarPlaceholder(texture.getContext(), size, { initial: '?', shirt: '#3a3f4a' });
-      texture.refresh();
-    }
+    createAvatarTexture(scene, 'avatar-generic', size, {
+      id: 'generic',
+      name: 'Personaggio',
+      palette: { skin: '#e8b98f', hair: '#3a2f26', shirt: '#4b5563', eye: '#241f1b' }
+    });
   }
 }
 
