@@ -64,6 +64,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     this.pendingOptions = null;
     this.optionsShowing = false;
     this.suppressAdvance = false;
+    this.isNpcConversation = false;
     this.rows = [];
     this.optionRows = [];
     this.optionsTop = 0;
@@ -140,8 +141,8 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       isPortrait,
       boxWidth: isPortrait ? Math.min(500, width - 24) : Math.min(760, width - 24),
       pad: isPortrait ? 16 : 20,
-      avatarSize: isPortrait ? 56 : 64,
-      minHeight: isPortrait ? 150 : 138
+      avatarSize: isPortrait ? 66 : 76,
+      minHeight: isPortrait ? 150 : 148
     };
   }
 
@@ -159,13 +160,13 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
 
     // Avatar: presente solo per chi ha un id parlante con texture dedicata.
     let hasAvatar = false;
-    if (this.current?.speakerId) {
-      const key = `avatar-${this.current.speakerId}`;
-      hasAvatar = this.scene.textures.exists(key);
+    const speakerKey = this.current?.speakerId
+      ? `avatar-${this.current.speakerId.toLowerCase()}`
+      : (this.current?.speaker ? `avatar-${this.current.speaker.toLowerCase()}` : null);
 
-      if (hasAvatar) {
-        this.avatar.setTexture(key);
-      }
+    if (speakerKey && this.scene.textures.exists(speakerKey)) {
+      hasAvatar = true;
+      this.avatar.setTexture(speakerKey);
     }
 
     this.avatar.setVisible(hasAvatar);
@@ -220,7 +221,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
 
     return options.reduce((sum, row) => sum + row.height, 0)
       + gaps
-      + (exit ? 10 + exit.height : 0);
+      + (exit ? (options.length > 0 ? 10 : 0) + exit.height : 0);
   }
 
   drawPanel(nameH) {
@@ -278,10 +279,11 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
   layoutRows(left, top) {
     const pad = this.padding;
     const labelX = left + pad + 40;
+    const optionsCount = this.rows.filter((r) => r.kind === 'option').length;
     let y = top + this.optionsTop + 8;
 
     for (const row of this.rows) {
-      if (row.kind === 'exit') {
+      if (row.kind === 'exit' && optionsCount > 0) {
         y += 4;
       }
 
@@ -302,6 +304,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
   }
 
   say({ speaker, speakerId, text }) {
+    this.isNpcConversation = false;
     this.queue.push({ speaker: speaker ?? '', speakerId: speakerId ?? null, text: text ?? '' });
 
     if (!this.visible) {
@@ -314,6 +317,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
    * eventuali risposte del giocatore da scegliere.
    */
   node({ lines, options }) {
+    this.isNpcConversation = true;
     for (const line of lines ?? []) {
       if (line && typeof line.text === 'string') {
         this.queue.push({
@@ -339,7 +343,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     const next = this.queue.shift();
 
     if (!next) {
-      if (this.pendingOptions) {
+      if (this.pendingOptions || this.isNpcConversation) {
         this.renderOptions();
         return;
       }
@@ -355,6 +359,14 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     this.setVisible(true);
     this.continueMark.setAlpha(1);
     uiState.dialogueOpen = true;
+
+    // Se siamo arrivati all'ultima battuta della conversazione con l'NPC,
+    // mostriamo subito le opzioni (o la sola riga di uscita se non ci sono scelte):
+    // in questo modo la conversazione si chiude solo col tasto "Esci" / ESC e un click
+    // accidentale sulla mappa non chiude il dialogo né fa muovere il personaggio.
+    if (this.isNpcConversation && this.queue.length === 0) {
+      this.renderOptions();
+    }
   }
 
   get isBusy() {
@@ -372,7 +384,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
   renderOptions() {
     const options = this.pendingOptions ?? [];
 
-    if (options.length === 0) {
+    if (options.length === 0 && !this.isNpcConversation) {
       this.close();
       return;
     }
@@ -511,6 +523,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     this.current = null;
     this.queue.length = 0;
     this.pendingOptions = null;
+    this.isNpcConversation = false;
     this.clearOptions();
     this.setVisible(false);
     this.avatar.setVisible(false);

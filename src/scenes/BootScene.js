@@ -1,19 +1,53 @@
 import Phaser from 'phaser';
 import { createAvatarTextures, createPropsTextures, createSoftTextures } from '../gfx/textureFactory.js';
 import { ensureCharacterAssets } from '../gfx/characterArt.js';
-import { listPlayableCharacters } from '../game/characters.js';
+import { AVATAR_DATA, LOGO_WHITE_DATA } from '../data/avatars.js';
+import { characterAvatarKey, listPlayableCharacters } from '../game/characters.js';
 import { Events, emit } from '../core/eventBus.js';
+
+function loadDataImage(textures, key, dataUri) {
+  return new Promise((resolve) => {
+    if (textures.exists(key)) {
+      resolve();
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      const texture = textures.addImage(key, img);
+      if (texture) {
+        texture.setFilter(Phaser.Textures.LINEAR);
+        for (const source of texture.source) {
+          source.scaleMode = Phaser.Textures.LINEAR;
+        }
+      }
+      resolve();
+    };
+    img.onerror = () => {
+      resolve();
+    };
+    img.src = dataUri;
+  });
+}
 
 export default class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
   }
 
-  preload() {
-    this.load.image('logo-bianco', 'logo-bianco.svg');
-  }
+  async create() {
+    if (this.game.renderer && this.game.renderer.config) {
+      this.game.renderer.config.antialias = true;
+    }
+    const avatarTasks = Object.entries(AVATAR_DATA).map(([id, dataUri]) =>
+      loadDataImage(this.textures, characterAvatarKey(id), dataUri)
+    );
 
-  create() {
+    await Promise.all([
+      loadDataImage(this.textures, 'logo-bianco', LOGO_WHITE_DATA),
+      ...avatarTasks
+    ]);
+
     createPropsTextures(this);
     createSoftTextures(this);
     createAvatarTextures(this);

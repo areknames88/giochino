@@ -37,11 +37,12 @@ function warnOnce(message) {
  */
 function resolveSpeakerId(speakerName, explicitId) {
   if (typeof explicitId === 'string' && explicitId.trim()) {
-    return explicitId.trim();
+    return explicitId.trim().toLowerCase();
   }
 
+  const nameOrId = typeof speakerName === 'string' ? speakerName.trim().toLowerCase() : '';
   const match = [...listPlayableCharacters(), ...listNpcCharacters()]
-    .find((character) => character.name === speakerName);
+    .find((character) => character.name?.toLowerCase() === nameOrId || character.id?.toLowerCase() === nameOrId);
 
   return match ? match.id : null;
 }

@@ -34,10 +34,11 @@ movimento del giocatore è bloccato (`uiState.dialogueLocked`), mentre per gli a
 resta libera.
 
 Ultima verifica: 6 ottobre 2026 — `npm run lint` pulito, `npm run build` ok (43 moduli),
-`npm run build:single` ok; test funzionali Playwright su Edge di sistema (10/10 verifiche: texture
-avatar, movimento libero iniziale, blocco movimento durante dialogo NPC, rendering opzioni e riga
-uscita dentro la box, uscita con tasto ESC, ripristino movimento, uscita con click su riga Esci,
-battuta giocatore con avatar dopo la scelta, e descrizione arredo senza avatar e senza blocco).
+`npm run build:single` ok. Integrati gli avatar illustrati (stile Baldur's Gate) posizionati in
+`public/Avatars/` (`Avatar Riccardo.jpeg`, `Avatar Concy.jpg`, `Avatar Marco.jpeg`, `Avatar Davide.jpg`):
+precaricati in `BootScene` con texture filter `LINEAR`, impiegati nei placeholder dei dialoghi
+(`DialogueBox`) al posto dei placeholder generati a runtime, e nella schermata iniziale di selezione
+dei personaggi (`CharacterSelectScene`) al posto dello sprite pixelato da passeggio.
 
 ## Vincoli e desideri (dal brief iniziale)
 
@@ -94,6 +95,7 @@ battuta giocatore con avatar dopo la scelta, e descrizione arredo senza avatar e
 | **Riga di uscita "Esci" + ESC con `queueMicrotask`** | Consente al giocatore di interrompere la conversazione a qualsiasi bivio. Chiudere il dialogo in un microtask garantisce che il click/tap di chiusura non venga propagato alla scena come click di movimento sul pavimento (trabocchetto 24). |
 | **Avatar generati a runtime (`createAvatarTextures`)** | Generazione procedurale di texture quadrate (`avatar-<id>`) con iniziale e colore camicia dai dati JSON esistenti, più `avatar-generic`: zero asset statici necessari e coerenza immediata con tutti i personaggi presenti nel registro. |
 | **`speakerId` nei payload dei dialoghi** | Permette al `DialogueBox` di identificare la texture dell'avatar sia per gli interlocutori NPC sia per il giocatore quando parla dopo aver scelto un'opzione. Per gli arredi `speakerId` è omesso e l'avatar non viene mostrato. |
+| **Avatar illustrati da `public/Avatars/`** | Precaricamento in `BootScene` con linear filtering delle illustrazioni dei quattro personaggi (`riccardo`, `concy`, `marco`, `davide`); sostituzione dei placeholder procedurali nei dialoghi e del personaggio pixelato nelle schede di `CharacterSelectScene`, mantenendo il fallback automatico per eventuali NPC senza asset. |
 
 ## Trapphigli di Phaser incontrati (leggere prima di debuggare)
 
@@ -228,6 +230,25 @@ battuta giocatore con avatar dopo la scelta, e descrizione arredo senza avatar e
     sottostanti vedono `uiState.dialogueOpen = false` prima di terminare la propagazione dell'evento e interpretano
     il tap come comando di movimento sul pavimento. Rimandare la chiusura effettiva con `queueMicrotask(() => this.close())`
     mantiene il dialogo formalmente aperto fino alla conclusione del ciclo di input.
+
+25. **`this.load.image` su `file://` fallisce per CORS policy del browser.**
+    Quando il file `index.html` (modalità `dist-single`) viene aperto con doppio clic (`file:///`), Chrome e Edge
+    bloccano le richieste `XMLHttpRequest` usate di default dal loader di Phaser per via dell'origine `null`.
+    Questo faceva ricadere il gioco sui placeholder procedurali con la sola iniziale (lettere).
+    La soluzione per mantenere il supporto standalone single-file è incorporare gli asset raster (avatar e logo)
+    come Data URL Base64 in `src/data/avatars.js`, caricandoli tramite elemento `Image` nativo e `textures.addImage`
+    in `BootScene`.
+
+26. **`pixelArt: true` globale e `image-rendering: pixelated` nel CSS degradano i ritratti illustrati.**
+    Se impostato in `GameConfig`, `pixelArt: true` di Phaser forza internamente `antialias = false` e `antialiasGL = false`,
+    obbligando il renderer WebGL a campionare qualsiasi texture in `gl.NEAREST` (point sampling). Inoltre, la regola CSS
+    `image-rendering: pixelated; crisp-edges` sul tag `<canvas>` imponeva al compositore del browser di ingrandire la viewport
+    960×540 raddoppiando o triplicando ogni pixel grezzo sui monitor moderni, producendo artefatti fortemente seghettati e
+    sgranati su volti e testi. La soluzione:
+    - In `main.js`: `antialias: true`, `antialiasGL: true`, `roundPixels: true`.
+    - In `BootScene.js`: filtro `Phaser.Textures.LINEAR` (valore `0`) esplicito su texture e source degli avatar.
+    - In `index.html`: rimosso `image-rendering: pixelated` per consentire un upscaling fluido del canvas.
+    - Calibrate le dimensioni a schermo dei ritratti (128×128 px nelle schede di scelta, 76×76 px nel dialogue box).
 
 ## Log delle sessioni
 
@@ -587,7 +608,9 @@ Fatto:
   giocatore sceglie una risposta, il `DialogueRunner` emette la battuta del giocatore con il suo `speakerId`,
   mostrando l'avatar del personaggio giocante per la sua battuta prima di passare alla replica dell'NPC.
 - **Opzione di uscita esplicita (riga Esci + tasto ESC)**: sotto le opzioni compare sempre la riga "Esci dalla
-  conversazione" con badge "ESC". Premere `ESC` o toccare la riga chiude il dialogo ed emette `DIALOGUE_CLOSED`.
+  conversazione" con badge "ESC". Quando si arriva all'ultima battuta di un dialogo con un NPC (nodo foglia senza scelte),
+  viene mostrata direttamente la riga "Esci": in questo modo la conversazione si chiude solo col tasto "Esci" o con `ESC`,
+  e cliccare sulla mappa non chiude improvvisamente il dialogo né fa camminare il personaggio per sbaglio.
   La chiusura effettiva è delegata a un `queueMicrotask` per evitare che il click venga interpretato dalla scena
   come spostamento sul pavimento.
 - **README e KNOWLEDGE aggiornati**: documentati nuovi controlli, opzioni di uscita, specifiche dei dialoghi,
@@ -598,7 +621,7 @@ Verifiche fatte:
 - `npm run lint` pulito (0 errori).
 - `npm run build` ok (43 moduli).
 - `npm run build:single` ok (bundle single-file aggiornato).
-- Test funzionale automatizzato con Playwright su Edge headless (10/10 test superati):
+- Test funzionale automatizzato con Playwright su Edge headless (11/11 test superati):
   1. Texture avatar generate a runtime per tutti i giocabili/NPC e generico.
   2. Movimento iniziale del giocatore verificato.
   3. Blocco movimento del giocatore con `uiState.dialogueLocked` durante conversazione NPC.
@@ -607,7 +630,8 @@ Verifiche fatte:
   6. Chiusura del dialogo tramite tasto ESC e sblocco immediato del movimento.
   7. Chiusura del dialogo tramite tap/click sulla riga "Esci dalla conversazione".
   8. Selezione opzione con tasto numerico e turno del giocatore con avatar del giocabile.
-  9. Descrizione arredo senza avatar e con movimento libero verificato.
+  9. Ultima battuta con riga "Esci", protezione dai click sulla mappa (nessun movimento) e chiusura pulita.
+  10. Descrizione arredo senza avatar e con movimento libero verificato.
 
 ## Come continuare
 Checklist per la prossima sessione:

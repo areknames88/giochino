@@ -164,6 +164,17 @@ export function resolveLook(character) {
   };
 }
 
+export const AVATAR_FILES = {
+  riccardo: 'Avatars/Avatar Riccardo.jpeg',
+  concy: 'Avatars/Avatar Concy.jpg',
+  marco: 'Avatars/Avatar Marco.jpeg',
+  davide: 'Avatars/Avatar Davide.jpg'
+};
+
+export function characterAvatarKey(id) {
+  return `avatar-${id}`;
+}
+
 export function characterTextureKey(id) {
   return `character-${id}`;
 }

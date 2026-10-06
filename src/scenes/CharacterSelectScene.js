@@ -3,6 +3,7 @@ import { GAME } from '../config.js';
 import { Events, emit } from '../core/eventBus.js';
 import { createControls, isTouchPrimary } from '../core/input.js';
 import {
+  characterAvatarKey,
   characterTextureKey,
   getCharacter,
   listPlayableCharacters,
@@ -19,21 +20,23 @@ const PANEL_STYLE = {
 const LAYOUTS = {
   landscape: {
     columns: 4,
-    card: { width: 176, height: 226 },
+    card: { width: 186, height: 248 },
     gridTop: null,
-    buttonGap: 72,
-    feetInset: 64,
-    nameInset: 52,
-    taglineInset: 32
+    buttonGap: 70,
+    avatarTop: 14,
+    avatarSize: 128,
+    nameY: 152,
+    taglineY: 182
   },
   portrait: {
     columns: 2,
-    card: { width: 200, height: 232 },
-    gridTop: 120,
-    buttonGap: 90,
-    feetInset: 70,
-    nameInset: 58,
-    taglineInset: 36
+    card: { width: 210, height: 260 },
+    gridTop: 110,
+    buttonGap: 80,
+    avatarTop: 16,
+    avatarSize: 136,
+    nameY: 162,
+    taglineY: 194
   }
 };
 
@@ -135,10 +138,14 @@ export default class CharacterSelectScene extends Phaser.Scene {
     const container = this.add.container(0, 0);
 
     const panel = this.add.graphics();
-    const sprite = this.add
-      .sprite(0, 0, characterTextureKey(character.id), 0)
-      .setOrigin(0.5, 1)
-      .setScale(GAME.selection.spriteScale);
+    const avatarKey = characterAvatarKey(character.id);
+    const textureKey = this.textures.exists(avatarKey)
+      ? avatarKey
+      : characterTextureKey(character.id);
+
+    const portrait = this.add
+      .image(0, 0, textureKey)
+      .setOrigin(0.5, 0);
     const name = this.add
       .text(0, 0, character.name, {
         ...PANEL_STYLE,
@@ -146,7 +153,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
         color: '#f0c27a',
         fontStyle: 'bold'
       })
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 0);
     const tagline = this.add
       .text(0, 0, character.tagline ?? '', {
         ...PANEL_STYLE,
@@ -155,9 +162,9 @@ export default class CharacterSelectScene extends Phaser.Scene {
         align: 'center',
         lineSpacing: 2
       })
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 0);
 
-    container.add([panel, sprite, name, tagline]);
+    container.add([panel, portrait, name, tagline]);
     container.setData('character', character);
 
     return container;
@@ -217,12 +224,18 @@ export default class CharacterSelectScene extends Phaser.Scene {
       container.setData('index', index);
       container.setData('rect', new Phaser.Geom.Rectangle(x, y, card.width, card.height));
 
-      container.getAt(1).setPosition(card.width / 2, card.height - preset.feetInset);
-      container.getAt(2).setPosition(card.width / 2, card.height - preset.nameInset);
-
+      const portrait = container.getAt(1);
+      const name = container.getAt(2);
       const tagline = container.getAt(3);
-      tagline.setWordWrapWidth(card.width - 24);
-      tagline.setPosition(card.width / 2, card.height - preset.taglineInset);
+
+      const centerX = card.width / 2;
+      portrait.setPosition(centerX, preset.avatarTop);
+      portrait.setDisplaySize(preset.avatarSize, preset.avatarSize);
+
+      name.setPosition(centerX, preset.nameY);
+
+      tagline.setWordWrapWidth(card.width - 20);
+      tagline.setPosition(centerX, preset.taglineY);
     });
 
     const buttonY = Math.min(
@@ -267,10 +280,13 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   drawSelectedCard() {
+    const portraitMode = this.scale.height > this.scale.width;
+    const preset = portraitMode ? LAYOUTS.portrait : LAYOUTS.landscape;
+
     this.cards.forEach((container, index) => {
       const { width, height } = this.cardSize;
       const panel = container.getAt(0);
-      const sprite = container.getAt(1);
+      const portrait = container.getAt(1);
       const selected = index === this.selectedIndex;
 
       panel.clear();
@@ -281,7 +297,18 @@ export default class CharacterSelectScene extends Phaser.Scene {
       panel.fillStyle(selected ? PANEL_HIGHLIGHT : 0x8b5a2b, selected ? 0.85 : 0.5);
       panel.fillRect(10, 3, width - 20, 2);
 
-      sprite.setScale(selected ? GAME.selection.selectedSpriteScale : GAME.selection.spriteScale);
+      // Cornice e fondo dietro l'avatar
+      const aSize = preset.avatarSize;
+      const ax = (width - aSize) / 2;
+      const ay = preset.avatarTop;
+      panel.fillStyle(0x0c0805, 0.9);
+      panel.fillRect(ax - 2, ay - 2, aSize + 4, aSize + 4);
+      panel.lineStyle(selected ? 2 : 1, selected ? PANEL_HIGHLIGHT : 0x5a3a1e, selected ? 0.95 : 0.7);
+      panel.strokeRect(ax - 2, ay - 2, aSize + 4, aSize + 4);
+
+      const targetSize = selected ? aSize + 4 : aSize;
+      portrait.setDisplaySize(targetSize, targetSize);
+      portrait.setPosition(width / 2, ay - (selected ? 2 : 0));
     });
   }
 
