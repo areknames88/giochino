@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { uiState } from '../core/uiState.js';
 
 const DIRS = ['down', 'left', 'right', 'up'];
 const ARRIVE_DISTANCE = 5;
@@ -152,6 +153,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
   update() {
     this.arrived = false;
+
+    // Conversazione con un NPC aperta: il giocatore resta fermo al proprio
+    // posto (nessuna tastiera, nessun cammino già impostato). La chiusura del
+    // dialogo ripristina il controllo al tocco successivo.
+    if (uiState.dialogueLocked) {
+      this.stopWalking();
+      this.body.setVelocity(0, 0);
+      this.playIdle();
+      this.finishStep();
+      return;
+    }
 
     const keyboard = this.readKeyboard();
     const keyboardLength = Math.hypot(keyboard.x, keyboard.y);

@@ -2,6 +2,37 @@ import Phaser from 'phaser';
 import { characterAnimKey, characterTextureKey, resolveLook } from '../game/characters.js';
 
 /**
+ * Disegna il logo Jackanal (J stilizzata) sul petto.
+ * Scala: 1 = dimensione base per tee frontale (torso 16px).
+ */
+function drawReverseHeart(g, cx, top, scale = 1, color = 0xffffff, alpha = 0.95) {
+  const s = scale;
+  const x = cx;
+  const y = top + 2 * s;
+
+  // Cuore al contrario (punta in alto, due lobi in basso)
+  // Lobo sinistro
+  fillCircle(g, x - 1.5 * s, y + 2 * s, 2 * s, color, alpha);
+  // Lobo destro
+  fillCircle(g, x + 1.5 * s, y + 2 * s, 2 * s, color, alpha);
+  // Punta in alto (triangolo rovesciato)
+  fillTriangle(g, x - 2.5 * s, y + 2 * s, x + 2.5 * s, y + 2 * s, x, y - 1 * s, color, alpha);
+}
+
+/** Cuore al contrario in vista di profilo. */
+function drawReverseHeartProfile(g, cx, dir, top, scale = 1, color = 0xffffff, alpha = 0.95) {
+  const s = scale;
+  const x = dir === 1 ? cx + 1.5 : cx - 3.5;
+  const y = top + 4 * s;
+
+  // Due cerchietti per i lobi
+  fillCircle(g, x - 1 * s * dir, y + 1.5 * s, 1.8 * s, color, alpha);
+  fillCircle(g, x + 1 * s * dir, y + 1.5 * s, 1.8 * s, color, alpha);
+  // Punta
+  fillTriangle(g, x - 2 * s * dir, y + 1.5 * s, x + 2 * s * dir, y + 1.5 * s, x, y - 1 * s, color, alpha);
+}
+
+/**
  * Disegno dei personaggi umanoidi. Tutto quello che il foglio di un personaggio
  * contiene arriva da un JSON (`src/data/characters/`): palette, corporatura,
  * stile di capelli, maglia ed effetti. Qui sotto ci sono solo le regole del
@@ -69,6 +100,11 @@ function fillEllipse(g, x, y, w, h, color, alpha = 1) {
 function fillQuad(g, points, color, alpha = 1) {
   g.fillStyle(tint(color), alpha);
   g.fillPoints(points, true);
+}
+
+function fillTriangle(g, x1, y1, x2, y2, x3, y3, color, alpha = 1) {
+  g.fillStyle(tint(color), alpha);
+  g.fillTriangle(x1, y1, x2, y2, x3, y3);
 }
 
 /** Dove si trova la testa rispetto ai piedi, e in che direzione guarda. */
@@ -149,11 +185,9 @@ function drawTorsoFrontBack(g, cx, feetY, look, bob, away) {
   } else if (look.outfitStyle === 'sleeveless') {
     fillRounded(g, left, top, TORSO_WIDTH, 2, 1, look.skinShade, 0.35);
   } else {
-    // T-shirt: logo Jackanal bianco sul petto a sinistra (altezza cuore)
+    // T-shirt: cuore al contrario bianco sul petto a sinistra (altezza cuore)
     if (!away) {
-      fillRect(g, cx + 1.5, top + 4, 3, 2.5, 0xffffff, 0.95);
-      fillRect(g, cx + 2, top + 6.5, 2, 1, 0xffffff, 0.9);
-      fillRect(g, cx + 2.5, top + 5, 1, 1, tint(look.shirt));
+      drawReverseHeart(g, cx + 1.5, top + 1, 1, 0xffffff, 0.95);
     }
   }
 
@@ -541,9 +575,8 @@ function drawProfileCell(g, cx, feetY, look, head, phase, bob) {
   } else if (look.outfitStyle === 'sleeveless') {
     profileRounded(g, cx, dir, -3, top, 6, 3, 1.5, look.skinShade, 0.4);
   } else {
-    // Logo bianco sul petto in vista di profilo
-    profileRect(g, cx, dir, 1, top + 4, 2.5, 2.5, 0xffffff, 0.95);
-    profileRect(g, cx, dir, 1.5, top + 6.5, 1.5, 1, 0xffffff, 0.9);
+    // Cuore al contrario bianco sul petto in vista di profilo
+    drawReverseHeartProfile(g, cx, dir, top, 1, 0xffffff, 0.95);
   }
 
   if (look.outfitStyle === 'dress') {

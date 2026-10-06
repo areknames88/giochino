@@ -6,6 +6,8 @@ export const Events = {
   ROOM_READY: 'room:ready',
   HINT_CHANGED: 'hint:changed',
   DIALOGUE_SAY: 'dialogue:say',
+  DIALOGUE_NODE: 'dialogue:node',
+  DIALOGUE_CHOICE: 'dialogue:choice',
   DIALOGUE_ADVANCE: 'dialogue:advance',
   DIALOGUE_CLOSED: 'dialogue:closed',
   PLAYER_MOVED: 'player:moved',

@@ -28,7 +28,7 @@ export default class HudScene extends Phaser.Scene {
     this.layoutElements();
 
     this.input.on('pointerdown', () => {
-      if (uiState.dialogueOpen) {
+      if (uiState.dialogueOpen && !uiState.dialogueOptionsOpen) {
         emit(Events.DIALOGUE_ADVANCE);
       }
     });

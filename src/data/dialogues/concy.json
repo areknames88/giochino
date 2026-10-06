@@ -1,0 +1,78 @@
+{
+  "id": "concy",
+  "speaker": "concy",
+  "entries": {
+    "default": "saluto",
+    "riccardo": "saluto-riccardo",
+    "marco": "saluto-marco",
+    "davide": "saluto-davide"
+  },
+  "nodes": {
+    "saluto": {
+      "lines": [
+        "Ehi, ciao. Se non senti il basso non è che sia basso: sei tu che sei troppo lontano."
+      ],
+      "options": [
+        { "text": "Com'è andata la prova?", "next": "prova" },
+        { "text": "La sala è tutta vostra?", "next": "sala" }
+      ]
+    },
+    "saluto-riccardo": {
+      "lines": [
+        "Ehi cantante, oggi la voce ce l'hai?",
+        "Se ti fermi a metà strofa ti prometto che abbasso il basso. Solo per te, però."
+      ],
+      "options": [
+        { "text": "Sto già scaldando la voce", "next": "prova" },
+        { "text": "Dipende da come suonate voi", "next": "sfida" },
+        { "text": "Al tuo pedale non ci penso nemmeno", "next": "pedale" }
+      ]
+    },
+    "saluto-marco": {
+      "lines": [
+        "Ah, eccolo. Il riff di prima era più lento di ieri, o mi sono sbagliata?"
+      ],
+      "options": [
+        { "text": "Era ritmico, non lento", "next": "sfida" },
+        { "text": "Com'è andata da voi?", "next": "prova" }
+      ]
+    },
+    "saluto-davide": {
+      "lines": [
+        "Davide, se ripicchietti sul rullante mentre accordo, ti prendo a plettra."
+      ],
+      "options": [
+        { "text": "Stavo solo tenendo il tempo", "next": "prova" },
+        { "text": "La batteria è roba tua, io i dischi li metto", "next": "sala" }
+      ]
+    },
+    "prova": {
+      "lines": [
+        "Il pezzo nuovo gira. Manca solo che smettiamo tutti di cambiare idea a ogni prova."
+      ],
+      "options": [
+        { "text": "E allora quando si riparte?", "next": "riparte" }
+      ]
+    },
+    "riparte": {
+      "lines": [
+        "Quando l'ultimo di noi smette di accordare. Tradotto: tra dieci minuti, o tra un'ora."
+      ]
+    },
+    "sala": {
+      "lines": [
+        "La sala è di tutti. Il parquet lo lucido io coi pedali: se ci passi sopra con le scarpe pulite, funziona anche con te."
+      ]
+    },
+    "sfida": {
+      "lines": [
+        "Oh, guarda un po'... va bene, proviamolo. Se cedo per primo ti offro una bibita."
+      ]
+    },
+    "pedale": {
+      "lines": [
+        "Giusto. Il mio pedale non si tocca: c'è un motivo se il pavimento trema fino alla porta."
+      ]
+    }
+  }
+}

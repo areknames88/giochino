@@ -1,0 +1,83 @@
+{
+  "id": "marco",
+  "speaker": "marco",
+  "entries": {
+    "default": "saluto",
+    "riccardo": "saluto-riccardo",
+    "concy": "saluto-concy",
+    "davide": "saluto-davide"
+  },
+  "nodes": {
+    "saluto": {
+      "lines": [
+        "Oh, ciao. Stavo sistemando il jack dell'ampli di destra: si stacca da solo, lo giuro."
+      ],
+      "options": [
+        { "text": "Com'è andata la prova?", "next": "prova" },
+        { "text": "La sala è tutta vostra?", "next": "sala" }
+      ]
+    },
+    "saluto-riccardo": {
+      "lines": [
+        "Ehi, voce. Prima di iniziare dimmi la verità: quanto volume ti serve sul monitor?",
+        "Non che io abbia intenzione di abbassarlo, voglio solo sentire la scusa."
+      ],
+      "options": [
+        { "text": "Più voce e meno tutto il resto", "next": "volume" },
+        { "text": "Mi arrangio, tu suona forte", "next": "prova" }
+      ]
+    },
+    "saluto-concy": {
+      "lines": [
+        "Concy, se il basso copre la mia chitarra ancora una volta, ti cambio gli accordi a sorpresa."
+      ],
+      "options": [
+        { "text": "Non osare nemmeno", "next": "chitarra" },
+        { "text": "Vediamo chi regge", "next": "sfida" }
+      ]
+    },
+    "saluto-davide": {
+      "lines": [
+        "Davide, quel charleston trema: o lo sistemi tu, o lo prendo io e diventa sottobicchiere."
+      ],
+      "options": [
+        { "text": "Sto già sistemando", "next": "prova" },
+        { "text": "Fai come ti pare", "next": "sala" }
+      ]
+    },
+    "prova": {
+      "lines": [
+        "La prova va bene, finché qualcuno non cambia gli accordi a metà pezzo.",
+        "Non guardo nessuno in particolare."
+      ],
+      "options": [
+        { "text": "E allora quando si riparte?", "next": "riparte" }
+      ]
+    },
+    "riparte": {
+      "lines": [
+        "Si riparte quando il jack di destra decide di restare nel jack. Ci vogliono pazienza e nastro adesivo."
+      ]
+    },
+    "sala": {
+      "lines": [
+        "Da questa parte, vicino al mio ampli, il riverbero è perfetto. Chiedi pure a chiunque... tranne a chi suona piano."
+      ]
+    },
+    "sfida": {
+      "lines": [
+        "Sfida accettata. Ma se perdo, la prossima volta tocca a te tenere il tempo col pedale."
+      ]
+    },
+    "volume": {
+      "lines": [
+        "Dillo forte? È già al massimo. Benvenuto nel concerto."
+      ]
+    },
+    "chitarra": {
+      "lines": [
+        "Non oserei. Però se continua, la prossima volta provo a suonare con la mano sinistra."
+      ]
+    }
+  }
+}

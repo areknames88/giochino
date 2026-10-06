@@ -128,19 +128,6 @@ export default class Npc extends Phaser.GameObjects.Container {
     }
   }
 
-  describe() {
-    const speaker = this.character.name;
-    const lines = Array.isArray(this.character.lines) && this.character.lines.length > 0
-      ? this.character.lines
-      : [this.character.tagline ?? ''];
-
-    return lines.map((text) => ({
-      speaker,
-      text,
-      prompt: this.prompt
-    }));
-  }
-
   destroy(fromScene) {
     if (this.solid) {
       this.solid.destroy();

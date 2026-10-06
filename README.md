@@ -21,7 +21,9 @@ JSON in `src/data/characters/`, quindi aspetto, corporatura, capelli, outfit e a
 senza toccare il codice.
 
 Non c'è ancora nessuna meccanica di gioco: l'interazione è **sola lettura** (descrizioni testuali),
-come da specifica di partenza.
+come da specifica di partenza. I quattro compagni presenti nella stanza parlano però con dialoghi
+a rami: cosa si dicono dipende da chi stai giocando, e ogni scelta del giocatore è una risposta
+fra due o tre proposte.
 
 ## Requisiti
 
@@ -76,6 +78,8 @@ non succede nient'altro. Per esaminare un arredo serve un tocco secco.
 | Click o tap su un arredo | Il personaggio gli va vicino e lo esamina |
 | Tenere premuto e trascinare | Il personaggio segue il puntatore; nessuna interazione parte |
 | Tap durante un dialogo | Avanza il testo |
+| Tap su una risposta | Sceglie la risposta proposta (da una a tre) |
+| Tap su "Esci dalla conversazione" | Chiude il dialogo durante le risposte |
 
 ### Tastiera
 
@@ -84,6 +88,8 @@ non succede nient'altro. Per esaminare un arredo serve un tocco secco.
 | `WASD` / frecce | Movimento (annulla una destinazione impostata col mouse o col tocco) |
 | `SHIFT` | Correre |
 | `E` / `INVIO` / `SPAZIO` | Interagisci con l'arredo più vicino (e avanza i dialoghi) |
+| `1` – `3` | Sceglie la risposta numerata durante un dialogo |
+| `ESC` | Chiude la conversazione durante le risposte |
 | `G` | Griglia delle tile e corpi di collisione |
 
 ### Smartphone e tablet
@@ -135,13 +141,16 @@ La scelta vale per la sessione corrente: non viene salvata nel browser.
     ├── data/characters/          # un personaggio = un JSON
     │   ├── playable/             # scelti nella schermata iniziale
     │   └── npc/                  # personaggi della stanza, non giocabili
+    ├── data/dialogues/           # un parlante = un grafo di dialogo JSON
+    │   └── riccardo.json
     ├── game/
     │   ├── rooms.js              # registro delle stanze
     │   ├── roomLayout.js         # da JSON a griglia di cellule solide + corpi di collisione
     │   ├── navigation.js         # griglia camminabile e percorso (A*) per il click
     │   ├── collision.js          # corpi statici + costanti di profondità (DEPTHS)
     │   ├── propTypes.js          # texture e ingombro per tipo di arredo
-    │   └── characters.js         # registro personaggi: JSON, validazione, chiavi texture/animazioni
+    │   ├── characters.js         # registro personaggi: JSON, validazione, chiavi texture/animazioni
+    │   └── dialogue.js           # registro dialoghi: ingressi per ascoltatore, nodi, validazione all'avvio
     ├── gfx/
     │   ├── textureFactory.js     # texture generate a runtime (arredi, ombre)
     │   ├── characterArt.js       # disegno del personaggio: corpo, capelli, outfit, accessori
@@ -152,9 +161,10 @@ La scelta vale per la sessione corrente: non viene salvata nel browser.
     │   ├── Prop.js               # arredo: ombra + sprite + corpo statico
     │   └── Npc.js                # personaggio non giocante: ombra, sprite idle, etichetta nome e dialogo
     ├── systems/
-    │   └── interaction.js        # arredo più vicino, hit test col dito e "esamina"
+    │   ├── interaction.js        # arredo più vicino, hit test col dito e "esamina"
+    │   └── dialogueRunner.js     # macchina a stati del dialogo: nodo corrente, scelte, chiusura
     ├── ui/
-    │   └── DialogueBox.js        # riquadro di testo, mostra tutto il messaggio subito
+    │   └── DialogueBox.js        # riquadro dialoghi: box unica, avatar quadrato, risposte sotto il testo, ESC
     └── scenes/
         ├── BootScene.js          # genera le texture e lancia la scelta del personaggio
         ├── CharacterSelectScene.js  # schede dei giocabili, conferma e avvio della stanza
@@ -173,8 +183,11 @@ La scelta vale per la sessione corrente: non viene salvata nel browser.
 3. **RoomScene** legge il JSON della stanza, disegna parquet e muri su canvas, ricava la griglia
    delle celle solide e ne crea i corpi statici, poi posiziona arredi, NPC definiti nella stanza e il personaggio.
 4. Gli NPC (`src/entities/Npc.js`) hanno ombra, sprite idle, etichetta nome e ruolo sopra la testa,
-   sono corpi solidi considerati da collisioni e pathfinding, e hanno dialoghi a più battute
-   accessibili con `E` o tap diretto.
+   sono corpi solidi considerati da collisioni e pathfinding, e parlano con dialoghi a rami
+   accessibili con `E` o tap diretto. Quale battuta parte dipende da chi sta giocando:
+   `src/game/dialogue.js` risolve il nodo d'ingresso in base all'ascoltatore, e ogni nodo può
+   proporre da una a tre risposte. Sceglierne una prepone la battuta del giocatore al nodo
+   successivo (`src/systems/dialogueRunner.js`).
 5. La camera segue il personaggio e si ferma ai bordi della stanza.
 6. L'ordinamento in profondità è **per Y**: ogni arredo, NPC e il personaggio hanno `depth = y`, quindi
    chi è più in basso nel disegno viene disegnato sopra. Pavimento e muri stanno dietro a tutto.
@@ -288,6 +301,49 @@ codice.
 - I giocabili vengono generati tutti in `BootScene` (servono alle anteprime); gli NPC vengono
   generati solo quando qualcuno li usa.
 
+## Formato dei dialoghi (JSON)
+
+Un parlante ha un file in `src/data/dialogues/<id>.json` con il grafo delle sue battute. Il file
+ha la precedenza: se manca, il dialogo cade sulle `lines` e `tagline` del JSON del personaggio
+(ingresso di riserva, usato anche per gli arredi).
+
+```json
+{
+  "id": "riccardo",
+  "speaker": "riccardo",
+  "entries": { "default": "saluto", "concy": "saluto-concy" },
+  "nodes": {
+    "saluto": {
+      "lines": ["Oh, ciao. Stavo prendendo l'intonazione con la sala."],
+      "options": [
+        { "text": "Com'è andata la prova?", "next": "prova" },
+        { "text": "La sala è tutta vostra?", "next": "sala" }
+      ]
+    },
+    "prova": {
+      "lines": ["La prova va da cannone."],
+      "options": [{ "text": "E allora quando si riparte?", "next": "riparte" }]
+    },
+    "riparte": { "lines": ["Si riparte quando siamo tutti d'accordo."] }
+  }
+}
+```
+
+| Campo | Tipo | Descrizione |
+| --- | --- | --- |
+| `id` / `speaker` | stringa | Personaggio che parla; deve esistere in `characters.js` |
+| `entries.default` | stringa | Nodo d'ingresso quando non c'è una voce specifica |
+| `entries.<id>` | stringa | Nodo d'ingresso quando l'ascoltatore è `<id>` (uno dei quattro giocabili) |
+| `nodes.<id>.lines` | array | Battute: stringa = le parla il personaggio, `{ "speaker": ..., "text": ... }` = le parla un altro |
+| `nodes.<id>.options` | array | Da una a tre risposte: `text` è la frase che sceglie il giocatore, `next` il nodo dopo |
+
+- La risposta scelta appare nel riquadro come battuta del giocatore, poi partono le `lines` del
+  nodo `next`. Un nodo senza `options` chiude il dialogo.
+- Al massimo 3 risposte (`MAX_OPTIONS`): il resto viene tagliato con un avviso in console.
+- All'avvio `dialogue.js` valida tutto il registro: ascoltatori non giocabili, `next` che puntano a
+  nodi inesistenti, nodi vuoti o risposte mancanti vengono segnalati una sola volta con il prefisso
+  `[dialogue]`.
+
 ## Aggiungere cose
 
 ### Un nuovo tipo di arredo
@@ -311,6 +367,12 @@ codice.
    aggiungi il disegno in `HAIR_DRAWERS`, `EFFECT_DRAWERS` o il blocco `outfit` di
    `src/gfx/characterArt.js`, e il nome nella lista di `characters.js` così i dati sbagliati
    vengono segnalati.
+
+### Un nuovo dialogo
+
+1. Crea `src/data/dialogues/<id>.json` con `entries` e `nodes` (vedi "Formato dei dialoghi").
+2. Importalo nella lista `DIALOGUES` di `src/game/dialogue.js`: così viene validato all'avvio.
+3. Nient'altro da toccare: runner e riquadro si consultano dal registro.
 
 ### La grafica vera
 
@@ -336,15 +398,15 @@ Nota: il workflow usa `npm ci`, quindi `package-lock.json` deve essere committat
 ## Limiti noti
 
 - L'interazione è solo descrittiva: nessuna meccanica (niente ancora, niente suonare).
-- Il movimento non è bloccato mentre un dialogo è aperto, ma con il dialogo aperto il tocco
-  avanza il testo invece di muovere il personaggio.
+- Il movimento è bloccato durante le conversazioni con gli NPC (il personaggio resta fermo
+  fino alla conclusione o uscendo con ESC / riga "Esci"); per le descrizioni degli arredi il
+  movimento resta libero e il riquadro si chiude automaticamente se ci si allontana oltre 120 px.
 - Il percorso è calcolato sulla griglia delle tile: non attraversa gli angoli stretti, quindi
   qualche arredo contro muro resta irraggiungibile con un singolo tap (basta toccarlo due volte).
 - Su telefono il gioco si adatta alla larghezza dello schermo mantenendo i 960 × 540 logici: in
   verticale resta letterboxed, è previsto per il gioco in orizzontale.
 - Le texture sono placeholder: disegnate a runtime, non ancora ottime.
 - La scelta del personaggio vale per la sessione: ricaricando la pagina si torna alla schelta iniziale.
-- Gli NPC sono dati e disegno, non ancora entità in stanza: nessuno è ancora collocato nella sala.
 - Nessun salvataggio, nessun audio, nessun multiplayer.
 - Il bundle non è code-split: ~336 kB gzip, va bene per un gioco statico.
 

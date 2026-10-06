@@ -1,0 +1,82 @@
+{
+  "id": "davide",
+  "speaker": "davide",
+  "entries": {
+    "default": "saluto",
+    "riccardo": "saluto-riccardo",
+    "concy": "saluto-concy",
+    "marco": "saluto-marco"
+  },
+  "nodes": {
+    "saluto": {
+      "lines": [
+        "Ehi! Un secondo che finisco di accordare la pelle del rullante... fatto, si sente?",
+        "La prova di oggi è un tiro assurdo, tieniti forte al parquet."
+      ],
+      "options": [
+        { "text": "Com'è andata la prova?", "next": "prova" },
+        { "text": "La sala è tutta vostra?", "next": "sala" }
+      ]
+    },
+    "saluto-riccardo": {
+      "lines": [
+        "Cantante! Se oggi entri in ritmo sulla seconda strofa, ti regalo un giro di doppio pedale."
+      ],
+      "options": [
+        { "text": "Promessa fatta, io entro sempre", "next": "prova" },
+        { "text": "Io entro quando voglio io", "next": "tempo" }
+      ]
+    },
+    "saluto-concy": {
+      "lines": [
+        "Concy, il mio piede destro e il tuo basso sono ancora in conflitto. Chi cede oggi?"
+      ],
+      "options": [
+        { "text": "Tu per primo, come sempre", "next": "sfida" },
+        { "text": "Sincronizziamoci e si risolve", "next": "prova" }
+      ]
+    },
+    "saluto-marco": {
+      "lines": [
+        "Marco, passami il plettro buono, quello che tieni nascosto dietro l'ampli."
+      ],
+      "options": [
+        { "text": "Prendine due, sono tuoi", "next": "plettro" },
+        { "text": "Questo è l'ultimo che hai", "next": "prova" }
+      ]
+    },
+    "prova": {
+      "lines": [
+        "Oggi tiro fortissimo. Se il rullante non si sente non è colpa mia: le pelli sono nuove."
+      ],
+      "options": [
+        { "text": "E allora quando si riparte?", "next": "riparte" }
+      ]
+    },
+    "riparte": {
+      "lines": [
+        "Si riparte appena smetto di suonare per provare i transitori. Aspetta, non ci metto molto... forse."
+      ]
+    },
+    "sala": {
+      "lines": [
+        "La sala è perfetta, si sente tutto fin dal corridoio. Anche le chiacchiere, attenzione."
+      ]
+    },
+    "sfida": {
+      "lines": [
+        "Sfida accettata. Ultimo che arriva in tempo compra le pizze."
+      ]
+    },
+    "tempo": {
+      "lines": [
+        "Il tempo lo tengo io, il resto è opinione. Vai, battuta due, tu decidi."
+      ]
+    },
+    "plettro": {
+      "lines": [
+        "Grazie! Ti restituisco un giro di doppio pedale gratis, vale più di qualsiasi plettro."
+      ]
+    }
+  }
+}

@@ -77,23 +77,4 @@ export default class InteractionSystem {
       emit(Events.HINT_CHANGED, null);
     }
   }
-
-  trigger(item = this.current) {
-    if (!item) {
-      return false;
-    }
-
-    if (typeof item.faceTowards === 'function' && this.scene.player) {
-      item.faceTowards(this.scene.player.x, this.scene.player.y);
-    }
-
-    const payload = item.describe();
-    const pages = Array.isArray(payload) ? payload : [payload];
-
-    for (const page of pages) {
-      emit(Events.DIALOGUE_SAY, page);
-    }
-
-    return true;
-  }
 }

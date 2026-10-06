@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { DEFAULT_CHARACTER_ID, DEFAULT_ROOM_ID, GAME } from '../config.js';
-import { Events, emit } from '../core/eventBus.js';
+import { Events, emit, on } from '../core/eventBus.js';
 import { createControls } from '../core/input.js';
 import { uiState } from '../core/uiState.js';
 import Player from '../entities/Player.js';
@@ -14,6 +14,7 @@ import { buildWalkableGrid, cellsToPoints, findPath, nearestWalkableCell } from 
 import { ensureCharacterAssets } from '../gfx/characterArt.js';
 import { createFloorTexture, createWallTexture } from '../gfx/roomTextures.js';
 import InteractionSystem from '../systems/interaction.js';
+import DialogueRunner from '../systems/dialogueRunner.js';
 
 /** Quanto può spostarsi il puntatore durante un tocco prima che diventi un trascinamento. */
 const TAP_SLOP = 12;
@@ -35,6 +36,12 @@ export default class RoomScene extends Phaser.Scene {
     this.props = [];
     this.pendingProp = null;
     this.drag = null;
+    this.dialogueTarget = null;
+    this.dialogueMaxDistance = 120;
+
+    this.unsubscribeDialogueClosed = on(Events.DIALOGUE_CLOSED, () => {
+      this.dialogueTarget = null;
+    });
 
     this.physics.world.setBounds(
       0,
@@ -94,6 +101,7 @@ export default class RoomScene extends Phaser.Scene {
       [...this.props.filter((prop) => prop.description), ...this.npcs],
       GAME.player.interactRange
     );
+    this.dialogueRunner = new DialogueRunner(this);
 
     this.navigation = buildWalkableGrid(
       this.layout,
@@ -287,10 +295,10 @@ export default class RoomScene extends Phaser.Scene {
 
     this.pendingProp = null;
     this.player.stopWalking();
-    if (typeof prop.faceTowards === 'function') {
-      prop.faceTowards(this.player.x, this.player.y);
+
+    if (this.dialogueRunner.start(prop)) {
+      this.dialogueTarget = prop;
     }
-    this.interactions.trigger(prop);
   }
 
   requestInteract() {
@@ -299,7 +307,10 @@ export default class RoomScene extends Phaser.Scene {
       return;
     }
 
-    this.interactions.trigger();
+    if (this.dialogueRunner.start(this.interactions.current)) {
+      this.dialogueTarget = this.interactions.current;
+      this.pendingProp = null;
+    }
   }
 
   createDebugOverlay() {
@@ -342,10 +353,31 @@ export default class RoomScene extends Phaser.Scene {
     this.player.update();
     this.interactions.update(this.player);
     this.resolvePending();
+
+    if (this.dialogueTarget && uiState.dialogueOpen) {
+      const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.dialogueTarget.x, this.dialogueTarget.y);
+      if (distance > this.dialogueMaxDistance) {
+        emit(Events.DIALOGUE_CLOSED);
+      }
+    }
+
     emit(Events.PLAYER_MOVED, { x: this.player.x, y: this.player.y });
   }
 
   changeRoom(roomId) {
     this.scene.restart({ roomId });
+  }
+
+  destroy() {
+    if (this.dialogueRunner) {
+      this.dialogueRunner.destroy();
+      this.dialogueRunner = null;
+    }
+
+    if (this.unsubscribeDialogueClosed) {
+      this.unsubscribeDialogueClosed();
+      this.unsubscribeDialogueClosed = null;
+    }
+    super.destroy();
   }
 }

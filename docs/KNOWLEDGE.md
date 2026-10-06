@@ -25,10 +25,19 @@ un prefisso di animazioni e la scala dell'ombra.
 stessi dati del gioco, in landscape 4×1 e in portrait 2×2. Si conferma col bottone, con `INVIO`,
 `SPAZIO` o `E`; `?char=<id>` la salta. La scelta resta nel registry, non viene salvata.
 
-Ultima verifica: 5 ottobre 2026 — `npm run lint` pulito, `npm run build` ok, `npm run build:single`
-ok; 16/16 verifiche funzionali sul dev server (scelta col click, ingresso in stanza, texture e
-animazioni del personaggio scelto, movimento, `?char=`, layout portrait) e 48/48 verifiche grafiche
-sui pixel delle celle dei 6 personaggi.
+**Dialoghi a rami con box unica moderna e avatar**: ogni parlante ha un grafo JSON in
+`src/data/dialogues/<id>.json` (`entries` con nodo d'ingresso per ascoltatore + `nodes` con
+battute e risposte). Il riquadro `DialogueBox` è una box unica rifinita con bordo dorato, avatar
+quadrato laterale generato a runtime (`avatar-<id>`), risposte elencate direttamente SOTTO il
+testo con badge numerati (1–3), e riga di uscita con tasto `ESC`. Durante le conversazioni NPC il
+movimento del giocatore è bloccato (`uiState.dialogueLocked`), mentre per gli arredi l'esplorazione
+resta libera.
+
+Ultima verifica: 6 ottobre 2026 — `npm run lint` pulito, `npm run build` ok (43 moduli),
+`npm run build:single` ok; test funzionali Playwright su Edge di sistema (10/10 verifiche: texture
+avatar, movimento libero iniziale, blocco movimento durante dialogo NPC, rendering opzioni e riga
+uscita dentro la box, uscita con tasto ESC, ripristino movimento, uscita con click su riga Esci,
+battuta giocatore con avatar dopo la scelta, e descrizione arredo senza avatar e senza blocco).
 
 ## Vincoli e desideri (dal brief iniziale)
 
@@ -76,6 +85,15 @@ sui pixel delle celle dei 6 personaggi.
 | **Fasi `[0, +SWING, 0, -SWING]` e camminata `1,2,3,2`** | Le quattro celle della riga sono: fermo, passo destro, centro, passo sinistro. Prendendo solo `1,2,3` la clip finisce con due pose di contatto opposte e zoppica: il ritorno alla cella 2 prima di ripetere è la posizione di passaggio. |
 | **Schermata di scelta con lo stesso disegno del gioco** | L'anteprima non è una foto statica: usa `drawCharacterCell` con la `look` del personaggio, quindi non può divergere da quello che si vede poi in stanza. La selezione è per sessione (registry), senza `localStorage`: lo stato del giocatore non è ancora modello. |
 | **`?char=<id>` come override della scelta** | Provare i quattro personaggi senza cliccare quattro volte, e poter controllare in un colpo solo che le texture esistono tutte. Se l'id non è un giocabile, si ignora e parte il default. |
+| **Dialoghi in file separati (`src/data/dialogues/`), non `reactions` nei JSON dei personaggi** | Personalizzare per ascoltatore richiede più di una riga: nei JSON dei personaggi significherebbe duplicare le battute quattro volte e logiche `if (listener === ...)` sparse ovunque. Un file per parlante, `entries` per chi ascolta, i JSON esistenti restano intatti. |
+| **Grafo con `next` obbligatorio, niente codice nei JSON** | Ogni risposta dichiara il nodo successivo: il grafo è interamente verificabile all'avvio (tutti i `next` risolti, ascoltatori noti, max 3 risposte) invece di fallire a gioco in corso. Il runner prepone la battuta scelta al nodo aperto, così il testo in bocca al giocatore è sempre la stringa `text` dell'opzione. |
+| **`DialogueRunner` separato da `InteractionSystem`** | `interaction.js` sa solo "qual è il bersaglio più vicino": la conversazione (nodo corrente, scelte, chiusura) è un altro gioco. I due ingressi (`E` e tap) chiamano la stessa `runner.start()`, senza eventi bus che attraversano l'HUD per arrivare al gameplay. |
+| **`DIALOGUE_CLOSED` sul bus globale** | `close()` emetteva solo su `scene.events` dell'HUD: `RoomScene` non vedeva la fine naturale del dialogo e `dialogueTarget` restava appeso. Sul bus globale tutti chiudono in un punto solo; l'emettitore fa `if (!this.visible) return` così è idempotente. |
+| **Box unica con avatar laterale e risposte sotto il testo** | Ispirata ai classici RPG (Baldur's Gate): l'interfaccia non si frammenta in schede galleggianti ma concentra ritratto, battuta e risposte in un unico pannello espandibile verso l'alto con divisore dorato e doppio bordo in stile sala prove. |
+| **Blocco del movimento solo durante conversazioni NPC (`uiState.dialogueLocked`)** | Durante un dialogo a bivi il giocatore deve restare focalizzato e non allontanarsi per sbaglio, mentre durante le ispezioni degli arredi e la descrizione stanza l'esplorazione deve rimanere fluida (con chiusura a distanza di 120 px). |
+| **Riga di uscita "Esci" + ESC con `queueMicrotask`** | Consente al giocatore di interrompere la conversazione a qualsiasi bivio. Chiudere il dialogo in un microtask garantisce che il click/tap di chiusura non venga propagato alla scena come click di movimento sul pavimento (trabocchetto 24). |
+| **Avatar generati a runtime (`createAvatarTextures`)** | Generazione procedurale di texture quadrate (`avatar-<id>`) con iniziale e colore camicia dai dati JSON esistenti, più `avatar-generic`: zero asset statici necessari e coerenza immediata con tutti i personaggi presenti nel registro. |
+| **`speakerId` nei payload dei dialoghi** | Permette al `DialogueBox` di identificare la texture dell'avatar sia per gli interlocutori NPC sia per il giocatore quando parla dopo aver scelto un'opzione. Per gli arredi `speakerId` è omesso e l'avatar non viene mostrato. |
 
 ## Trapphigli di Phaser incontrati (leggere prima di debuggare)
 
@@ -196,6 +214,20 @@ sui pixel delle celle dei 6 personaggi.
     tick del render loop, `JustDown` restituisce `false` e il tocco va perso. Per comandi discreti
     (navigazione a schede, conferma con INVIO, interazioni con tasti specifici) usare sempre
     `this.input.keyboard.on('keydown-KEY', ...)` che risponde immediatamente all'evento DOM.
+
+23. **L'`pointerdown` di un oggetto interattivo parte PRIMA di quello della scena.**
+    `InputPlugin` processa prima gli hit test per oggetto (dall'alto in basso nella lista di
+    visualizzazione), poi gli handler di scena: un tap che sceglie un'opzione di dialogo fa partire
+    `pickOption()` e subito dopo l'`advance()` di `HudScene`, che avanzerebbe la prima battuta del
+    nodo appena aperto (la riga del giocatore salterebbe). La difesa è un flag `suppressAdvance`
+    imposto nel `pointerdown` dell'oggetto e azzerato da un `queueMicrotask`: la scena controlla il
+    flag nello stesso ciclo sincrono dell'input, il microtask ripulisce appena finito.
+
+24. **`close()` immediato su pointerdown di un pulsante UI può far scattare il click di scena sul pavimento.**
+    Se il click su una riga UI chiude il dialogo istantaneamente nello stesso stack di esecuzione, le scene
+    sottostanti vedono `uiState.dialogueOpen = false` prima di terminare la propagazione dell'evento e interpretano
+    il tap come comando di movimento sul pavimento. Rimandare la chiusura effettiva con `queueMicrotask(() => this.close())`
+    mantiene il dialogo formalmente aperto fino alla conclusione del ciclo di input.
 
 ## Log delle sessioni
 
@@ -470,6 +502,112 @@ Verifiche fatte:
 - `art.mjs`: **48/48** (0 px discrepanza di forma fra sinistra e destra).
 - `check.mjs`: **16/16**.
 - `npm run lint` pulito, `npm run build` ok (37 moduli), `npm run build:single` ok.
+
+### 2026-10-05 — Sessione 8: chiusura dialogo per distanza
+
+Fatto:
+
+- **Dialogo che si chiude se il giocatore si allontana**: in `RoomScene.update()` si controlla la
+  distanza tra `player` e `dialogueTarget` (l'NPC/arredo con cui si sta parlando). Se supera
+  `dialogueMaxDistance = 120` px, viene emesso `DIALOGUE_CLOSED` che chiude il riquadro e ripulisce
+  lo stato.
+- Il `dialogueTarget` viene tracciato sia quando il dialogo parte col click/tap (`resolvePending()`)
+  sia con la tastiera (`requestInteract()`).
+- Subscription a `DIALOGUE_CLOSED` per azzerare `dialogueTarget` quando il dialogo finisce
+  normalmente; cleanup in `destroy()`.
+
+Verifiche fatte:
+
+- `npm run lint` pulito.
+- `npm run build` ok (37 moduli).
+- `npm run build:single` ok.
+
+### 2026-10-06 — Sessione 9: dialoghi a rami, una battuta per chi ascolta
+
+Fatto:
+
+- **Grafo per parlante**: `src/data/dialogues/<id>.json` (riccardo, concy, marco, davide). Ogni
+  file ha `entries` (nodo d'ingresso per ascoltatore + `default`) e `nodes`: `lines` (stringa =
+  parla il parlante, `{speaker, text}` = parla un altro) e `options` (1–3 risposte con `next`).
+  Ogni NPC saluta e reagisce diversamente a seconda di chi sta giocando.
+- **Registro `src/game/dialogue.js`**: importa i JSON in `DIALOGUES`, valida all'avvio con
+  warn-once `[dialogue]` (ascoltatori non giocabili, `next` inesistenti, nodi vuoti, oltre
+  `MAX_OPTIONS = 3`), risolve ingresso e nodo con fallback:
+  `entries[listener] → entries.default → character.lines → tagline`. I JSON dei personaggi non
+  sono stati toccati.
+- **Runner `src/systems/dialogueRunner.js`**: macchina a stati (`start`/`choose`/`stop`) sul bus.
+  tiene il nodo corrente, emette `DIALOGUE_NODE` con battute e opzioni, e alla scelta prepone la
+  battuta del giocatore (`{speaker: name, text: option.text}`) a quelle del nodo successivo. Gli
+  arredi passano dallo stesso runner ma con `DIALOGUE_SAY` a pagine, come prima.
+- **Risposte nel `DialogueBox`**: `renderOptions()` disegna le righe sopra il riquadro (badge
+  "1. ", wordWrap, rettangolo interattivo con cursore a mano) e i tasti `1`–`3` fanno lo stesso.
+  `suppressAdvance` + `queueMicrotask` impedisce che lo stesso tap che sceglie avanzi anche la
+  prima battuta nuova (trabocchetto 23). `uiState.dialogueOptionsOpen` blocca l'avanzamento da
+  tap sul canvas finché le opzioni sono aperte (`HudScene`).
+- **`DIALOGUE_CLOSED` sul bus globale**: `close()` ora emette sul bus e torna subito se già
+  chiuso: prima l'evento finiva solo su `scene.events` dell'HUD e `RoomScene` non vedeva la fine
+  naturale del dialogo.
+- Rimossi `InteractionSystem.trigger()` e `Npc.describe()`: superati dal runner.
+- README aggiornato (controlli con tap su risposta e tasti `1`–`3`, sezione "Formato dei
+  dialoghi", albero del progetto, "Un nuovo dialogo"); qui sopra: 5 nuove righe di decisioni e il
+  trabocchetto 23.
+
+Verifiche fatte:
+
+- `npm run lint` pulito.
+- `npm run build` ok (43 moduli).
+- Validazione statica dei 4 JSON: tutti i riferimenti `entries`/`next` risolti.
+- Script Playwright funzionale (Chrome di sistema, script fuori repo): **46/46**, due esecuzioni
+  consecutive. Copre la matrice 4 personaggi × 3 NPC con esplorazione di tutti i rami (ingresso
+  personalizzato, eco della scelta in bocca al giocatore, chiusura pulita a ogni foglia), il
+  percorso arredo con `DIALOGUE_SAY`, il tap reale su una riga-opzione (coordinate logiche →
+  CSS, nessuna battuta saltata), il tap sul canvas per avanzare, la chiusura con `DIALOGUE_CLOSED`
+  e zero warning `[dialogue]` in console.
+
+### 2026-10-06 — Sessione 10: redesign UI dialogo, avatar laterale, uscita ESC e blocco movimento NPC
+
+Fatto:
+
+- **Blocco movimento durante dialogo NPC**: introdotto flag `uiState.dialogueLocked` impostato a `true`
+  all'avvio di un dialogo con un NPC (`DialogueRunner.start(character)`) e azzerato a `false` alla chiusura
+  (`stop()`). In `Player.update()`, se `dialogueLocked` è attivo il giocatore azzera la velocità, interrompe il
+  cammino e resta in posa idle, ignorando qualsiasi input da tastiera. Le descrizioni degli arredi e della stanza
+  lasciano il movimento sbloccato (con chiusura automatica se ci si allontana oltre 120 px).
+- **Redesign UI `DialogueBox`**: unificazione in una singola box in basso con stile moderno, fondo scurito,
+  doppio bordo rifinito con filetti dorati e luce superiore. Quando sono presenti scelte del giocatore, le opzioni
+  vengono renderizzate all'interno della stessa box SOTTO il testo, separate da una linea divisoria dorata, con
+  badge numerati 1–3 e rettangoli interattivi con effetto hover.
+- **Avatar quadrato laterale**: avatar ritratto (stile Baldur's Gate) posizionato a sinistra del nome e della
+  battuta (64×64 px landscape, 56×56 px portrait) racchiuso in una cornice dedicata. Visibile solo quando
+  è presente uno `speakerId` associato.
+- **Avatar procedurali a runtime (`createAvatarTextures`)**: in `BootScene`, vengono generate su canvas
+  le texture `avatar-<id>` per tutti i giocabili e NPC (iniziale maiuscola e colore della camicia dai dati JSON),
+  più `avatar-generic`.
+- **`speakerId` nei payload**: `normalizeLines` assegna lo `speakerId` per ogni battuta dei dialoghi. Quando il
+  giocatore sceglie una risposta, il `DialogueRunner` emette la battuta del giocatore con il suo `speakerId`,
+  mostrando l'avatar del personaggio giocante per la sua battuta prima di passare alla replica dell'NPC.
+- **Opzione di uscita esplicita (riga Esci + tasto ESC)**: sotto le opzioni compare sempre la riga "Esci dalla
+  conversazione" con badge "ESC". Premere `ESC` o toccare la riga chiude il dialogo ed emette `DIALOGUE_CLOSED`.
+  La chiusura effettiva è delegata a un `queueMicrotask` per evitare che il click venga interpretato dalla scena
+  come spostamento sul pavimento.
+- **README e KNOWLEDGE aggiornati**: documentati nuovi controlli, opzioni di uscita, specifiche dei dialoghi,
+  tabella decisioni e nuovo trabocchetto 24.
+
+Verifiche fatte:
+
+- `npm run lint` pulito (0 errori).
+- `npm run build` ok (43 moduli).
+- `npm run build:single` ok (bundle single-file aggiornato).
+- Test funzionale automatizzato con Playwright su Edge headless (10/10 test superati):
+  1. Texture avatar generate a runtime per tutti i giocabili/NPC e generico.
+  2. Movimento iniziale del giocatore verificato.
+  3. Blocco movimento del giocatore con `uiState.dialogueLocked` durante conversazione NPC.
+  4. Mostra avatar corretto per l'NPC interlocutore.
+  5. Rendering opzioni numerate e riga di uscita dentro la box unificata.
+  6. Chiusura del dialogo tramite tasto ESC e sblocco immediato del movimento.
+  7. Chiusura del dialogo tramite tap/click sulla riga "Esci dalla conversazione".
+  8. Selezione opzione con tasto numerico e turno del giocatore con avatar del giocabile.
+  9. Descrizione arredo senza avatar e con movimento libero verificato.
 
 ## Come continuare
 Checklist per la prossima sessione:
