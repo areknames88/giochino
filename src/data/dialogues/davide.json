@@ -10,21 +10,33 @@
   "nodes": {
     "saluto": {
       "lines": [
-        "Ehi! Un secondo che finisco di accordare la pelle del rullante... fatto, si sente?",
-        "La prova di oggi è un tiro assurdo, tieniti forte al parquet."
+        "Hey tu! Io sono Davide, bacchetto e banchetto a volontà.",
+        "Benvenuto nel mondo Jackanal. Cosa vuoi sapere?"
       ],
       "options": [
-        { "text": "Com'è andata la prova?", "next": "prova" },
-        { "text": "La sala è tutta vostra?", "next": "sala" }
+        {
+          "text": "Com'è andata la prova?",
+          "next": "saluto-riccardo"
+        },
+        {
+          "text": "La sala è tutta vostra?",
+          "next": "sala"
+        }
       ]
     },
     "saluto-riccardo": {
       "lines": [
-        "Cantante! Se oggi entri in ritmo sulla seconda strofa, ti regalo un giro di doppio pedale."
+        "Weeei. Ma chi si vede. Un geko cantante. Sei pronto per quello che ti aspetta?"
       ],
       "options": [
-        { "text": "Promessa fatta, io entro sempre", "next": "prova" },
-        { "text": "Io entro quando voglio io", "next": "tempo" }
+        {
+          "text": "Chi sono, dove sono quando sono assente di me?",
+          "next": "prova"
+        },
+        {
+          "text": "Hai visto il mio binocolo?",
+          "next": "riparte"
+        }
       ]
     },
     "saluto-concy": {
@@ -32,8 +44,14 @@
         "Concy, il mio piede destro e il tuo basso sono ancora in conflitto. Chi cede oggi?"
       ],
       "options": [
-        { "text": "Tu per primo, come sempre", "next": "sfida" },
-        { "text": "Sincronizziamoci e si risolve", "next": "prova" }
+        {
+          "text": "Tu per primo, come sempre",
+          "next": "sfida"
+        },
+        {
+          "text": "Sincronizziamoci e si risolve",
+          "next": "prova"
+        }
       ]
     },
     "saluto-marco": {
@@ -41,8 +59,14 @@
         "Marco, passami il plettro buono, quello che tieni nascosto dietro l'ampli."
       ],
       "options": [
-        { "text": "Prendine due, sono tuoi", "next": "plettro" },
-        { "text": "Questo è l'ultimo che hai", "next": "prova" }
+        {
+          "text": "Prendine due, sono tuoi",
+          "next": "plettro"
+        },
+        {
+          "text": "Questo è l'ultimo che hai",
+          "next": "prova"
+        }
       ]
     },
     "prova": {
@@ -50,7 +74,10 @@
         "Oggi tiro fortissimo. Se il rullante non si sente non è colpa mia: le pelli sono nuove."
       ],
       "options": [
-        { "text": "E allora quando si riparte?", "next": "riparte" }
+        {
+          "text": "E allora quando si riparte?",
+          "next": "riparte"
+        }
       ]
     },
     "riparte": {

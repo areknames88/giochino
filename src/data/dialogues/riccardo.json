@@ -13,8 +13,14 @@
         "Oh, ciao. Stavo prendendo l'intonazione con la sala: il riverbero qui è perfetto, lo senti?"
       ],
       "options": [
-        { "text": "Com'è andata la prova?", "next": "prova" },
-        { "text": "La sala è tutta vostra?", "next": "sala" }
+        {
+          "text": "Com'è andata la prova?",
+          "next": "prova"
+        },
+        {
+          "text": "La sala è tutta vostra?",
+          "next": "sala"
+        }
       ]
     },
     "saluto-concy": {
@@ -23,8 +29,14 @@
         "Lo so, lo so: è il tuo momento. Però dimmelo lo stesso."
       ],
       "options": [
-        { "text": "Sta già sotto, guarda", "next": "basso" },
-        { "text": "Sentiamo chi arriva prima", "next": "sfida" }
+        {
+          "text": "Sta già sotto, guarda",
+          "next": "basso"
+        },
+        {
+          "text": "Sentiamo chi arriva prima",
+          "next": "sfida"
+        }
       ]
     },
     "saluto-marco": {
@@ -32,8 +44,14 @@
         "Marco, quanto volume tieni sull'ampli di sinistra? Non che mi importi, mi gira solo la testa."
       ],
       "options": [
-        { "text": "Dillo forte, non ti sento", "next": "volume" },
-        { "text": "Va bene così, suona", "next": "prova" }
+        {
+          "text": "Dillo forte, non ti sento",
+          "next": "volume"
+        },
+        {
+          "text": "Va bene così, suona",
+          "next": "prova"
+        }
       ]
     },
     "saluto-davide": {
@@ -41,8 +59,14 @@
         "Davide, il rullante è accordato oggi o suona come una pentola?"
       ],
       "options": [
-        { "text": "Accordato meglio di ieri", "next": "prova" },
-        { "text": "Fatti sentire dal fondo della sala", "next": "sala" }
+        {
+          "text": "Accordato meglio di ieri",
+          "next": "prova"
+        },
+        {
+          "text": "Fatti sentire dal fondo della sala",
+          "next": "sala"
+        }
       ]
     },
     "prova": {
@@ -50,7 +74,10 @@
         "La prova va da cannone: voce calda, ritmo saldo. Stasera attacchiamo tutto il pezzo, senza fermarci a metà."
       ],
       "options": [
-        { "text": "E allora quando si riparte?", "next": "riparte" }
+        {
+          "text": "E allora quando si riparte?",
+          "next": "riparte"
+        }
       ]
     },
     "riparte": {
