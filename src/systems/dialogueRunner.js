@@ -41,6 +41,9 @@ export default class DialogueRunner {
     const character = target.character ?? null;
 
     if (!character) {
+      if (typeof target.hasOptions === 'function' && target.hasOptions()) {
+        return this.startPropDialogue(target);
+      }
       return this.describeProp(target);
     }
 
@@ -52,9 +55,29 @@ export default class DialogueRunner {
     }
 
     this.subscribe();
-    this.state = { character, listenerId, nodeId: entry.nodeId, options: entry.options };
+    this.state = { isProp: false, character, listenerId, nodeId: entry.nodeId, options: entry.options };
     uiState.dialogueLocked = true;
     this.emitNode(entry.lines, entry.options);
+    return true;
+  }
+
+  startPropDialogue(prop) {
+    this.subscribe();
+    this.state = {
+      isProp: true,
+      prop,
+      nodeId: '__root__',
+      options: prop.options,
+      nodes: prop.nodes ?? {}
+    };
+    uiState.dialogueLocked = true;
+
+    const lines = [{
+      speaker: prop.label,
+      text: prop.description
+    }];
+
+    this.emitNode(lines, prop.options);
     return true;
   }
 
@@ -69,6 +92,40 @@ export default class DialogueRunner {
     const option = state.options[index];
 
     if (!option) {
+      return;
+    }
+
+    if (state.isProp) {
+      if (!option.next || !state.nodes || !state.nodes[option.next]) {
+        emit(Events.DIALOGUE_CLOSED);
+        return;
+      }
+
+      const nextNode = state.nodes[option.next];
+      const player = getCharacter(this.listenerId());
+      const playerLine = { speaker: player.name, speakerId: player.id, text: option.text };
+
+      const rawLines = Array.isArray(nextNode.lines) ? nextNode.lines : [];
+      const normalizedLines = rawLines.map((line) => {
+        if (typeof line === 'string') {
+          return { speaker: state.prop.label, text: line };
+        }
+        return {
+          speaker: line.speaker ?? state.prop.label,
+          text: line.text ?? ''
+        };
+      });
+
+      this.state = {
+        ...state,
+        nodeId: option.next,
+        options: Array.isArray(nextNode.options) ? nextNode.options : null
+      };
+
+      this.emitNode(
+        [playerLine, ...normalizedLines],
+        nextNode.options
+      );
       return;
     }
 
@@ -113,9 +170,10 @@ export default class DialogueRunner {
   }
 
   emitNode(lines, options) {
-    const labels = Array.isArray(options)
-      ? options.slice(0, MAX_OPTIONS).map((option) => option.text)
+    const list = Array.isArray(options)
+      ? (Number.isFinite(MAX_OPTIONS) ? options.slice(0, MAX_OPTIONS) : options)
       : [];
+    const labels = list.map((option) => option.text);
 
     emit(Events.DIALOGUE_NODE, {
       lines,

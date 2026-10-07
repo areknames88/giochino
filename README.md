@@ -39,7 +39,8 @@ npm run dev       # server di sviluppo con HMR su http://localhost:5173
 npm run build     # genera il sito statico in dist/ (per GitHub Pages)
 npm run preview   # serve dist/ su http://localhost:4173
 npm run build:single  # genera docs/dist-single/index.html, apribile con doppio clic
-npm run lint      # ESLint
+npm run editor        # avvia il CMS visivo per stanze, oggetti e dialoghi (http://localhost:3333)
+npm run lint          # ESLint
 ```
 
 ### Aprire la build: `dist/` oppure `docs/dist-single/`?

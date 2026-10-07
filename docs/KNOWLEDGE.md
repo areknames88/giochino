@@ -268,6 +268,28 @@ filtro NEAREST):
 
 ## Log delle sessioni
 
+### 2026-10-07 — Sessione 17: CMS gestionale (npm run editor) e rimozione vincolo fisso MAX_OPTIONS
+
+Fatto:
+
+- **Rimosso il vincolo rigido delle 3 opzioni di dialogo (`MAX_OPTIONS`)**:
+  - `src/game/dialogue.js`: `MAX_OPTIONS = Infinity`, la validazione non tronca più arbitrariamente le risposte.
+  - `src/systems/dialogueRunner.js`: emette la totalità delle opzioni presenti nel nodo.
+  - `src/ui/DialogueBox.js`: gestisce un numero variabile di opzioni con binding da tastiera per i tasti `1`–`9` (oltre al click/tap diretto di qualsiasi numero di risposte) e layout verticale ad altezza automatica.
+- **Creato il Content Management Editor visivo (`npm run editor`)**:
+  - Script server `scripts/editorServer.js` (server HTTP leggero senza dipendenze esterne su porta 3333, con auto-apertura del browser).
+  - API REST locale: `GET /api/data`, `POST /api/save/all`, `POST /api/save/room`, `POST /api/save/dialogue` per leggere e scrivere direttamente su `src/data/` formattando i JSON a 2 spazi.
+  - Plugin `editorApiPlugin()` integrato in `vite.config.js` per consentire l'uso dell'editor anche all'indirizzo `http://localhost:5173/editor.html` durante `npm run dev`.
+  - Pagina web `editor.html`:
+    - **Visualizzazione Scenari/Stanze**: seleziona le stanze disponibili (es. Sala Prove).
+    - **Gestione Oggetti (Props)**: elenco interattivo con filtro, modifica di nome (`label`), prompt, descrizione ispezione, e **supporto completo a opzioni di risposta e nodi di reazione per gli oggetti**, con simulatore dal vivo!
+    - **Gestione NPC e compagni di band**: selezione dell'interlocutore (Riccardo, Concy, Marco, Davide, default), mappatura del nodo d'ingresso (`entries[listener]`), editor completo dei nodi ad albero con battute (`lines`) e risposte variabili (`options`), puntatori `next` guidati con creazione rapida di nuovi nodi.
+    - **Simulatore interattivo in-game**: preview dal vivo del riquadro di dialogo con avatar del personaggio, battute e bottoni cliccabili per testare il flusso delle conversazioni.
+    - Salvataggio rapido con feedback visivo e scorciatoia `Ctrl+S`.
+- **Supporto opzioni interattive per gli Arredi (Props)**:
+  - `src/entities/Prop.js`: supporta `data.options` e `data.nodes`, esponendo `hasOptions()`.
+  - `src/systems/dialogueRunner.js`: se un oggetto ha opzioni definite, avvia il flusso interattivo con le scelte del giocatore e i nodi di reazione (`startPropDialogue` e gestione `isProp` in `choose()`), preservando invece il comportamento a semplice testo non bloccante per gli arredi tradizionali.
+
 ### 2026-10-07 — Sessione 16: sincronizzazione build single-file e risoluzione percorso dist-single
 
 Fatto:

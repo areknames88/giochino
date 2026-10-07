@@ -11,6 +11,8 @@ export default class Prop extends Phaser.GameObjects.Container {
     this.label = data.label ?? data.type;
     this.description = data.description ?? '';
     this.prompt = data.prompt ?? 'Esamina';
+    this.options = Array.isArray(data.options) ? data.options : null;
+    this.nodes = data.nodes && typeof data.nodes === 'object' ? data.nodes : null;
     this.footprint = propFootprint(data.type, this.variant);
     this.solid = null;
 
@@ -42,6 +44,10 @@ export default class Prop extends Phaser.GameObjects.Container {
 
   setDepthByPosition() {
     this.setDepth(this.y);
+  }
+
+  hasOptions() {
+    return Array.isArray(this.options) && this.options.length > 0;
   }
 
   describe() {

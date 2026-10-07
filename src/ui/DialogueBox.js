@@ -107,7 +107,8 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       on(Events.DIALOGUE_CLOSED, () => this.close())
     ];
 
-    this.optionKeys = ['ONE', 'TWO', 'THREE'].map((name, index) => {
+    const keyNames = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
+    this.optionKeys = keyNames.map((name, index) => {
       const handler = () => this.pickOption(index);
       scene.input.keyboard?.on(`keydown-${name}`, handler);
       return { name, handler };
@@ -349,7 +350,7 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
     }
 
     this.pendingOptions = Array.isArray(options) && options.length > 0
-      ? options.slice(0, MAX_OPTIONS)
+      ? (Number.isFinite(MAX_OPTIONS) ? options.slice(0, MAX_OPTIONS) : options)
       : null;
 
     if (!this.visible || this.optionsShowing) {

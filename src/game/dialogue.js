@@ -17,7 +17,7 @@ import davide from '../data/dialogues/davide.json';
  * sconosciute finiscono in console una volta sola (come in `characters.js`).
  */
 export const DIALOGUES = [riccardo, concy, marco, davide];
-export const MAX_OPTIONS = 3;
+export const MAX_OPTIONS = Infinity;
 
 const warned = new Set();
 
@@ -147,7 +147,7 @@ function validateDialogue(dialogue) {
       continue;
     }
 
-    if (node.options.length > MAX_OPTIONS) {
+    if (Number.isFinite(MAX_OPTIONS) && node.options.length > MAX_OPTIONS) {
       warnOnce(`"${speakerId}": nodo "${nodeId}" ha ${node.options.length} opzioni, massimo ${MAX_OPTIONS}`);
     }
 

@@ -55,6 +55,84 @@ function inlineEntryScript() {
   };
 }
 
+function editorApiPlugin() {
+  return {
+    name: 'editor-api-plugin',
+    apply: 'serve',
+    configureServer(server) {
+      const DATA_PATHS = {
+        rooms: path.join(__dirname, 'src', 'data', 'rooms'),
+        playables: path.join(__dirname, 'src', 'data', 'characters', 'playable'),
+        npcs: path.join(__dirname, 'src', 'data', 'characters', 'npc'),
+        dialogues: path.join(__dirname, 'src', 'data', 'dialogues')
+      };
+
+      function readJsonDir(dirPath) {
+        const result = {};
+        if (!fs.existsSync(dirPath)) return result;
+        const files = fs.readdirSync(dirPath).filter((f) => f.endsWith('.json'));
+        for (const file of files) {
+          const id = path.basename(file, '.json');
+          try {
+            result[id] = JSON.parse(fs.readFileSync(path.join(dirPath, file), 'utf8'));
+          } catch (e) {
+            console.warn(`[editor-api] Errore lettura ${file}:`, e.message);
+          }
+        }
+        return result;
+      }
+
+      server.middlewares.use(async (req, res, next) => {
+        const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        const pathname = urlObj.pathname;
+
+        if (pathname === '/api/data' && req.method === 'GET') {
+          const data = {
+            rooms: readJsonDir(DATA_PATHS.rooms),
+            playables: readJsonDir(DATA_PATHS.playables),
+            npcs: readJsonDir(DATA_PATHS.npcs),
+            dialogues: readJsonDir(DATA_PATHS.dialogues)
+          };
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.end(JSON.stringify({ success: true, data }));
+          return;
+        }
+
+        if (pathname === '/api/save/all' && req.method === 'POST') {
+          let body = '';
+          req.on('data', (c) => { body += c; });
+          req.on('end', () => {
+            try {
+              const { rooms = {}, dialogues = {} } = JSON.parse(body);
+              let count = 0;
+              for (const [roomId, data] of Object.entries(rooms)) {
+                if (/^[a-zA-Z0-9_-]+$/.test(roomId)) {
+                  fs.writeFileSync(path.join(DATA_PATHS.rooms, `${roomId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
+                  count += 1;
+                }
+              }
+              for (const [dialogueId, data] of Object.entries(dialogues)) {
+                if (/^[a-zA-Z0-9_-]+$/.test(dialogueId)) {
+                  fs.writeFileSync(path.join(DATA_PATHS.dialogues, `${dialogueId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
+                  count += 1;
+                }
+              }
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.end(JSON.stringify({ success: true, count }));
+            } catch (err) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ success: false, error: err.message }));
+            }
+          });
+          return;
+        }
+
+        next();
+      });
+    }
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const singleFile = mode === SINGLE_FILE_MODE;
 
@@ -72,6 +150,6 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       host: true
     },
-    plugins: singleFile ? [inlineEntryScript()] : []
+    plugins: singleFile ? [inlineEntryScript()] : [editorApiPlugin()]
   };
 });
