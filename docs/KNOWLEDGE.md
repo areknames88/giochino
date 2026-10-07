@@ -257,7 +257,26 @@ filtro NEAREST):
     - In `index.html`: rimosso `image-rendering: pixelated` per consentire un upscaling fluido del canvas.
     - Calibrate le dimensioni a schermo dei ritratti (128×128 px nelle schede di scelta, 76×76 px nel dialogue box).
 
+27. **Disallineamento percorsi di output per la build `build:single` (`dist-single/` vs `docs/dist-single/`).**
+    `vite.config.js` esportava il bundle single-file su `outDir: 'docs/dist-single'`. Nel repository erano però presenti
+    copie preesistenti e tracciate in git anche in `dist-single/index.html` (radice) e `docs/index.html`.
+    Se un utente eseguiva `npm run build:single` e apriva da Windows Explorer la cartella `dist-single/index.html`
+    o `docs/index.html`, visualizzava la vecchia versione del gioco senza le ultime modifiche.
+    La soluzione: hook `closeBundle()` in `vite.config.js` che, al termine del build `single`, copia e sincronizza
+    automaticamente il bundle aggiornato in `dist-single/index.html` e `docs/index.html`. In questo modo
+    qualunque sia il percorso aperto dall'utente o servito da server/file statici, il contenuto è sempre l'ultima build.
+
 ## Log delle sessioni
+
+### 2026-10-07 — Sessione 16: sincronizzazione build single-file e risoluzione percorso dist-single
+
+Fatto:
+
+- Risolto il problema per cui `npm run build:single` sembrava riproporre il vecchio modello:
+  - `vite.config.js` compilava unicamente dentro `docs/dist-single/index.html`.
+  - Le cartelle `dist-single/index.html` e `docs/index.html` contenevano file obsoleti del commit precedente.
+  - Aggiunto l'aggiornamento automatico e sincronizzato via `closeBundle()` in `vite.config.js`.
+  - Rigenerati tutti e tre i file HTML con il bundle aggiornato (mixer, prese, casse PA, microfoni, cavi, posizioni NPC).
 
 ### 2026-10-07 — Sessione 15: complessità sala prove (mixer, presa elettrica, casse PA e monitor, microfoni, cavi)
 

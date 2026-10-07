@@ -1,4 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const SINGLE_FILE_MODE = 'single';
 
@@ -28,6 +34,23 @@ function inlineEntryScript() {
       );
 
       delete bundle[entry.fileName];
+    },
+    closeBundle() {
+      try {
+        const srcPath = path.resolve(__dirname, 'docs/dist-single/index.html');
+        if (fs.existsSync(srcPath)) {
+          const rootDistSingle = path.resolve(__dirname, 'dist-single');
+          if (!fs.existsSync(rootDistSingle)) {
+            fs.mkdirSync(rootDistSingle, { recursive: true });
+          }
+          fs.copyFileSync(srcPath, path.join(rootDistSingle, 'index.html'));
+
+          const docsRoot = path.resolve(__dirname, 'docs');
+          fs.copyFileSync(srcPath, path.join(docsRoot, 'index.html'));
+        }
+      } catch (err) {
+        console.warn('Mirroring single-file build failed:', err);
+      }
     }
   };
 }
