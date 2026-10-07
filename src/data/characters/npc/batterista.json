@@ -1,0 +1,25 @@
+{
+  "id": "batterista",
+  "kind": "npc",
+  "name": "La batterista",
+  "role": "Batteria",
+  "tagline": "Berretto e maglietta senza maniche",
+  "lines": [
+    "Oggi abbiamo un tiro assurdo.",
+    "Dammi un secondo che sto finendo di accordare la pelle del rullante."
+  ],
+  "build": { "height": 1, "width": 0.96 },
+  "palette": {
+    "skin": "#eec49a",
+    "hair": "#a8402f",
+    "shirt": "#3f7f6a",
+    "pants": "#4a3b2a",
+    "shoes": "#2b2118",
+    "eye": "#2b2118"
+  },
+  "hair": { "style": "ponytail" },
+  "outfit": { "style": "sleeveless" },
+  "effects": [
+    { "type": "hat", "color": "#c2452f" }
+  ]
+}

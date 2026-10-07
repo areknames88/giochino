@@ -1,0 +1,23 @@
+{
+  "id": "concy",
+  "kind": "playable",
+  "name": "Concy",
+  "role": "Bassista",
+  "tagline": "Basso e groove",
+  "build": { "height": 0.98, "width": 0.95 },
+  "palette": {
+    "skin": "#f3cbab",
+    "hair": "#e8c468",
+    "shirt": "#1172e3",
+    "pants": "#2b3d5c",
+    "shoes": "#1b1918",
+    "eye": "#241f1b"
+  },
+  "hair": { "style": "long" },
+  "outfit": { "style": "tee" },
+  "effects": [],
+  "lines": [
+    "Ho appena regolato l'amplificatore: senti che spinta sulle frequenze basse?",
+    "Se siamo pronti, facciamo partire il giro di basso e teniamo il tempo."
+  ]
+}

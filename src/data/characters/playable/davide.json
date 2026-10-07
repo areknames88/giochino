@@ -1,0 +1,26 @@
+{
+  "id": "davide",
+  "kind": "playable",
+  "name": "Davide",
+  "role": "Batterista",
+  "tagline": "Bacchette e ritmo",
+  "build": { "height": 1.04, "width": 1.05 },
+  "palette": {
+    "skin": "#e6b98e",
+    "hair": "#52341e",
+    "shirt": "#1172e3",
+    "pants": "#2b3d5c",
+    "shoes": "#1b1918",
+    "eye": "#221c17"
+  },
+  "hair": { "style": "short" },
+  "outfit": { "style": "tee" },
+  "effects": [
+    { "type": "hat", "color": "#4a3f35", "style": "coppola" },
+    { "type": "beard", "color": "#52341e", "length": "long" }
+  ],
+  "lines": [
+    "La pelle del rullante è tirata al punto giusto, abbiamo un tiro micidiale.",
+    "Conto fino a quattro con le bacchette ed entriamo tutti insieme."
+  ]
+}

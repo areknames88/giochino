@@ -1,0 +1,25 @@
+{
+  "id": "basso",
+  "kind": "npc",
+  "name": "Il bassista",
+  "role": "Basso",
+  "tagline": "Capelli rasati, tracolla",
+  "lines": [
+    "Stiamo provando il pezzo nuovo.",
+    "Se tocchi l'amplificatore, occhio alle frequenze basse: vibra tutto il pavimento."
+  ],
+  "build": { "height": 1.04, "width": 1.1 },
+  "palette": {
+    "skin": "#b8794d",
+    "hair": "#241c16",
+    "shirt": "#22262b",
+    "pants": "#3a3f47",
+    "shoes": "#191c20",
+    "eye": "#171310"
+  },
+  "hair": { "style": "short" },
+  "outfit": { "style": "tee" },
+  "effects": [
+    { "type": "strap", "color": "#7a2f2a" }
+  ]
+}

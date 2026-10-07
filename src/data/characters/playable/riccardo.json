@@ -1,0 +1,23 @@
+{
+  "id": "riccardo",
+  "kind": "playable",
+  "name": "Riccardo",
+  "role": "Cantante",
+  "tagline": "Voce e microfono",
+  "build": { "height": 1.02, "width": 1.0 },
+  "palette": {
+    "skin": "#e8b98f",
+    "hair": "#5a3825",
+    "shirt": "#1172e3",
+    "pants": "#2b3d5c",
+    "shoes": "#1b1918",
+    "eye": "#241f1b"
+  },
+  "hair": { "style": "short" },
+  "outfit": { "style": "tee" },
+  "effects": [],
+  "lines": [
+    "Uno, due, tre, prova! Il riverbero della sala oggi è perfetto.",
+    "Scaldiamo la voce e poi attacchiamo con la prima traccia della scaletta."
+  ]
+}

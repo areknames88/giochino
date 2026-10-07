@@ -1,0 +1,82 @@
+{
+  "id": "riccardo",
+  "speaker": "riccardo",
+  "entries": {
+    "default": "saluto",
+    "concy": "saluto-concy",
+    "marco": "saluto-marco",
+    "davide": "saluto-davide"
+  },
+  "nodes": {
+    "saluto": {
+      "lines": [
+        "Oh, ciao. Stavo prendendo l'intonazione con la sala: il riverbero qui è perfetto, lo senti?"
+      ],
+      "options": [
+        { "text": "Com'è andata la prova?", "next": "prova" },
+        { "text": "La sala è tutta vostra?", "next": "sala" }
+      ]
+    },
+    "saluto-concy": {
+      "lines": [
+        "Concy! Dimmi che oggi il basso sta un po' sotto la mia voce.",
+        "Lo so, lo so: è il tuo momento. Però dimmelo lo stesso."
+      ],
+      "options": [
+        { "text": "Sta già sotto, guarda", "next": "basso" },
+        { "text": "Sentiamo chi arriva prima", "next": "sfida" }
+      ]
+    },
+    "saluto-marco": {
+      "lines": [
+        "Marco, quanto volume tieni sull'ampli di sinistra? Non che mi importi, mi gira solo la testa."
+      ],
+      "options": [
+        { "text": "Dillo forte, non ti sento", "next": "volume" },
+        { "text": "Va bene così, suona", "next": "prova" }
+      ]
+    },
+    "saluto-davide": {
+      "lines": [
+        "Davide, il rullante è accordato oggi o suona come una pentola?"
+      ],
+      "options": [
+        { "text": "Accordato meglio di ieri", "next": "prova" },
+        { "text": "Fatti sentire dal fondo della sala", "next": "sala" }
+      ]
+    },
+    "prova": {
+      "lines": [
+        "La prova va da cannone: voce calda, ritmo saldo. Stasera attacchiamo tutto il pezzo, senza fermarci a metà."
+      ],
+      "options": [
+        { "text": "E allora quando si riparte?", "next": "riparte" }
+      ]
+    },
+    "riparte": {
+      "lines": [
+        "Si riparte quando siamo tutti d'accordo. Tradotto: quando decido io."
+      ]
+    },
+    "sala": {
+      "lines": [
+        "La sala è di tutti, ma il microfono è mio. Scherzo... forse."
+      ]
+    },
+    "sfida": {
+      "lines": [
+        "Sfida accettata. Ultimo al ritmo compra il caffè per tutti."
+      ]
+    },
+    "basso": {
+      "lines": [
+        "Eccolo qui. Perfetto: stasera il basso sta sotto, il resto è storia."
+      ]
+    },
+    "volume": {
+      "lines": [
+        "Tranquillo, è già al massimo. Così la sente la band e il vicinato: due in uno."
+      ]
+    }
+  }
+}

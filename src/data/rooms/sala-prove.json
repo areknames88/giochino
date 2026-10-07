@@ -1,0 +1,221 @@
+{
+  "id": "sala-prove",
+  "name": "Sala Prove",
+  "tagline": "Il posto dove il suono fa da parete",
+  "description": "Sala prove in legno: la batteria è al centro, gli amplificatori sono pronti, i microfoni sono posizionati, le casse PA sono accese e il mixer è collegato alla presa elettrica.",
+  "tileSize": 32,
+  "columns": 30,
+  "rows": 20,
+  "seed": 20261004,
+  "palette": {
+    "floor": {
+      "base": "#8b5a2b",
+      "light": "#a8703a",
+      "dark": "#6b4220",
+      "seam": "#4a2d15"
+    },
+    "wall": {
+      "top": "#b0793f",
+      "light": "#d9a765",
+      "face": "#7c4e28",
+      "dark": "#5b361b",
+      "seam": "#3a2110"
+    }
+  },
+  "walls": [
+    { "x": 0, "y": 0, "w": 30, "h": 1 },
+    { "x": 0, "y": 19, "w": 30, "h": 1 },
+    { "x": 0, "y": 0, "w": 1, "h": 20 },
+    { "x": 29, "y": 0, "w": 1, "h": 20 }
+  ],
+  "openings": [
+    { "x": 14, "y": 19, "w": 2, "h": 1 }
+  ],
+  "spawn": {
+    "x": 15,
+    "y": 17,
+    "facing": "up"
+  },
+  "props": [
+    {
+      "type": "drum-kit",
+      "x": 15,
+      "y": 6,
+      "label": "Batteria",
+      "prompt": "Esamina",
+      "description": "Un kit completo in legno d'acero: rullante, due tom, floor tom, charleston e due piatti. Le pelli sono un po' consumate dal tempo."
+    },
+    {
+      "type": "amp",
+      "variant": "guitar",
+      "x": 8,
+      "y": 4.5,
+      "label": "Amplificatore chitarra (sx)",
+      "prompt": "Esamina",
+      "description": "Combo da 30 watt, telaio color panna, griglia in tessuto. Il volume è già al massimo: si sente fin dalla porta."
+    },
+    {
+      "type": "amp",
+      "variant": "guitar",
+      "x": 22,
+      "y": 4.5,
+      "label": "Amplificatore chitarra (dx)",
+      "prompt": "Esamina",
+      "description": "Gemello del primo, ma con il jack scollegato e un fazzoletto piegato sopra per coprire la polvere."
+    },
+    {
+      "type": "amp",
+      "variant": "bass",
+      "x": 26.5,
+      "y": 6.8,
+      "label": "Amplificatore basso",
+      "prompt": "Esamina",
+      "description": "Cassa a quattro vie con pannello arancione. Il cono da 12 è stato sostituito di recente: le viti sono ancora lucide."
+    },
+    {
+      "type": "mixer",
+      "x": 4.5,
+      "y": 9.5,
+      "label": "Mixer audio",
+      "prompt": "Esamina",
+      "description": "Console di missaggio a 16 canali con fader graduati, potenziometri colorati e LED di picco. Il cavo di alimentazione nero è collegato direttamente alla presa elettrica a muro."
+    },
+    {
+      "type": "power-outlet",
+      "x": 1.6,
+      "y": 9.5,
+      "label": "Presa elettrica",
+      "prompt": "Esamina",
+      "description": "Presa industriale a muro con placca grigia. La spina del mixer è inserita a fondo e la spia rossa indica che c'è corrente."
+    },
+    {
+      "type": "speaker",
+      "variant": "pa",
+      "x": 3.5,
+      "y": 4.5,
+      "label": "Cassa PA (sx)",
+      "prompt": "Esamina",
+      "description": "Diffusore attivo a due vie montato su stativo a treppiede. La spia blu è accesa: diffonde la voce di Riccardo in tutta la stanza."
+    },
+    {
+      "type": "speaker",
+      "variant": "pa",
+      "x": 26.5,
+      "y": 4.5,
+      "label": "Cassa PA (dx)",
+      "prompt": "Esamina",
+      "description": "Diffusore gemello su piantana metallica, collegato via cavo XLR al banco mixer per completare l'impianto stereo."
+    },
+    {
+      "type": "mic-stand",
+      "variant": "boom",
+      "x": 13.0,
+      "y": 11.0,
+      "label": "Microfono per la voce",
+      "prompt": "Esamina",
+      "description": "Asta a giraffa con microfono dinamico a palla argentata per Riccardo. Il cavo XLR scende lungo l'asta fino al pavimento."
+    },
+    {
+      "type": "mic-stand",
+      "variant": "boom",
+      "x": 9.5,
+      "y": 7.2,
+      "label": "Microfono cori",
+      "prompt": "Esamina",
+      "description": "Microfono su asta regolabile posizionato davanti a Marco per i cori e le seconde voci."
+    },
+    {
+      "type": "mic-stand",
+      "variant": "boom",
+      "x": 24.0,
+      "y": 8.5,
+      "label": "Microfono cori (basso)",
+      "prompt": "Esamina",
+      "description": "Asta microfonica a giraffa con microfono regolabile per Concy, dedicato ai cori e alle seconde voci."
+    },
+    {
+      "type": "cables",
+      "variant": "bundle",
+      "x": 4.5,
+      "y": 12.5,
+      "label": "Fascio di cavi e ciabatta",
+      "prompt": "Esamina",
+      "description": "Una matassa di cavi audio jack e cannon XLR sul pavimento, affiancata da una ciabatta con interruttore rosso illuminato."
+    },
+    {
+      "type": "cables",
+      "variant": "coil",
+      "x": 20.5,
+      "y": 4.8,
+      "label": "Matassa di cavi di scorta",
+      "prompt": "Esamina",
+      "description": "Un cavo spiralato nero ben arrotolato con fascetta a strappo, pronto per essere collegato in caso di emergenza."
+    },
+    {
+      "type": "door",
+      "x": 15,
+      "y": 20,
+      "label": "Porta della sala",
+      "prompt": "Esamina",
+      "description": "Una porta di legno massello con maniglia in ottone. Dall'altra parte si sente il rumore del corridoio."
+    }
+  ],
+  "cables": [
+    {
+      "points": [[1.6, 9.5], [2.8, 9.8], [4.4, 9.5]],
+      "color": "#141416",
+      "width": 3.2
+    },
+    {
+      "points": [[4.5, 9.5], [4.0, 7.5], [3.6, 4.8]],
+      "color": "#18181a",
+      "width": 2.5
+    },
+    {
+      "points": [[4.5, 9.5], [5.5, 6.0], [7.0, 3.8], [15.0, 3.5], [23.0, 3.8], [26.5, 4.8]],
+      "color": "#18181a",
+      "width": 2.5
+    },
+    {
+      "points": [[13.0, 11.0], [10.5, 10.8], [7.5, 9.8], [4.8, 9.6]],
+      "color": "#202022",
+      "width": 2.4
+    },
+    {
+      "points": [[9.5, 7.2], [7.8, 8.2], [4.8, 9.3]],
+      "color": "#1f1f21",
+      "width": 2.2
+    },
+    {
+      "points": [[4.5, 9.5], [9.5, 11.2], [16.5, 11.0], [21.5, 9.8], [24.0, 8.5]],
+      "color": "#202022",
+      "width": 2.4
+    }
+  ],
+  "characters": [
+    {
+      "id": "davide",
+      "x": 18,
+      "y": 6.5,
+      "facing": "down"
+    },
+    {
+      "id": "concy",
+      "x": 24.0,
+      "y": 7.2,
+      "facing": "down"
+    },
+    {
+      "id": "marco",
+      "x": 9.5,
+      "y": 5.5,
+      "facing": "down"
+    },
+    {
+      "id": "riccardo",
+      "x": 13,
+      "y": 9.5,
+      "facing": "down"
+    }
+  ]
+}
