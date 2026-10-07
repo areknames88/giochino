@@ -289,6 +289,9 @@ Fatto:
 - **Supporto opzioni interattive per gli Arredi (Props)**:
   - `src/entities/Prop.js`: supporta `data.options` e `data.nodes`, esponendo `hasOptions()`.
   - `src/systems/dialogueRunner.js`: se un oggetto ha opzioni definite, avvia il flusso interattivo con le scelte del giocatore e i nodi di reazione (`startPropDialogue` e gestione `isProp` in `choose()`), preservando invece il comportamento a semplice testo non bloccante per gli arredi tradizionali.
+- **Rimozione dialogo automatico all'ingresso della stanza**:
+  - In `src/scenes/HudScene.js`, rimossa la chiamata automatica `this.dialogue.say(...)` all'evento `ROOM_READY`.
+  - Il personaggio giocabile (che entra dalla porta a sud a `y = 17`) non viene più coperto dal riquadro di dialogo in basso; il nome della stanza e la tagline restano visibili in alto a sinistra e nel toast animato in alto al centro. L'interazione è immediata sin dal primo frame.
 
 ### 2026-10-07 — Sessione 16: sincronizzazione build single-file e risoluzione percorso dist-single
 
