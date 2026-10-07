@@ -183,7 +183,6 @@ function drawDrumKit(g) {
     const angle = (i / 10) * Math.PI * 2;
     fillCircle(g, 78 + Math.cos(angle) * 30, 82 + Math.sin(angle) * 30, 1.5, CHROME);
   }
-  fillRect(g, 62, 78, 32, 2, 0x8a6a30, 0.5);
 
   chromePole(g, 78, 50, 58, 4);
   fillRect(g, 50, 53, 58, 4, CHROME);
@@ -556,6 +555,233 @@ function drawCablesCoil(g) {
   fillRect(g, 28, 14.5, 2, 2, 0x1e2023);
 }
 
+function drawGuitarRed(g) {
+  // --- FLOOR GUITAR STAND (Tubular black steel) ---
+  fillRect(g, 15, 48, 2, 8, 0x18181b);
+  fillCircle(g, 16, 56, 1.5, RUBBER);
+  g.lineStyle(2, 0x18181b, 1);
+  g.lineBetween(16, 48, 9, 56);
+  g.lineBetween(16, 48, 23, 56);
+  fillCircle(g, 9, 56, 1.5, RUBBER);
+  fillCircle(g, 23, 56, 1.5, RUBBER);
+
+  // Lower padded U-cradle for guitar body (foam covered)
+  g.lineStyle(3, 0x27272a, 1);
+  g.lineBetween(10, 44, 16, 46);
+  g.lineBetween(16, 46, 22, 44);
+  fillCircle(g, 10, 44, 2, 0x18181b);
+  fillCircle(g, 22, 44, 2, 0x18181b);
+
+  // Vertical spine pole of the stand
+  fillRect(g, 15, 14, 2, 34, 0x18181b);
+  fillRect(g, 15, 14, 1, 34, 0x3f3f46);
+
+  // Upper neck cradle / fork
+  fillRect(g, 12, 17, 8, 2, 0x27272a);
+  fillRect(g, 11, 15, 2, 4, 0x18181b);
+  fillRect(g, 19, 15, 2, 4, 0x18181b);
+
+  // --- RED ELECTRIC GUITAR (Solid-body double-cutaway) ---
+  fillEllipse(g, 16, 38, 16, 18, 0x181010, 0.4);
+
+  const RED_DARK = 0x991b1b;
+  const RED_MAIN = 0xdc2626;
+  const RED_LIGHT = 0xef4444;
+
+  // Lower bout & waist
+  fillEllipse(g, 16, 40, 16, 14, RED_DARK);
+  fillEllipse(g, 16, 39.5, 15, 13, RED_MAIN);
+  fillEllipse(g, 15, 38.5, 10, 8, RED_LIGHT, 0.4);
+
+  // Upper horns (Cutaways)
+  fillRounded(g, 11, 28, 4, 12, 2, RED_MAIN);
+  fillRect(g, 11, 28, 3, 10, RED_LIGHT);
+  fillRounded(g, 17, 30, 4, 10, 2, RED_MAIN);
+  fillRect(g, 18, 30, 3, 8, RED_DARK);
+
+  // Pickguard (Classic white 3-ply)
+  fillEllipse(g, 15.5, 38, 9, 8, 0xf3f4f6);
+  fillRect(g, 13, 33, 4, 6, 0xf3f4f6);
+  fillCircle(g, 14, 34, 1, 0xffffff);
+
+  // Pickups (3 single-coil pickups with chrome pole pieces)
+  fillRect(g, 14, 34, 4.5, 1.5, 0x111827);
+  fillRect(g, 14, 37, 4.5, 1.5, 0x111827);
+  fillRect(g, 14, 40, 4.5, 1.5, 0x111827);
+  for (let i = 0; i < 3; i += 1) {
+    fillCircle(g, 14.8 + i * 1.4, 34.7, 0.35, CHROME);
+    fillCircle(g, 14.8 + i * 1.4, 37.7, 0.35, CHROME);
+    fillCircle(g, 14.8 + i * 1.4, 40.7, 0.35, CHROME);
+  }
+
+  // Chrome bridge & saddles
+  fillRect(g, 14, 42.5, 4.5, 2.5, CHROME);
+  fillRect(g, 14.5, 42.5, 3.5, 1, 0xffffff);
+
+  // White rotary control knobs & pickup selector
+  fillCircle(g, 18.5, 40.5, 1, 0xffffff);
+  fillCircle(g, 18.5, 42.5, 1, 0xffffff);
+  fillCircle(g, 18, 44.5, 1, 0xffffff);
+  fillRect(g, 17, 37, 1.5, 1.5, 0xd1d5db);
+
+  // Chrome output jack plate
+  fillEllipse(g, 19, 45, 3, 2, CHROME);
+  fillCircle(g, 19, 45, 0.6, 0x111827);
+
+  // --- GUITAR NECK & FRETBOARD ---
+  fillRect(g, 14.5, 11, 3, 22, 0xdfbb82);
+  fillRect(g, 14.5, 11, 1, 22, 0xf3e2c3);
+
+  for (let y = 13; y <= 31; y += 2) {
+    fillRect(g, 14.5, y, 3, 0.6, 0x9ca3af);
+  }
+  fillCircle(g, 16, 17.5, 0.45, 0x111827);
+  fillCircle(g, 16, 21.5, 0.45, 0x111827);
+  fillCircle(g, 16, 25.5, 0.45, 0x111827);
+  fillCircle(g, 15.6, 29.5, 0.4, 0x111827);
+  fillCircle(g, 16.4, 29.5, 0.4, 0x111827);
+
+  // Nut
+  fillRect(g, 14.5, 10.5, 3, 1, 0xffffff);
+
+  // Headstock Strat style
+  fillRounded(g, 14, 4, 4, 7, 1.5, 0xdfbb82);
+  fillCircle(g, 15, 4.5, 1.5, 0xdfbb82);
+  fillRect(g, 13.5, 6, 1.5, 3, 0xdfbb82);
+
+  // 6 Chrome tuning pegs in line
+  for (let i = 0; i < 6; i += 1) {
+    fillRect(g, 13, 5 + i * 0.9, 1.2, 0.7, CHROME);
+  }
+
+  // 6 Silver steel strings
+  g.lineStyle(0.6, 0xe5e7eb, 0.75);
+  g.lineBetween(14.8, 43, 14.8, 10.5);
+  g.lineBetween(15.3, 43, 15.3, 10.5);
+  g.lineBetween(15.8, 43, 15.8, 10.5);
+  g.lineBetween(16.3, 43, 16.3, 10.5);
+  g.lineBetween(16.8, 43, 16.8, 10.5);
+  g.lineBetween(17.2, 43, 17.2, 10.5);
+}
+
+function drawBassPrecision(g) {
+  // --- FLOOR GUITAR STAND (Tubular black steel) ---
+  fillRect(g, 15, 54, 2, 8, 0x18181b);
+  fillCircle(g, 16, 62, 1.5, RUBBER);
+  g.lineStyle(2, 0x18181b, 1);
+  g.lineBetween(16, 54, 8, 62);
+  g.lineBetween(16, 54, 24, 62);
+  fillCircle(g, 8, 62, 1.5, RUBBER);
+  fillCircle(g, 24, 62, 1.5, RUBBER);
+
+  // Lower padded U-cradle for bass body
+  g.lineStyle(3.5, 0x27272a, 1);
+  g.lineBetween(9, 49, 16, 51);
+  g.lineBetween(16, 51, 23, 49);
+  fillCircle(g, 9, 49, 2, 0x18181b);
+  fillCircle(g, 23, 49, 2, 0x18181b);
+
+  // Vertical spine pole of the stand
+  fillRect(g, 15, 14, 2, 40, 0x18181b);
+  fillRect(g, 15, 14, 1, 40, 0x3f3f46);
+
+  // Upper neck cradle / fork
+  fillRect(g, 12, 17, 8, 2, 0x27272a);
+  fillRect(g, 11, 15, 2, 4, 0x18181b);
+  fillRect(g, 19, 15, 2, 4, 0x18181b);
+
+  // --- FENDER PRECISION BASS (Classic 3-Color Sunburst & Tortoiseshell) ---
+  fillEllipse(g, 16, 44, 17, 20, 0x181010, 0.4);
+
+  const BURST_BLACK = 0x1c1008;
+  const BURST_BROWN = 0x85300a;
+  const BURST_GOLD = 0xde9531;
+
+  // Lower bout & waist
+  fillEllipse(g, 16, 46, 17, 15, BURST_BLACK);
+  fillEllipse(g, 16, 45.5, 15, 13, BURST_BROWN);
+  fillEllipse(g, 15.5, 45, 11, 9, BURST_GOLD);
+
+  // Extended Upper Horn (P-Bass signature reaching high)
+  fillRounded(g, 10.5, 32, 4.5, 15, 2, BURST_BLACK);
+  fillRounded(g, 11, 33, 3.5, 13, 1.5, BURST_BROWN);
+  fillRect(g, 11.5, 34, 2.5, 11, BURST_GOLD);
+
+  // Lower horn (shorter, rounded)
+  fillRounded(g, 17.5, 36, 4, 11, 2, BURST_BLACK);
+  fillRounded(g, 18, 37, 3, 9, 1.5, BURST_BROWN);
+
+  // Tortoiseshell Pickguard
+  const TORTOISE = 0x54180d;
+  fillEllipse(g, 15.5, 43, 10, 9, TORTOISE);
+  fillRect(g, 12, 36, 4.5, 8, TORTOISE);
+  fillRect(g, 18, 43, 3.5, 8, CHROME);
+  fillCircle(g, 14, 42, 1, 0x7c2d12);
+  fillCircle(g, 16, 44, 0.8, 0x9a3412);
+  fillCircle(g, 13.5, 39, 0.8, 0x7c2d12);
+
+  // Split-Coil P-Bass Pickup
+  fillRect(g, 13.5, 39, 3, 2.5, 0x111827);
+  fillCircle(g, 14.3, 40.2, 0.5, CHROME);
+  fillCircle(g, 15.7, 40.2, 0.5, CHROME);
+  fillRect(g, 15.5, 42, 3, 2.5, 0x111827);
+  fillCircle(g, 16.3, 43.2, 0.5, CHROME);
+  fillCircle(g, 17.7, 43.2, 0.5, CHROME);
+
+  // Heavy 4-saddle vintage chrome bridge
+  fillRect(g, 13.5, 48.5, 5.5, 3.5, CHROME);
+  fillRect(g, 14, 48.5, 4.5, 1, 0xffffff);
+
+  // 2 Large knurled flat-top chrome knobs (Volume & Tone)
+  fillCircle(g, 19.5, 46, 1.4, CHROME);
+  fillCircle(g, 19.5, 46, 0.6, 0xffffff);
+  fillCircle(g, 19.5, 49.5, 1.4, CHROME);
+  fillCircle(g, 19.5, 49.5, 0.6, 0xffffff);
+
+  // Chrome output jack
+  fillCircle(g, 19.5, 52.5, 1, CHROME);
+  fillCircle(g, 19.5, 52.5, 0.4, 0x111827);
+
+  // --- LONG SCALE BASS NECK & FRETBOARD ---
+  fillRect(g, 14.2, 10, 3.6, 26, 0xdfbb82);
+  fillRect(g, 14.5, 10, 3, 26, 0x422616);
+  fillRect(g, 14.2, 10, 0.8, 26, 0xf3e2c3);
+
+  for (let y = 12; y <= 34; y += 2.2) {
+    fillRect(g, 14.5, y, 3, 0.6, 0x9ca3af);
+  }
+  fillCircle(g, 16, 16, 0.5, 0xffffff);
+  fillCircle(g, 16, 20.5, 0.5, 0xffffff);
+  fillCircle(g, 16, 25, 0.5, 0xffffff);
+  fillCircle(g, 15.5, 29.5, 0.4, 0xffffff);
+  fillCircle(g, 16.5, 29.5, 0.4, 0xffffff);
+
+  // Bone Nut
+  fillRect(g, 14.2, 9.5, 3.6, 1, 0xffffff);
+
+  // Large P-Bass Headstock
+  fillRounded(g, 13.5, 2.5, 4.5, 8, 1.5, 0xdfbb82);
+  fillCircle(g, 14.5, 3, 1.8, 0xdfbb82);
+  fillRect(g, 13, 5, 1.5, 4, 0xdfbb82);
+
+  // 4 Large Chrome Cloverleaf Tuners
+  for (let i = 0; i < 4; i += 1) {
+    const ty = 3.5 + i * 1.5;
+    fillRect(g, 11.5, ty, 2, 1, CHROME);
+    fillCircle(g, 11.5, ty + 0.5, 1.2, CHROME);
+  }
+
+  // 4 Thick Bass strings
+  g.lineStyle(1.1, 0xe5e7eb, 0.9);
+  g.lineBetween(14.8, 49, 14.8, 9.5);
+  g.lineStyle(1.0, 0xe5e7eb, 0.85);
+  g.lineBetween(15.6, 49, 15.6, 9.5);
+  g.lineStyle(0.9, 0xe5e7eb, 0.85);
+  g.lineBetween(16.4, 49, 16.4, 9.5);
+  g.lineStyle(0.8, 0xe5e7eb, 0.8);
+  g.lineBetween(17.2, 49, 17.2, 9.5);
+}
+
 function buildPropsTexture(scene) {
   const g = scene.make.graphics({ x: 0, y: 0, add: false });
 
@@ -601,6 +827,14 @@ function buildPropsTexture(scene) {
 
   drawCablesCoil(g);
   g.generateTexture('prop-cables-coil', 36, 24);
+  g.clear();
+
+  drawGuitarRed(g);
+  g.generateTexture('prop-guitar-red', 32, 58);
+  g.clear();
+
+  drawBassPrecision(g);
+  g.generateTexture('prop-bass-precision', 32, 64);
   g.clear();
 
   g.destroy();

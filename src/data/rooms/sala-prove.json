@@ -73,6 +73,37 @@
       "nodes": {}
     },
     {
+      "type": "guitar",
+      "variant": "red",
+      "x": 6.5,
+      "y": 4.5,
+      "label": "Chitarra elettrica di Marco",
+      "prompt": "Esamina",
+      "description": "Una solid-body laccata di un rosso brillante appoggiata su uno stand tubolare nero. Il battipenna bianco è leggermente rigato dalle plettrate veloci di Marco.",
+      "options": [
+        {
+          "text": "Pizzica la corda del Mi basso",
+          "next": "suona-chitarra"
+        },
+        {
+          "text": "Controlla l'accordatura delle meccaniche",
+          "next": "accordatura-chitarra"
+        }
+      ],
+      "nodes": {
+        "suona-chitarra": {
+          "lines": [
+            "Pizzichi la sesta corda: una nota secca e squillante vibra nel corpo in legno, anche a volume spento."
+          ]
+        },
+        "accordatura-chitarra": {
+          "lines": [
+            "Le sei chiavette cromate sono salde: l'intonazione è impeccabile, Marco non lascia nulla al caso."
+          ]
+        }
+      }
+    },
+    {
       "type": "amp",
       "variant": "guitar",
       "x": 8,
@@ -104,6 +135,37 @@
       "description": "Cassa a quattro vie con pannello arancione. Il cono da 12 è stato sostituito di recente: le viti sono ancora lucide.",
       "options": [],
       "nodes": {}
+    },
+    {
+      "type": "bass",
+      "variant": "precision",
+      "x": 28,
+      "y": 6.8,
+      "label": "Basso Fender Precision di Concy",
+      "prompt": "Esamina",
+      "description": "Un classico Precision Bass con finitura vintage a tre colori sunburst e battipenna tartarugato su stand da terra. Ha il tipico pickup split-coil nero e quattro corde spesse ben tese.",
+      "options": [
+        {
+          "text": "Sfiora le corde con le dita",
+          "next": "suona-basso"
+        },
+        {
+          "text": "Osserva il manico e la paletta",
+          "next": "dettagli-basso"
+        }
+      ],
+      "nodes": {
+        "suona-basso": {
+          "lines": [
+            "Le quattro corde spesse emettono una vibrazione calda e cupa che fa vibrare il parquet sotto i tuoi piedi."
+          ]
+        },
+        "dettagli-basso": {
+          "lines": [
+            "Manico massiccio in acero e paletta larga con le quattro grandi chiavette cromate a trifoglio: il marchio di fabbrica del sound di Concy."
+          ]
+        }
+      }
     },
     {
       "type": "mixer",

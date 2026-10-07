@@ -6,7 +6,9 @@ const DEFAULT_TEXTURE = {
   'power-outlet': 'prop-power-outlet',
   speaker: 'prop-speaker-pa',
   'mic-stand': 'prop-mic-stand',
-  cables: 'prop-cables-bundle'
+  cables: 'prop-cables-bundle',
+  guitar: 'prop-guitar-red',
+  bass: 'prop-bass-precision'
 };
 
 const DEFAULT_FOOTPRINT = {
@@ -17,13 +19,21 @@ const DEFAULT_FOOTPRINT = {
   'power-outlet': null,
   speaker: { w: 32, h: 24 },
   'mic-stand': { w: 22, h: 18 },
-  cables: null
+  cables: null,
+  guitar: { w: 22, h: 18 },
+  bass: { w: 22, h: 18 }
 };
 
 const VARIANT_OVERRIDES = {
   amp: {
     bass: { texture: 'prop-amp-bass', footprint: { w: 62, h: 44 } },
     guitar: { texture: 'prop-amp-guitar', footprint: { w: 52, h: 34 } }
+  },
+  guitar: {
+    red: { texture: 'prop-guitar-red', footprint: { w: 22, h: 18 } }
+  },
+  bass: {
+    precision: { texture: 'prop-bass-precision', footprint: { w: 22, h: 18 } }
   },
   door: {
     closed: { texture: 'prop-door', footprint: null }

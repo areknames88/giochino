@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createAvatarTextures, createPropsTextures, createSoftTextures } from '../gfx/textureFactory.js';
 import { ensureCharacterAssets } from '../gfx/characterArt.js';
-import { LOGO_WHITE_DATA } from '../data/avatars.js';
+import { LOGO_BLUE_DATA } from '../data/avatars.js';
 import { listPlayableCharacters } from '../game/characters.js';
 import { Events, emit } from '../core/eventBus.js';
 
@@ -39,7 +39,7 @@ export default class BootScene extends Phaser.Scene {
     if (this.game.renderer && this.game.renderer.config) {
       this.game.renderer.config.antialias = true;
     }
-    await loadDataImage(this.textures, 'logo-bianco', LOGO_WHITE_DATA, Phaser.Textures.LINEAR);
+    await loadDataImage(this.textures, 'logo-blu', LOGO_BLUE_DATA, Phaser.Textures.LINEAR);
 
     createPropsTextures(this);
     createSoftTextures(this);

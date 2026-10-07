@@ -211,24 +211,6 @@ export function createFloorTexture(scene, key, room, layout) {
   drawFloorCables(ctx, room, layout);
   drawWallContactShadow(ctx, layout);
 
-  // Logo Jackanal al centro della stanza, opacizzato
-  if (scene.textures.exists('logo-bianco')) {
-    const logoTex = scene.textures.get('logo-bianco');
-    const logoSource = logoTex.getSourceImage();
-    if (logoSource) {
-      const maxDim = Math.min(pixelWidth, pixelHeight) * 0.25;
-      const aspect = logoSource.width / logoSource.height;
-      const logoWidth = aspect > 1 ? maxDim : maxDim * aspect;
-      const logoHeight = aspect > 1 ? maxDim / aspect : maxDim;
-      const x = (pixelWidth - logoWidth) / 2;
-      const y = (pixelHeight - logoHeight) / 2;
-
-      ctx.globalAlpha = 0.08;
-      ctx.drawImage(logoSource, x, y, logoWidth, logoHeight);
-      ctx.globalAlpha = 1;
-    }
-  }
-
   texture.refresh();
 
   return texture;

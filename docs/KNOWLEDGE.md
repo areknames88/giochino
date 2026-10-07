@@ -268,6 +268,23 @@ filtro NEAREST):
 
 ## Log delle sessioni
 
+### 2026-10-07 — Sessione 18: chitarra elettrica rossa e basso Fender Precision su stand
+
+Fatto:
+
+- **Aggiunta Chitarra Elettrica Rossa su stand (`prop-guitar-red`)**:
+  - Posizionata a `x: 6.5, y: 4.5`, immediatamente a sinistra dell'amplificatore di Marco.
+  - Stand tubolare nero a treppiede da terra con piedini gommati e culla inferiore imbottita in spugna.
+  - Corpo solid-body asimmetrico a doppio corno in rosso fiammante laccato (`0xdc2626`), battipenna bianco 3-ply, 3 pickup single-coil con magneti cromati, ponte vibrato cromato, manopole bianche, presa jack cromata e manico in acero con 6 meccaniche cromate in linea e 6 corde in acciaio.
+  - Dotata di interazioni e scelte multiple: suonare la corda di Mi o controllare l'accordatura.
+- **Aggiunto Basso Fender Precision su stand (`prop-bass-precision`)**:
+  - Posizionato a `x: 28.0, y: 6.8`, immediatamente a destra dell'amplificatore del basso di Concy.
+  - Stand da terra nero con culla sagomata.
+  - Silhouette classica Precision Bass con corno superiore allungato fino al 12° tasto, finitura vintage sunburst a tre toni (nero/tabacco, marrone ambrato e cuore oro-miele), battipenna tartarugato Tortoiseshell con piastra cromata controlli, pickup split-coil nero sfalsato con poli cromati, massiccio ponte cromato a 4 sellette, 2 grandi manopole cromate a cupola zigrinata, lungo manico in acero scala 34" con tastiera in palissandro, paletta sagomata con 4 grandi chiavette cromate a trifoglio (cloverleaf) e 4 corde spesse in nickel.
+  - Dotato di interazioni e scelte multiple: sfiorare le corde o esaminare paletta e meccaniche.
+- **Aggiornato il registro degli arredi (`src/game/propTypes.js`)**: registrati i tipi `guitar` (`red`) e `bass` (`precision`) con ingombro solido `{ w: 22, h: 18 }`.
+- **Aggiornato il CMS (`editor.html`)**: aggiunte le icone e il supporto completo per `guitar` e `bass` nella sidebar e nell'anteprima.
+
 ### 2026-10-07 — Sessione 17: CMS gestionale (npm run editor) e rimozione vincolo fisso MAX_OPTIONS
 
 Fatto:
@@ -772,6 +789,31 @@ Verifiche fatte:
 - Test automatizzato Playwright end-to-end su Edge headless:
   - Portrait (viewport 390×844): speaker 22px, body 21px, continueMark 15px, opzioni 19px, riga esci 17px, hint ESC 13px, badge 14px (26×26 px), altezza righe >= 44px.
   - Rotazione dinamica a Landscape (viewport 960×540): speaker 18px, body 16px, opzioni 15px, riga esci 14px, hint ESC 11px, badge 13px, altezze minime preservate a 30px.
+
+### 2026-10-07 — Sessione 12: Editor CMS dialoghi/arredi, arredi interattivi, strumenti musicali e logo su grancassa
+
+Fatto:
+
+- **Editor CMS dedicato (`npm run editor`)**:
+  - Creata pagina gestionale indipendente `editor.html` per navigare stanze, oggetti di scena, NPC e personaggi principali giocabili.
+  - Permette di modificare descrizioni e alberi di dialogo con opzioni a ramificazione variabile (senza limite fisso a 3 opzioni), salvando direttamente i file JSON via server locale (`scripts/editorServer.js` o dev server Vite).
+- **Opzioni e dialoghi per oggetti/arredi di scena**:
+  - Esteso il sistema di interazione e `propTypes.js` per supportare ramificazioni e risposte a scelta multipla anche negli arredi/props, oltre che negli NPC.
+- **Esperienza di ingresso stanza migliorata**:
+  - Rimosso l'auto-dialogo di benvenuto che copriva il personaggio al caricamento della stanza iniziale.
+- **Nuovi arredi e strumenti musicali nella sala prove**:
+  - Aggiunta chitarra elettrica rossa su stand tubolare nero vicino all'amplificatore per chitarra (`prop-guitar-red`).
+  - Aggiunto basso elettrico tipo Fender Precision su stand vicino all'amplificatore per basso (`prop-bass-precision`).
+- **Logo Jackanal su grancassa e pulizia pavimento**:
+  - Rimosso `logo-bianco.svg` dal parquet della stanza (`src/gfx/roomTextures.js`), rendendo il pavimento pulito e senza watermark sovrapposto.
+  - Integrato `public/logo-blu.svg` (incluso come Base64 `LOGO_BLUE_DATA` in `src/data/avatars.js` per compatibilità 100% offline / single-file) al centro della pelle della grancassa della batteria (`prop-drum-kit`).
+  - Ottimizzazione definizione e dimensioni del logo: ritagliato il `viewBox` dell'SVG sui contorni esatti della grafica (`viewBox="172 104 458 544"`), eliminando i margini vuoti, e renderizzato il logo come Game Object Image dedicato in `Prop.js` con linear texture filtering GPU e dimensioni 36×42 px, garantendo curve vettoriali nitide, scritte "JACKANAL" leggibili e proporzioni eccellenti sulla pelle della grancassa.
+
+Verifiche fatte:
+
+- `npm run lint` pulito (0 errori).
+- `npm run build` ok.
+- `npm run build:single` ok (aggiornato `dist-single/index.html`, `docs/dist-single/index.html` e `docs/index.html`).
 
 ## Come continuare
 Checklist per la prossima sessione:

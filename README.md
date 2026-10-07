@@ -12,7 +12,7 @@ stanza reale, arredi leggibili, personaggio che ci si muove dentro, niente HUD i
 ## Stato attuale
 
 Una sola stanza, la **Sala Prove**: parquet e muri in legno, una batteria, tre amplificatori (due chitarra,
-uno basso), un banco mixer collegato alla presa elettrica, due casse PA su stativo,
+uno basso), una chitarra elettrica rossa su stand, un basso Fender Precision sunburst su stand, un banco mixer collegato alla presa elettrica, due casse PA su stativo,
 aste microfoniche per voce e cori, cavi che attraversano il parquet, fascio di cavi e ciabatta multipresa,
 più la porta. Il personaggio si muove, la camera lo segue, gli arredi ostacolano e si possono ispezionare.
 
@@ -245,7 +245,7 @@ Ogni stanza è un file in `src/data/rooms/`. Non serve toccare il codice per cam
 - `x` e `y` sono in **tile** e possono essere decimali. `y` è il punto in cui l'arredo tocca il
   pavimento: è anche il suo `depth`.
 - `type` e `variant` determinano texture e ingombro (vedi `src/game/propTypes.js`).
-- Tipi disponibili: `drum-kit`, `amp` (`guitar` / `bass`), `mixer`, `power-outlet`, `speaker` (`pa` / `monitor`), `mic-stand` (`boom`), `cables` (`bundle` / `coil`), `door`.
+- Tipi disponibili: `drum-kit`, `amp` (`guitar` / `bass`), `guitar` (`red`), `bass` (`precision`), `mixer`, `power-outlet`, `speaker` (`pa` / `monitor`), `mic-stand` (`boom`), `cables` (`bundle` / `coil`), `door`.
 - Se l'arredo ha un ingombro, diventa automaticamente un ostacolo.
 - `description` non vuota = arredo ispezionabile.
 

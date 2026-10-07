@@ -31,6 +31,15 @@ export default class Prop extends Phaser.GameObjects.Container {
     this.visual = scene.add.image(0, 0, texture).setOrigin(0.5, 1);
 
     this.add([this.shadow, this.visual]);
+
+    if (this.type === 'drum-kit' && scene.textures.exists('logo-blu')) {
+      // Center of bass drum head is (78, 82) on 168x124 canvas.
+      // Relative to origin (0.5, 1): x = 78 - 84 = -6, y = 82 - 124 = -42
+      this.logo = scene.add.image(-6, -42, 'logo-blu');
+      this.logo.setDisplaySize(36, 42);
+      this.add(this.logo);
+    }
+
     scene.add.existing(this);
     this.setDepthByPosition();
 
