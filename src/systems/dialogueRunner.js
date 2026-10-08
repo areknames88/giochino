@@ -85,7 +85,7 @@ export default class DialogueRunner {
     const options = this.filterOptions(entry.options, false, character, null);
     this.state = { isProp: false, character, listenerId, nodeId: entry.nodeId, options };
     uiState.dialogueLocked = true;
-    this.emitNode(entry.lines, options);
+    this.emitNode(entry.lines, options, true);
     return true;
   }
 
@@ -106,7 +106,7 @@ export default class DialogueRunner {
       text: prop.description
     }];
 
-    this.emitNode(lines, options);
+    this.emitNode(lines, options, false);
     return true;
   }
 
@@ -136,6 +136,8 @@ export default class DialogueRunner {
       }
       if (nextNode.removeProp || nextNode.giveItem) {
         emit(Events.PROP_REMOVED, { prop: state.prop });
+        emit(Events.DIALOGUE_CLOSED);
+        return;
       }
 
       const player = getCharacter(this.listenerId());
@@ -162,7 +164,8 @@ export default class DialogueRunner {
 
       this.emitNode(
         [playerLine, ...normalizedLines],
-        nextOptions
+        nextOptions,
+        false
       );
       return;
     }
@@ -212,7 +215,7 @@ export default class DialogueRunner {
     return true;
   }
 
-  emitNode(lines, options) {
+  emitNode(lines, options, isNpc = true) {
     const list = Array.isArray(options)
       ? (Number.isFinite(MAX_OPTIONS) ? options.slice(0, MAX_OPTIONS) : options)
       : [];
@@ -220,7 +223,8 @@ export default class DialogueRunner {
 
     emit(Events.DIALOGUE_NODE, {
       lines,
-      options: labels.length > 0 ? labels : null
+      options: labels.length > 0 ? labels : null,
+      isNpc
     });
   }
 

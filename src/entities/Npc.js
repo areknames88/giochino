@@ -38,7 +38,7 @@ export default class Npc extends Phaser.GameObjects.Container {
 
     super(scene, x, y);
 
-    this.data = data;
+    this.npcData = data;
     this.character = character;
     this.look = resolveLook(character);
     this.defaultFacing = data.facing ?? 'down';

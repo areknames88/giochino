@@ -5,7 +5,7 @@ export default class Prop extends Phaser.GameObjects.Container {
   constructor(scene, data, layout) {
     super(scene, data.x * layout.tileSize, data.y * layout.tileSize);
 
-    this.data = data;
+    this.propData = data;
     this.type = data.type;
     this.variant = data.variant ?? null;
     this.label = data.label ?? data.type;

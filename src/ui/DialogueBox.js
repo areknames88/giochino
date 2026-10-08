@@ -337,8 +337,8 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
    * Un nodo del grafo dei dialoghi: battute da mostrare in coda e, alla fine,
    * eventuali risposte del giocatore da scegliere.
    */
-  node({ lines, options }) {
-    this.isNpcConversation = true;
+  node({ lines, options, isNpc = true }) {
+    this.isNpcConversation = Boolean(isNpc);
     for (const line of lines ?? []) {
       if (line && typeof line.text === 'string') {
         this.queue.push({
@@ -448,7 +448,12 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
         .rectangle(0, 0, hitWidth, height, COLORS.rowBg, 0.96)
         .setStrokeStyle(1, COLORS.rowStroke);
       hit.setInteractive({ useHandCursor: true });
-      hit.on('pointerdown', () => this.pickOption(index));
+      hit.on('pointerdown', (_pointer, _localX, _localY, event) => {
+        if (event && event.stopPropagation) {
+          event.stopPropagation();
+        }
+        this.pickOption(index);
+      });
       hit.on('pointerover', () => this.setRowHover(row, true));
       hit.on('pointerout', () => this.setRowHover(row, false));
 
@@ -484,7 +489,12 @@ export default class DialogueBox extends Phaser.GameObjects.Container {
       .rectangle(0, 0, hitWidth, exitHeight, COLORS.exitBg, 0.9)
       .setStrokeStyle(1, COLORS.rowStroke);
     exitHit.setInteractive({ useHandCursor: true });
-    exitHit.on('pointerdown', () => this.exitConversation());
+    exitHit.on('pointerdown', (_pointer, _localX, _localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.exitConversation();
+    });
     exitHit.on('pointerover', () => this.setRowHover(exitRow, true));
     exitHit.on('pointerout', () => this.setRowHover(exitRow, false));
 

@@ -290,6 +290,11 @@ Fatto:
 - **Donazioni di oggetti da parte di tutti i personaggi giocabili/NPC**:
   - Aggiornati tutti i file di dialogo (`concy.json`, `marco.json`, `davide.json`, `riccardo.json`) con opzioni per ricevere l'oggetto caratteristico di ciascun componente.
   - In `DialogueRunner.js`: supporto per `giveItem` nei nodi e filtro automatico delle opzioni di dono già riscosse per evitare duplicati.
+- **Risoluzione chiusura dialogo alla raccolta oggetti e interazione arredi**:
+  - Alla selezione di raccolta della matassa di cavi (o qualunque nodo arredo con `removeProp` / `giveItem`), il dialogo viene chiuso immediatamente con `Events.DIALOGUE_CLOSED`, evitando che il box rimanga aperto sul messaggio di uscita.
+  - Risolto bug critico in `Prop.js` (e preventivamente in `Npc.js`): `this.data = data` sovrascriveva la proprietà interna `this.data` di Phaser (`Phaser.Data.DataManager`), causando un `TypeError: this.data.destroy is not a function` al momento di `prop.destroy()` in `removeProp`. L'errore interrompeva l'esecuzione sincrona impedendo a `emit(Events.DIALOGUE_CLOSED)` e `DialogueBox.close()` di scattare e lasciando il dialogo aperto. Ridenominato in `this.propData` e `this.npcData`.
+  - In `DialogueBox.js`, aggiunto `event.stopPropagation()` sui listener `pointerdown` delle righe opzione ed esci per impedire che i click attraversino verso la scena sottostante.
+  - Distinzione tra conversazioni NPC e interazioni arredi tramite flag `isNpc: false` in `DIALOGUE_NODE`: gli arredi con opzioni (chitarra, basso, cavi) chiudono il dialogo in modo naturale alla fine del testo/avanzamento senza imporre il pulsante "Esci dalla conversazione".
 - **Verifiche**:
   - `npm run lint` pulito (0 errori);
   - `npm run build` ok (48 moduli);
