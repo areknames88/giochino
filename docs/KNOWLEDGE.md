@@ -268,6 +268,33 @@ filtro NEAREST):
 
 ## Log delle sessioni
 
+### 2026-10-08 — Sessione 19: Sistema Inventario, HUD Zaino, raccolta Cavi ed equipaggiamento NPC
+
+Fatto:
+
+- **Sistema Inventario data-driven (`src/game/inventory.js`)**:
+  - Catalogo oggetti `ITEMS`: Matassa di cavi di scorta, Accordatore a pedale (Concy), Plettro Jackanal Heavy (Marco), Chiavetta per batteria (Davide), Filtro antipop tascabile (Riccardo).
+  - Gestione stato con `addItem`, `hasItem`, `getItem`, `getItems`, `removeItem`.
+  - Notifiche ed eventi: `ITEM_COLLECTED`, `ITEM_REMOVED`, `TOAST`, `INVENTORY_TOGGLE`, `INVENTORY_OPEN`, `INVENTORY_CLOSE`.
+- **Icone e grafica procedurale a runtime (`src/gfx/inventoryArt.js`)**:
+  - Generazione texture 100% Canvas/Graphics (zero immagini esterne): icona dello zaino per l'HUD (`ui-backpack`) e icone dettagliate per ciascun oggetto (`item-cables`, `item-concy-tuner`, `item-marco-pick`, `item-davide-drumkey`, `item-riccardo-popfilter`).
+  - Precaricate in `BootScene`.
+- **HUD Zaino e Finestra Inventario (`InventoryBox.js` e `HudScene.js`)**:
+  - Bottone zaino in alto a destra nell'HUD con badge notifica contatore oggetti (visibile quando > 0), tooltip tasto `[I]`, hover dorato e tocco responsive.
+  - Scorciatoie da tastiera: `I` e `B` per aprire/chiudere l'inventario, `ESC` per chiudere.
+  - Finestra `InventoryBox`: layout a legno scuro con cornice dorata coordinato con il `DialogueBox`, griglia/elenco slot interattivi a sinistra e scheda di dettaglio completa con icona ingrandita, categoria e descrizione d'atmosfera a destra (e visualizzazione responsive per mobile portrait).
+  - Blocco del movimento del personaggio (`uiState.inventoryOpen`) durante l'esplorazione dello zaino, con chiusura protetta tramite `queueMicrotask`.
+- **Raccolta del primo oggetto nel mondo (Matassa di cavi di scorta)**:
+  - In `sala-prove.json`, la matassa di cavi a coordinate `x: 20.5, y: 4.8` include l'opzione "Raccogli la matassa di cavi".
+  - Alla selezione, l'oggetto entra nello zaino, compare il toast a schermo, e il prop scompare visivamente e fisicamente dalla stanza (`Events.PROP_REMOVED` e filtro in `RoomScene`).
+- **Donazioni di oggetti da parte di tutti i personaggi giocabili/NPC**:
+  - Aggiornati tutti i file di dialogo (`concy.json`, `marco.json`, `davide.json`, `riccardo.json`) con opzioni per ricevere l'oggetto caratteristico di ciascun componente.
+  - In `DialogueRunner.js`: supporto per `giveItem` nei nodi e filtro automatico delle opzioni di dono già riscosse per evitare duplicati.
+- **Verifiche**:
+  - `npm run lint` pulito (0 errori);
+  - `npm run build` ok (48 moduli);
+  - `npm run build:single` ok (bundle single-file sincronizzato).
+
 ### 2026-10-07 — Sessione 18: chitarra elettrica rossa e basso Fender Precision su stand
 
 Fatto:

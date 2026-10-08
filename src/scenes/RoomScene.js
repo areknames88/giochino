@@ -15,6 +15,7 @@ import { ensureCharacterAssets } from '../gfx/characterArt.js';
 import { createFloorTexture, createWallTexture } from '../gfx/roomTextures.js';
 import InteractionSystem from '../systems/interaction.js';
 import DialogueRunner from '../systems/dialogueRunner.js';
+import { inventory } from '../game/inventory.js';
 
 /** Quanto può spostarsi il puntatore durante un tocco prima che diventi un trascinamento. */
 const TAP_SLOP = 12;
@@ -43,6 +44,10 @@ export default class RoomScene extends Phaser.Scene {
       this.dialogueTarget = null;
     });
 
+    this.unsubscribePropRemoved = on(Events.PROP_REMOVED, ({ prop }) => {
+      this.removeProp(prop);
+    });
+
     this.physics.world.setBounds(
       0,
       0,
@@ -54,7 +59,9 @@ export default class RoomScene extends Phaser.Scene {
     this.createFloorAndWalls();
     this.createWallBodies();
 
-    this.props = this.room.props.map((prop) => new Prop(this, prop, this.layout));
+    this.props = this.room.props
+      .filter((propData) => !propData.id || !inventory.hasItem(propData.id))
+      .map((prop) => new Prop(this, prop, this.layout));
     for (const prop of this.props) {
       if (prop.solid) {
         this.colliders.push(prop.solid);
@@ -193,10 +200,10 @@ export default class RoomScene extends Phaser.Scene {
       id: pointer.id,
       x: pointer.x,
       y: pointer.y,
-      blocked: uiState.dialogueOpen
+      blocked: uiState.dialogueOpen || uiState.inventoryOpen
     };
 
-    if (uiState.dialogueOpen) {
+    if (uiState.dialogueOpen || uiState.inventoryOpen) {
       return;
     }
 
@@ -205,7 +212,7 @@ export default class RoomScene extends Phaser.Scene {
   }
 
   handlePointerMove(pointer) {
-    if (!this.drag || pointer.id !== this.drag.id || this.drag.blocked || uiState.dialogueOpen) {
+    if (!this.drag || pointer.id !== this.drag.id || this.drag.blocked || uiState.dialogueOpen || uiState.inventoryOpen) {
       return;
     }
 
@@ -220,7 +227,7 @@ export default class RoomScene extends Phaser.Scene {
     const drag = this.drag;
     this.drag = null;
 
-    if (drag.blocked || uiState.dialogueOpen) {
+    if (drag.blocked || uiState.dialogueOpen || uiState.inventoryOpen) {
       return;
     }
 
@@ -302,6 +309,10 @@ export default class RoomScene extends Phaser.Scene {
   }
 
   requestInteract() {
+    if (uiState.inventoryOpen) {
+      return;
+    }
+
     if (uiState.dialogueOpen) {
       emit(Events.DIALOGUE_ADVANCE);
       return;
@@ -311,6 +322,42 @@ export default class RoomScene extends Phaser.Scene {
       this.dialogueTarget = this.interactions.current;
       this.pendingProp = null;
     }
+  }
+
+  removeProp(prop) {
+    if (!prop) {
+      return;
+    }
+
+    const idx = this.props.indexOf(prop);
+    if (idx !== -1) {
+      this.props.splice(idx, 1);
+    }
+
+    if (prop.solid) {
+      const colIdx = this.colliders.indexOf(prop.solid);
+      if (colIdx !== -1) {
+        this.colliders.splice(colIdx, 1);
+      }
+      prop.solid.destroy();
+    }
+
+    if (this.interactions) {
+      this.interactions.interactables = this.interactions.interactables.filter((t) => t !== prop);
+      if (this.interactions.current === prop) {
+        this.interactions.current = null;
+        emit(Events.HINT_CHANGED, null);
+      }
+    }
+
+    if (this.dialogueTarget === prop) {
+      this.dialogueTarget = null;
+    }
+    if (this.pendingProp === prop) {
+      this.pendingProp = null;
+    }
+
+    prop.destroy();
   }
 
   createDebugOverlay() {
@@ -377,6 +424,11 @@ export default class RoomScene extends Phaser.Scene {
     if (this.unsubscribeDialogueClosed) {
       this.unsubscribeDialogueClosed();
       this.unsubscribeDialogueClosed = null;
+    }
+
+    if (this.unsubscribePropRemoved) {
+      this.unsubscribePropRemoved();
+      this.unsubscribePropRemoved = null;
     }
     super.destroy();
   }

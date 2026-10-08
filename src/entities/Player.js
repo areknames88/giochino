@@ -154,10 +154,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   update() {
     this.arrived = false;
 
-    // Conversazione con un NPC aperta: il giocatore resta fermo al proprio
-    // posto (nessuna tastiera, nessun cammino già impostato). La chiusura del
-    // dialogo ripristina il controllo al tocco successivo.
-    if (uiState.dialogueLocked) {
+    // Conversazione con un NPC aperta o inventario aperto: il giocatore resta fermo al proprio
+    // posto (nessuna tastiera, nessun cammino già impostato). La chiusura
+    // ripristina il controllo al tocco successivo.
+    if (uiState.dialogueLocked || uiState.inventoryOpen) {
       this.stopWalking();
       this.body.setVelocity(0, 0);
       this.playIdle();

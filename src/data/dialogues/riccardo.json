@@ -18,6 +18,10 @@
           "next": "prova"
         },
         {
+          "text": "Hai un accessorio utile per la voce?",
+          "next": "dono-riccardo"
+        },
+        {
           "text": "La sala è tutta vostra?",
           "next": "sala"
         }
@@ -32,6 +36,10 @@
         {
           "text": "Sta già sotto, guarda",
           "next": "basso"
+        },
+        {
+          "text": "Hai qualcosa per non far rimbombare il microfono?",
+          "next": "dono-riccardo"
         },
         {
           "text": "Sentiamo chi arriva prima",
@@ -49,6 +57,10 @@
           "next": "volume"
         },
         {
+          "text": "Hai un antipop da mettere sull'asta cori?",
+          "next": "dono-riccardo"
+        },
+        {
           "text": "Va bene così, suona",
           "next": "prova"
         }
@@ -62,6 +74,10 @@
         {
           "text": "Accordato meglio di ieri",
           "next": "prova"
+        },
+        {
+          "text": "Prestami il filtro per il microfono panoramico",
+          "next": "dono-riccardo"
         },
         {
           "text": "Fatti sentire dal fondo della sala",
@@ -103,6 +119,24 @@
     "volume": {
       "lines": [
         "Tranquillo, è già al massimo. Così la sente la band e il vicinato: due in uno."
+      ]
+    },
+    "dono-riccardo": {
+      "giveItem": "riccardo-popfilter",
+      "lines": [
+        "Guarda nello scomparto: c'è il mio filtro antipop tascabile con morsetto.",
+        "Basta agganciarlo all'asta del microfono e salva la capsula dai soffi sulle 'p' e le 'b'. Mettilo nello zaino!"
+      ],
+      "options": [
+        {
+          "text": "Ottimo Riccardo, me lo porto via!",
+          "next": "ringraziamento-riccardo"
+        }
+      ]
+    },
+    "ringraziamento-riccardo": {
+      "lines": [
+        "Salva le orecchie del fonico e la registrazione, ricordatelo sempre!"
       ]
     }
   }

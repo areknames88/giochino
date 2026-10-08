@@ -18,6 +18,10 @@
           "next": "prova"
         },
         {
+          "text": "Hai un plettro di riserva per caso?",
+          "next": "dono-marco"
+        },
+        {
           "text": "La sala è tutta vostra?",
           "next": "sala"
         }
@@ -32,6 +36,10 @@
         {
           "text": "Più voce e meno tutto il resto",
           "next": "volume"
+        },
+        {
+          "text": "Hai un plettro buono da prestarmi?",
+          "next": "dono-marco"
         },
         {
           "text": "Mi arrangio, tu suona forte",
@@ -49,6 +57,10 @@
           "next": "chitarra"
         },
         {
+          "text": "Passami un plettro dei tuoi prima che inizi a suonare",
+          "next": "dono-marco"
+        },
+        {
           "text": "Vediamo chi regge",
           "next": "sfida"
         }
@@ -62,6 +74,10 @@
         {
           "text": "Sto già sistemando",
           "next": "prova"
+        },
+        {
+          "text": "Hai un plettro rigido da darmi?",
+          "next": "dono-marco"
         },
         {
           "text": "Fai come ti pare",
@@ -104,6 +120,24 @@
     "chitarra": {
       "lines": [
         "Non oserei. Però se continua, la prossima volta provo a suonare con la mano sinistra."
+      ]
+    },
+    "dono-marco": {
+      "giveItem": "marco-pick",
+      "lines": [
+        "Ma certo! Tieni questo plettro Jackanal Heavy in celluloide tartarugata.",
+        "Spessore 1.2 millimetri, attacco chirurgico e logo stampato a caldo. Infilalo nello zaino e guai a te se lo perdi!"
+      ],
+      "options": [
+        {
+          "text": "Perfetto Marco, grazie mille!",
+          "next": "ringraziamento-marco"
+        }
+      ]
+    },
+    "ringraziamento-marco": {
+      "lines": [
+        "Figurati! Con quel plettro non hai più scuse sui tempi veloci."
       ]
     }
   }

@@ -254,6 +254,7 @@
       "nodes": {}
     },
     {
+      "id": "cables",
       "type": "cables",
       "variant": "coil",
       "x": 20.5,
@@ -261,8 +262,21 @@
       "label": "Matassa di cavi di scorta",
       "prompt": "Esamina",
       "description": "Un cavo spiralato nero ben arrotolato con fascetta a strappo, pronto per essere collegato in caso di emergenza.",
-      "options": [],
-      "nodes": {}
+      "options": [
+        {
+          "text": "Raccogli la matassa di cavi",
+          "next": "raccogli-cavi"
+        }
+      ],
+      "nodes": {
+        "raccogli-cavi": {
+          "giveItem": "cables",
+          "removeProp": true,
+          "lines": [
+            "Prendi la matassa di cavi spiralati e la infili nello zaino. Potrà servire per collegare una cassa o uno strumento al momento giusto."
+          ]
+        }
+      }
     },
     {
       "type": "door",

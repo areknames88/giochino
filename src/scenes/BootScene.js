@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createAvatarTextures, createPropsTextures, createSoftTextures } from '../gfx/textureFactory.js';
+import { createInventoryTextures } from '../gfx/inventoryArt.js';
 import { ensureCharacterAssets } from '../gfx/characterArt.js';
 import { LOGO_BLUE_DATA } from '../data/avatars.js';
 import { listPlayableCharacters } from '../game/characters.js';
@@ -44,6 +45,7 @@ export default class BootScene extends Phaser.Scene {
     createPropsTextures(this);
     createSoftTextures(this);
     createAvatarTextures(this);
+    createInventoryTextures(this);
 
     for (const character of listPlayableCharacters()) {
       ensureCharacterAssets(this, character);

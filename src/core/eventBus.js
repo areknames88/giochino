@@ -11,7 +11,13 @@ export const Events = {
   DIALOGUE_ADVANCE: 'dialogue:advance',
   DIALOGUE_CLOSED: 'dialogue:closed',
   PLAYER_MOVED: 'player:moved',
-  TOAST: 'toast'
+  TOAST: 'toast',
+  INVENTORY_TOGGLE: 'inventory:toggle',
+  INVENTORY_OPEN: 'inventory:open',
+  INVENTORY_CLOSE: 'inventory:close',
+  ITEM_COLLECTED: 'item:collected',
+  ITEM_REMOVED: 'item:removed',
+  PROP_REMOVED: 'prop:removed'
 };
 
 export const eventBus = new Phaser.Events.EventEmitter();

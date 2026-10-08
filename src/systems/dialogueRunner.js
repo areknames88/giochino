@@ -3,6 +3,7 @@ import { Events, emit, on } from '../core/eventBus.js';
 import { uiState } from '../core/uiState.js';
 import { getCharacter } from '../game/characters.js';
 import { MAX_OPTIONS, resolveEntry, resolveNext } from '../game/dialogue.js';
+import { inventory } from '../game/inventory.js';
 
 /**
  * Guida una conversazione.
@@ -25,6 +26,32 @@ export default class DialogueRunner {
     this.scene = scene;
     this.state = null;
     this.unsubscribe = null;
+  }
+
+  filterOptions(options, isProp, target, nodes) {
+    if (!Array.isArray(options)) {
+      return null;
+    }
+
+    const available = options.filter((option) => {
+      if (!option.next) {
+        return true;
+      }
+      if (isProp) {
+        const nextNode = nodes?.[option.next];
+        if (nextNode?.giveItem && inventory.hasItem(nextNode.giveItem)) {
+          return false;
+        }
+      } else {
+        const nextNode = resolveNext(target, option.next);
+        if (nextNode?.giveItem && inventory.hasItem(nextNode.giveItem)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    return available.length > 0 ? available : null;
   }
 
   start(target) {
@@ -55,19 +82,21 @@ export default class DialogueRunner {
     }
 
     this.subscribe();
-    this.state = { isProp: false, character, listenerId, nodeId: entry.nodeId, options: entry.options };
+    const options = this.filterOptions(entry.options, false, character, null);
+    this.state = { isProp: false, character, listenerId, nodeId: entry.nodeId, options };
     uiState.dialogueLocked = true;
-    this.emitNode(entry.lines, entry.options);
+    this.emitNode(entry.lines, options);
     return true;
   }
 
   startPropDialogue(prop) {
     this.subscribe();
+    const options = this.filterOptions(prop.options, true, prop, prop.nodes);
     this.state = {
       isProp: true,
       prop,
       nodeId: '__root__',
-      options: prop.options,
+      options,
       nodes: prop.nodes ?? {}
     };
     uiState.dialogueLocked = true;
@@ -77,7 +106,7 @@ export default class DialogueRunner {
       text: prop.description
     }];
 
-    this.emitNode(lines, prop.options);
+    this.emitNode(lines, options);
     return true;
   }
 
@@ -102,6 +131,13 @@ export default class DialogueRunner {
       }
 
       const nextNode = state.nodes[option.next];
+      if (nextNode.giveItem) {
+        inventory.addItem(nextNode.giveItem);
+      }
+      if (nextNode.removeProp || nextNode.giveItem) {
+        emit(Events.PROP_REMOVED, { prop: state.prop });
+      }
+
       const player = getCharacter(this.listenerId());
       const playerLine = { speaker: player.name, speakerId: player.id, text: option.text };
 
@@ -116,15 +152,17 @@ export default class DialogueRunner {
         };
       });
 
+      const nextOptions = this.filterOptions(nextNode.options, true, state.prop, state.nodes);
+
       this.state = {
         ...state,
         nodeId: option.next,
-        options: Array.isArray(nextNode.options) ? nextNode.options : null
+        options: nextOptions
       };
 
       this.emitNode(
         [playerLine, ...normalizedLines],
-        nextNode.options
+        nextOptions
       );
       return;
     }
@@ -136,11 +174,16 @@ export default class DialogueRunner {
       return;
     }
 
+    if (next.giveItem) {
+      inventory.addItem(next.giveItem);
+    }
+
     const player = getCharacter(this.listenerId());
-    this.state = { ...state, nodeId: next.nodeId, options: next.options };
+    const nextOptions = this.filterOptions(next.options, false, state.character, null);
+    this.state = { ...state, nodeId: next.nodeId, options: nextOptions };
     this.emitNode(
       [{ speaker: player.name, speakerId: player.id, text: option.text }, ...next.lines],
-      next.options
+      nextOptions
     );
   }
 

@@ -98,7 +98,7 @@ function buildNode(character, nodeId, node) {
     return null;
   }
 
-  return { nodeId, lines, options: normalizeOptions(node.options) };
+  return { nodeId, lines, options: normalizeOptions(node.options), giveItem: node.giveItem ?? null };
 }
 
 function validateDialogue(dialogue) {

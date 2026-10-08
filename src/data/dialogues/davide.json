@@ -19,6 +19,10 @@
           "next": "saluto-riccardo"
         },
         {
+          "text": "Mi presti un attrezzo per la batteria?",
+          "next": "dono-davide"
+        },
+        {
           "text": "La sala è tutta vostra?",
           "next": "sala"
         }
@@ -32,6 +36,10 @@
         {
           "text": "Chi sono, dove sono quando sono assente di me?",
           "next": "prova"
+        },
+        {
+          "text": "Davide, hai una chiavetta per accordare i tamburi?",
+          "next": "dono-davide"
         },
         {
           "text": "Hai visto il mio binocolo?",
@@ -49,6 +57,10 @@
           "next": "sfida"
         },
         {
+          "text": "Passami la chiavetta a T per fissare il pedale",
+          "next": "dono-davide"
+        },
+        {
           "text": "Sincronizziamoci e si risolve",
           "next": "prova"
         }
@@ -62,6 +74,10 @@
         {
           "text": "Prendine due, sono tuoi",
           "next": "plettro"
+        },
+        {
+          "text": "In cambio mi dai una chiavetta di riserva?",
+          "next": "dono-davide"
         },
         {
           "text": "Questo è l'ultimo che hai",
@@ -103,6 +119,24 @@
     "plettro": {
       "lines": [
         "Grazie! Ti restituisco un giro di doppio pedale gratis, vale più di qualsiasi plettro."
+      ]
+    },
+    "dono-davide": {
+      "giveItem": "davide-drumkey",
+      "lines": [
+        "Eccola qui: la mia chiavetta a T per i tiranti!",
+        "Serve per accordare rullante e tom, ma anche per stringere le memorie dei piatti. Tienila sempre nello zaino per le emergenze da palco."
+      ],
+      "options": [
+        {
+          "text": "Grazie Davide, tornerà utilissima!",
+          "next": "ringraziamento-davide"
+        }
+      ]
+    },
+    "ringraziamento-davide": {
+      "lines": [
+        "Ora che ce l'hai anche tu, guai a chi lascia un'asta allentata!"
       ]
     }
   }
