@@ -1,52 +1,39 @@
 import { Events, emit } from '../core/eventBus.js';
+import cables from '../data/items/cables.json';
+import concyTuner from '../data/items/concy-tuner.json';
+import marcoPick from '../data/items/marco-pick.json';
+import davideDrumkey from '../data/items/davide-drumkey.json';
+import riccardoPopfilter from '../data/items/riccardo-popfilter.json';
 
 /**
  * Catalogo degli oggetti dell'inventario.
  * Ciascun oggetto ha un identificativo univoco, nome, categoria, icona procedurale
  * e descrizione narrativa dettagliata.
+ * Gli oggetti vengono caricati da `src/data/items/*.json`.
  */
-export const ITEMS = {
-  cables: {
-    id: 'cables',
-    name: 'Matassa di cavi di scorta',
-    shortName: 'Cavi di scorta',
-    category: 'Connessioni',
-    description: 'Un cavo audio spiralato nero ben arrotolato con fascetta a strappo. Prontissimo per collegare un ampli, una cassa o un microfono in caso di emergenza.',
-    iconKey: 'item-cables'
-  },
-  'concy-tuner': {
-    id: 'concy-tuner',
-    name: 'Accordatore a pedale',
-    shortName: 'Accordatore',
-    category: 'Effetti & Pedali',
-    description: 'Un robusto pedale d\'acciaio blu notte di Concy con display luminoso a LED. Fondamentale per tenere il basso intonato e le frequenze basse solide.',
-    iconKey: 'item-concy-tuner'
-  },
-  'marco-pick': {
-    id: 'marco-pick',
-    name: 'Plettro Jackanal Heavy',
-    shortName: 'Plettro Heavy',
-    category: 'Accessori Chitarra',
-    description: 'Un plettro triangolare in celluloide tartarugata regalato da Marco, con il logo Jackanal stampato a caldo. Rigido e perfetto per i riff veloci.',
-    iconKey: 'item-marco-pick'
-  },
-  'davide-drumkey': {
-    id: 'davide-drumkey',
-    name: 'Chiavetta per batteria',
-    shortName: 'Chiavetta',
-    category: 'Attrezzi Batteria',
-    description: 'Una chiave a T cromata da taschino che Davide usa per accordare i tiranti del rullante e stringere i morsetti delle aste piatti.',
-    iconKey: 'item-davide-drumkey'
-  },
-  'riccardo-popfilter': {
-    id: 'riccardo-popfilter',
-    name: 'Filtro antipop tascabile',
-    shortName: 'Filtro antipop',
-    category: 'Accessori Voce',
-    description: 'Una retina circolare nera con morsetto regolabile che Riccardo porta sempre con sé. Ferma i colpi d\'aria prima che facciano fischiare l\'impianto.',
-    iconKey: 'item-riccardo-popfilter'
-  }
+const staticItems = {
+  [cables.id]: cables,
+  [concyTuner.id]: concyTuner,
+  [marcoPick.id]: marcoPick,
+  [davideDrumkey.id]: davideDrumkey,
+  [riccardoPopfilter.id]: riccardoPopfilter
 };
+
+let dynamicItems = {};
+try {
+  const itemModules = import.meta.glob('../data/items/*.json', { eager: true });
+  for (const itemPath in itemModules) {
+    const mod = itemModules[itemPath];
+    const item = mod?.default ?? mod;
+    if (item && item.id) {
+      dynamicItems[item.id] = item;
+    }
+  }
+} catch {
+  // In caso di ambiente non-Vite, ripiega su staticItems
+}
+
+export const ITEMS = Object.keys(dynamicItems).length > 0 ? dynamicItems : staticItems;
 
 /**
  * Gestione dello stato dell'inventario (singleton).

@@ -412,8 +412,9 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
       this.drawSlotBg(bg, slotSize, slotSize, isSelected, item !== null);
 
       if (item) {
-        // Mostra solo l'icona!
-        const icon = this.scene.add.image(slotSize / 2, slotSize / 2, item.iconKey)
+        // Mostra l'icona (con fallback a item-generic se mancante)
+        const textureKey = this.scene.textures.exists(item.iconKey) ? item.iconKey : 'item-generic';
+        const icon = this.scene.add.image(slotSize / 2, slotSize / 2, textureKey)
           .setDisplaySize(34, 34);
 
         const hit = this.scene.add.zone(slotSize / 2, slotSize / 2, slotSize, slotSize)

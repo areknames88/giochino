@@ -1,0 +1,8 @@
+{
+  "id": "batteria-da",
+  "name": "Nuovo Oggetto",
+  "shortName": "Nuovo",
+  "category": "Varie",
+  "description": "Descrizione dell'oggetto da raccogliere che apparirà nello zaino dell'inventario.",
+  "iconKey": "item-generic"
+}

@@ -268,6 +268,33 @@ filtro NEAREST):
 
 ## Log delle sessioni
 
+### 2026-10-14 — Sessione 23: Sezione Catalogo Inventario nell'Editor CMS, oggetti data-driven e assegnazione dinamica
+
+Fatto:
+
+- **Oggetti inventario data-driven (`src/data/items/*.json`)**:
+  - Estratto il catalogo degli oggetti dall'oggetto statico di `src/game/inventory.js` trasformandolo in file JSON individuali all'interno di `src/data/items/` (`cables.json`, `concy-tuner.json`, `marco-pick.json`, `davide-drumkey.json`, `riccardo-popfilter.json`).
+  - `src/game/inventory.js` ora importa e aggrega dinamicamente tutti i file da `src/data/items/` via `import.meta.glob` (con fallback statico di sicurezza), consentendo l'aggiunta di nuovi oggetti direttamente dall'editor CMS senza dover toccare il codice del gioco.
+  - Generata nuova texture procedurale fallback `item-generic` in `src/gfx/inventoryArt.js` e aggiunto fallback in `src/ui/InventoryBox.js` in modo che qualsiasi nuovo oggetto creato dall'editor disponga automaticamente di un'icona retro dorata se non ne viene indicata una specifica.
+- **Sezione dedicata all'inventario nell'Editor (`editor.html`)**:
+  - Aggiunta terza scheda nella sidebar: `🎒 Inventario (<span id="itemsCount">0</span>)`.
+  - Tasto `+ Nuovo Oggetto Inventario` che guida la creazione rapida di nuovi oggetti raccoglibili con ID univoco normalizzato.
+  - Editor centrale dedicato:
+    - ID univoco, Nome completo (`name`), Nome breve per la barra slot (`shortName`), Categoria con datalist guidato (`category`), Selettore texture/icona (`iconKey`), Descrizione narrativa (`description`).
+    - Scheda *"🗺️ Come si Ottiene nel Gioco"*: scansione automatica di tutte le stanze e di tutti i grafi di dialogo NPC per evidenziare dove e come l'oggetto viene consegnato o raccolto (`giveItem`), con pulsanti per saltare all'arredo o al dialogo corrispondente.
+    - Pulsante `🗑️ Elimina Oggetto` con verifica delle referenze attive prima dell'eliminazione.
+  - **Simulatore in-game dell'inventario (Colonna 3)**:
+    - Quando si seleziona un oggetto dell'inventario, la colonna di destra mostra l'esatta replica fedele dello zaino in-game (`InventoryBox.js`), con slot evidenziato, icona, barra comandi e scheda dettagli espansa con badge di categoria.
+- **Integrazione `giveItem` e `removeProp` negli arredi e nei dialoghi (`editor.html`)**:
+  - Nell'editor degli arredi di scena (`renderPropEditor`), ogni nodo di reazione ora offre un menu a tendina per assegnare un oggetto dall'inventario (`giveItem`) e una checkbox per rimuovere l'arredo dalla stanza dopo la raccolta (`removeProp`).
+  - Nell'editor dei dialoghi NPC (`renderNodesList`), ogni nodo consente di selezionare un oggetto da consegnare al giocatore (`giveItem`). Durante la simulazione del dialogo, la battuta finale riporta l'avviso visivo del dono ottenuto.
+- **API Server & Dev Middleware (`vite.config.js` e `scripts/editorServer.js`)**:
+  - Aggiunto `DATA_PATHS.items`, supporto nel salvataggio `/api/save/all` e `/api/data`, con sincronizzazione dei file su disco e cancellazione dei file rimossi.
+- **Verifiche**:
+  - `npm run lint` pulito (0 errori);
+  - `npm run build` ok (56 moduli);
+  - `npm run build:single` ok (bundle single-file sincronizzato).
+
 ### 2026-10-14 — Sessione 22: Rimozione label 'TRASCINA' dall'inventario e movimento libero con zaino aperto
 
 Fatto:

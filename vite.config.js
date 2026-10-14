@@ -64,7 +64,8 @@ function editorApiPlugin() {
         rooms: path.join(__dirname, 'src', 'data', 'rooms'),
         playables: path.join(__dirname, 'src', 'data', 'characters', 'playable'),
         npcs: path.join(__dirname, 'src', 'data', 'characters', 'npc'),
-        dialogues: path.join(__dirname, 'src', 'data', 'dialogues')
+        dialogues: path.join(__dirname, 'src', 'data', 'dialogues'),
+        items: path.join(__dirname, 'src', 'data', 'items')
       };
 
       function readJsonDir(dirPath) {
@@ -91,7 +92,8 @@ function editorApiPlugin() {
             rooms: readJsonDir(DATA_PATHS.rooms),
             playables: readJsonDir(DATA_PATHS.playables),
             npcs: readJsonDir(DATA_PATHS.npcs),
-            dialogues: readJsonDir(DATA_PATHS.dialogues)
+            dialogues: readJsonDir(DATA_PATHS.dialogues),
+            items: readJsonDir(DATA_PATHS.items)
           };
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(JSON.stringify({ success: true, data }));
@@ -103,7 +105,7 @@ function editorApiPlugin() {
           req.on('data', (c) => { body += c; });
           req.on('end', () => {
             try {
-              const { rooms = {}, dialogues = {} } = JSON.parse(body);
+              const { rooms = {}, dialogues = {}, items = {} } = JSON.parse(body);
               let count = 0;
               for (const [roomId, data] of Object.entries(rooms)) {
                 if (/^[a-zA-Z0-9_-]+$/.test(roomId)) {
@@ -114,6 +116,22 @@ function editorApiPlugin() {
               for (const [dialogueId, data] of Object.entries(dialogues)) {
                 if (/^[a-zA-Z0-9_-]+$/.test(dialogueId)) {
                   fs.writeFileSync(path.join(DATA_PATHS.dialogues, `${dialogueId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
+                  count += 1;
+                }
+              }
+              if (!fs.existsSync(DATA_PATHS.items)) {
+                fs.mkdirSync(DATA_PATHS.items, { recursive: true });
+              }
+              const existingItemFiles = fs.readdirSync(DATA_PATHS.items).filter((f) => f.endsWith('.json'));
+              for (const file of existingItemFiles) {
+                const id = path.basename(file, '.json');
+                if (!items[id]) {
+                  fs.unlinkSync(path.join(DATA_PATHS.items, file));
+                }
+              }
+              for (const [itemId, data] of Object.entries(items)) {
+                if (/^[a-zA-Z0-9_-]+$/.test(itemId)) {
+                  fs.writeFileSync(path.join(DATA_PATHS.items, `${itemId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
                   count += 1;
                 }
               }

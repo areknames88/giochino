@@ -12,7 +12,8 @@ const DATA_PATHS = {
   rooms: path.join(ROOT_DIR, 'src', 'data', 'rooms'),
   playables: path.join(ROOT_DIR, 'src', 'data', 'characters', 'playable'),
   npcs: path.join(ROOT_DIR, 'src', 'data', 'characters', 'npc'),
-  dialogues: path.join(ROOT_DIR, 'src', 'data', 'dialogues')
+  dialogues: path.join(ROOT_DIR, 'src', 'data', 'dialogues'),
+  items: path.join(ROOT_DIR, 'src', 'data', 'items')
 };
 
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
@@ -122,7 +123,8 @@ const server = http.createServer(async (req, res) => {
         rooms: readJsonDir(DATA_PATHS.rooms),
         playables: readJsonDir(DATA_PATHS.playables),
         npcs: readJsonDir(DATA_PATHS.npcs),
-        dialogues: readJsonDir(DATA_PATHS.dialogues)
+        dialogues: readJsonDir(DATA_PATHS.dialogues),
+        items: readJsonDir(DATA_PATHS.items)
       };
       sendJson(res, 200, { success: true, data });
     } catch (err) {
@@ -148,6 +150,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/save/item' && req.method === 'POST') {
+    try {
+      const { itemId, data } = await parseBody(req);
+      if (!itemId || typeof itemId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(itemId)) {
+        sendJson(res, 400, { success: false, error: 'itemId non valido' });
+        return;
+      }
+      if (!fs.existsSync(DATA_PATHS.items)) {
+        fs.mkdirSync(DATA_PATHS.items, { recursive: true });
+      }
+      const target = path.join(DATA_PATHS.items, `${itemId}.json`);
+      fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
+      console.log(`[editor] Salvato oggetto: ${itemId}.json`);
+      sendJson(res, 200, { success: true, message: `Oggetto ${itemId} salvato` });
+    } catch (err) {
+      sendJson(res, 500, { success: false, error: err.message });
+    }
+    return;
+  }
+
   if (pathname === '/api/save/dialogue' && req.method === 'POST') {
     try {
       const { dialogueId, data } = await parseBody(req);
@@ -167,7 +189,7 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/save/all' && req.method === 'POST') {
     try {
-      const { rooms = {}, dialogues = {} } = await parseBody(req);
+      const { rooms = {}, dialogues = {}, items = {} } = await parseBody(req);
       let count = 0;
 
       for (const [roomId, data] of Object.entries(rooms)) {
@@ -181,6 +203,24 @@ const server = http.createServer(async (req, res) => {
       for (const [dialogueId, data] of Object.entries(dialogues)) {
         if (/^[a-zA-Z0-9_-]+$/.test(dialogueId)) {
           const target = path.join(DATA_PATHS.dialogues, `${dialogueId}.json`);
+          fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
+          count += 1;
+        }
+      }
+
+      if (!fs.existsSync(DATA_PATHS.items)) {
+        fs.mkdirSync(DATA_PATHS.items, { recursive: true });
+      }
+      const existingItemFiles = fs.readdirSync(DATA_PATHS.items).filter((f) => f.endsWith('.json'));
+      for (const file of existingItemFiles) {
+        const id = path.basename(file, '.json');
+        if (!items[id]) {
+          fs.unlinkSync(path.join(DATA_PATHS.items, file));
+        }
+      }
+      for (const [itemId, data] of Object.entries(items)) {
+        if (/^[a-zA-Z0-9_-]+$/.test(itemId)) {
+          const target = path.join(DATA_PATHS.items, `${itemId}.json`);
           fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
           count += 1;
         }

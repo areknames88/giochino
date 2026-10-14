@@ -777,6 +777,145 @@
       color: #e8bb8d;
     }
 
+    /* IN-GAME INVENTORY SIMULATION BOX */
+    .inventory-box-preview {
+      background: #170f09;
+      border: 2px solid #8b5a2b;
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .inv-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #8b5a2b;
+      padding-bottom: 8px;
+    }
+
+    .inv-preview-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f0c27a;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .inv-preview-count {
+      font-size: 11px;
+      color: #a68c74;
+      background: rgba(0,0,0,0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #4a301a;
+    }
+
+    .inv-preview-slots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 6px 0;
+    }
+
+    .inv-preview-slot {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #1d120a;
+      border: 2px solid #54381e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .inv-preview-slot.selected {
+      background: #382312;
+      border-color: #f0c27a;
+      box-shadow: 0 0 10px rgba(240, 194, 122, 0.4);
+      transform: scale(1.05);
+    }
+
+    .inv-preview-slot.empty {
+      opacity: 0.35;
+      border-style: dashed;
+      font-size: 14px;
+      color: #8b5a2b;
+    }
+
+    .inv-preview-control-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #24160c;
+      border: 1px solid #5a3a1e;
+      border-radius: 6px;
+      padding: 6px 12px;
+    }
+
+    .inv-preview-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f5e8d5;
+    }
+
+    .inv-preview-info-btn {
+      font-size: 11px;
+      font-weight: 700;
+      color: #120c08;
+      background: #f0c27a;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .inv-preview-details {
+      background: #1a1009;
+      border: 1px solid #8b5a2b;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .inv-preview-cat-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #f0c27a;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      background: rgba(139, 90, 43, 0.35);
+      border: 1px solid #8b5a2b;
+      padding: 2px 8px;
+      border-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .inv-preview-full-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f5e8d5;
+    }
+
+    .inv-preview-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #cbb8a2;
+    }
+
     /* TOAST NOTIFICATION */
     .toast {
       position: fixed;
@@ -877,14 +1016,15 @@
 
     <!-- COL 1: SIDEBAR -->
     <aside class="sidebar">
-      <div class="room-selector-box">
+      <div id="roomSelectorBox" class="room-selector-box">
         <label for="roomSelect" style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block;">Scenario / Stanza</label>
         <select id="roomSelect" class="room-select"></select>
       </div>
 
       <div class="tabs-bar">
-        <button id="tabProps" class="tab-btn active">📦 Oggetti (<span id="propsCount">0</span>)</button>
-        <button id="tabNpcs" class="tab-btn">👥 Personaggi / NPC (<span id="npcsCount">0</span>)</button>
+        <button id="tabProps" class="tab-btn active">📦 Arredi (<span id="propsCount">0</span>)</button>
+        <button id="tabNpcs" class="tab-btn">👥 Personaggi (<span id="npcsCount">0</span>)</button>
+        <button id="tabItems" class="tab-btn">🎒 Inventario (<span id="itemsCount">0</span>)</button>
       </div>
 
       <div id="sidebarList" class="sidebar-list">
@@ -901,7 +1041,7 @@
           </div>
           <div class="editor-headline">
             <h2 id="editorTitle">Seleziona un elemento</h2>
-            <p id="editorSubtitle">Scegli un oggetto o un NPC dalla barra a sinistra per modificarlo</p>
+            <p id="editorSubtitle">Scegli un arredo, un NPC o un oggetto dalla barra a sinistra per modificarlo</p>
           </div>
         </div>
         <div id="editorActions">
@@ -913,7 +1053,7 @@
         <div class="empty-state">
           <div class="empty-icon">👈</div>
           <h3>Nessun elemento selezionato</h3>
-          <p>Seleziona un arredo o un NPC dalla colonna a sinistra per iniziare a modificare descrizioni e dialoghi.</p>
+          <p>Seleziona un arredo, un NPC o un oggetto dell'inventario dalla colonna a sinistra per iniziare.</p>
         </div>
       </div>
     </main>
@@ -921,12 +1061,12 @@
     <!-- COL 3: IN-GAME PREVIEW -->
     <aside class="preview-pane">
       <div class="preview-header">
-        <span>🎮 Anteprima In-Game</span>
+        <span id="previewHeaderTitle">🎮 Anteprima In-Game</span>
         <button id="btnRestartPreview" class="btn btn-secondary btn-sm" title="Riavvia simulazione">🔄 Riavvia</button>
       </div>
       <div class="preview-body">
-        <div class="preview-hint">
-          Simulatore dal vivo: vedi esattamente come appariranno le battute nel riquadro di gioco e clicca sulle risposte per testare il flusso dei dialoghi!
+        <div class="preview-hint" id="previewHint">
+          Simulatore dal vivo: vedi esattamente come appariranno dialoghi e oggetti nel riquadro di gioco!
         </div>
 
         <!-- DIALOGUE BOX SIMULATION -->
@@ -938,11 +1078,33 @@
             </div>
             <div class="game-content">
               <div id="previewSpeaker" class="game-speaker-name">Narratore</div>
-              <div id="previewSpeech" class="game-speech-text">Seleziona un oggetto o un NPC per vedere l'anteprima.</div>
+              <div id="previewSpeech" class="game-speech-text">Seleziona un elemento per vedere l'anteprima.</div>
             </div>
           </div>
           <div id="previewOptionsList" class="game-options-list" style="display: none;">
             <!-- Options rendered via JS -->
+          </div>
+        </div>
+
+        <!-- INVENTORY BOX SIMULATION -->
+        <div id="previewInventoryBox" class="inventory-box-preview" style="display: none;">
+          <div class="inv-preview-header">
+            <div class="inv-preview-title">
+              <span>🎒 INVENTARIO (ZAINO)</span>
+            </div>
+            <div id="invPreviewCount" class="inv-preview-count">1 Oggetto</div>
+          </div>
+          <div class="inv-preview-slots" id="invPreviewSlots">
+            <!-- Rendered via JS -->
+          </div>
+          <div class="inv-preview-control-bar">
+            <span id="invPreviewItemName" class="inv-preview-item-name">Oggetto</span>
+            <span class="inv-preview-info-btn">ℹ️ INFO</span>
+          </div>
+          <div class="inv-preview-details">
+            <span id="invPreviewCatBadge" class="inv-preview-cat-badge">CATEGORIA</span>
+            <div id="invPreviewFullName" class="inv-preview-full-name">Nome Oggetto</div>
+            <div id="invPreviewDesc" class="inv-preview-desc">Descrizione...</div>
           </div>
         </div>
       </div>
@@ -962,11 +1124,13 @@
       playables: {},
       npcs: {},
       dialogues: {},
+      items: {},
       currentRoomId: null,
-      activeTab: 'props', // 'props' | 'npcs'
-      selectedItemType: null, // 'prop' | 'npc'
+      activeTab: 'props', // 'props' | 'npcs' | 'items'
+      selectedItemType: null, // 'prop' | 'npc' | 'item'
       selectedPropIndex: null,
       selectedNpcId: null,
+      selectedItemId: null,
       selectedListenerId: 'default',
       isDirty: false,
       preview: {
@@ -986,6 +1150,19 @@
       if (!id) return 'public/favicon.svg';
       const clean = id.toLowerCase().trim();
       return AVATAR_MAP[clean] || 'public/favicon.svg';
+    }
+
+    function getItemEmoji(iconKey) {
+      switch (iconKey) {
+        case 'item-cables': return '🔌';
+        case 'item-concy-tuner': return '🎛️';
+        case 'item-marco-pick': return '🎸';
+        case 'item-davide-drumkey': return '🥁';
+        case 'item-riccardo-popfilter': return '🎤';
+        case 'item-generic':
+        default:
+          return '🎒';
+      }
     }
 
     function showToast(message, type = 'success') {
@@ -1020,6 +1197,7 @@
         state.playables = json.data.playables || {};
         state.npcs = json.data.npcs || {};
         state.dialogues = json.data.dialogues || {};
+        state.items = json.data.items || {};
 
         const roomIds = Object.keys(state.rooms);
         if (roomIds.length > 0) {
@@ -1039,7 +1217,8 @@
       try {
         const payload = {
           rooms: state.rooms,
-          dialogues: state.dialogues
+          dialogues: state.dialogues,
+          items: state.items
         };
         const res = await fetch('/api/save/all', {
           method: 'POST',
@@ -1086,18 +1265,19 @@
 
     function renderSidebarList() {
       const room = state.rooms[state.currentRoomId];
-      if (!room) return;
-
-      const props = room.props || [];
-      const characters = room.characters || [];
+      const props = room ? (room.props || []) : [];
+      const characters = room ? (room.characters || []) : [];
+      const items = Object.values(state.items || {});
 
       document.getElementById('propsCount').textContent = props.length;
       document.getElementById('npcsCount').textContent = characters.length;
+      document.getElementById('itemsCount').textContent = items.length;
 
       const list = document.getElementById('sidebarList');
       list.innerHTML = '';
 
       if (state.activeTab === 'props') {
+        if (!room) return;
         props.forEach((prop, index) => {
           const card = document.createElement('div');
           card.className = `item-card ${state.selectedItemType === 'prop' && state.selectedPropIndex === index ? 'active' : ''}`;
@@ -1116,15 +1296,16 @@
           card.innerHTML = `
             <div class="item-icon">${icon}</div>
             <div class="item-info">
-              <div class="item-title">${prop.label || prop.type}</div>
-              <div class="item-subtitle">${prop.description ? prop.description.slice(0, 38) + '...' : 'Nessuna descrizione'}</div>
+              <div class="item-title">${escapeHtml(prop.label || prop.type)}</div>
+              <div class="item-subtitle">${prop.description ? escapeHtml(prop.description.slice(0, 38)) + '...' : 'Nessuna descrizione'}</div>
             </div>
-            <span class="tag-badge">${prop.type}</span>
+            <span class="tag-badge">${escapeHtml(prop.type)}</span>
           `;
           card.onclick = () => selectProp(index);
           list.appendChild(card);
         });
-      } else {
+      } else if (state.activeTab === 'npcs') {
+        if (!room) return;
         // NPCs in room
         characters.forEach((char) => {
           const charInfo = state.playables[char.id] || state.npcs[char.id] || { name: char.id, tagline: 'NPC' };
@@ -1137,14 +1318,45 @@
               <img src="${avatarUrl}" alt="${charInfo.name}" onerror="this.src='public/favicon.svg'">
             </div>
             <div class="item-info">
-              <div class="item-title">${charInfo.name || char.id}</div>
-              <div class="item-subtitle">${charInfo.tagline || 'Personaggio'}</div>
+              <div class="item-title">${escapeHtml(charInfo.name || char.id)}</div>
+              <div class="item-subtitle">${escapeHtml(charInfo.tagline || 'Personaggio')}</div>
             </div>
             <span class="tag-badge">NPC</span>
           `;
           card.onclick = () => selectNpc(char.id);
           list.appendChild(card);
         });
+      } else if (state.activeTab === 'items') {
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-primary btn-sm';
+        addBtn.style.cssText = 'width: 100%; justify-content: center; margin-bottom: 8px;';
+        addBtn.innerHTML = '+ Nuovo Oggetto Inventario';
+        addBtn.onclick = createNewItem;
+        list.appendChild(addBtn);
+
+        items.forEach((item) => {
+          const card = document.createElement('div');
+          card.className = `item-card ${state.selectedItemType === 'item' && state.selectedItemId === item.id ? 'active' : ''}`;
+          const icon = getItemEmoji(item.iconKey);
+
+          card.innerHTML = `
+            <div class="item-icon" style="background: #24160c; border-color: #8b5a2b; font-size: 20px;">${icon}</div>
+            <div class="item-info">
+              <div class="item-title">${escapeHtml(item.name || item.id)}</div>
+              <div class="item-subtitle">${escapeHtml(item.category || 'Varie')} • <code>${escapeHtml(item.id)}</code></div>
+            </div>
+            <span class="tag-badge" style="border-color: #8b5a2b; color: var(--gold);">${escapeHtml(item.shortName || 'Item')}</span>
+          `;
+          card.onclick = () => selectItem(item.id);
+          list.appendChild(card);
+        });
+
+        if (items.length === 0) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;';
+          empty.textContent = 'Nessun oggetto presente. Clicca su "+ Nuovo Oggetto Inventario" per iniziare.';
+          list.appendChild(empty);
+        }
       }
     }
 
@@ -1153,6 +1365,7 @@
       state.selectedItemType = 'prop';
       state.selectedPropIndex = index;
       state.selectedNpcId = null;
+      state.selectedItemId = null;
       state.preview.propCurrentNodeId = '__root__';
       renderSidebarList();
       renderPropEditor(index);
@@ -1163,9 +1376,42 @@
       state.selectedItemType = 'npc';
       state.selectedNpcId = charId;
       state.selectedPropIndex = null;
+      state.selectedItemId = null;
       renderSidebarList();
       renderNpcEditor(charId);
       initNpcPreview(charId);
+    }
+
+    function selectItem(itemId) {
+      state.selectedItemType = 'item';
+      state.selectedItemId = itemId;
+      state.selectedPropIndex = null;
+      state.selectedNpcId = null;
+      renderSidebarList();
+      renderItemEditor(itemId);
+      updateItemPreview(itemId);
+    }
+
+    function createNewItem() {
+      const id = prompt('Inserisci un ID univoco per il nuovo oggetto (es. cavo-oro, cuffie, plettro-extra):');
+      if (!id || !id.trim()) return;
+      const cleanId = id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      if (state.items[cleanId]) {
+        alert('Esiste già un oggetto con questo ID!');
+        return;
+      }
+      state.items[cleanId] = {
+        id: cleanId,
+        name: 'Nuovo Oggetto',
+        shortName: 'Nuovo',
+        category: 'Varie',
+        description: 'Descrizione dell\'oggetto da raccogliere che apparirà nello zaino dell\'inventario.',
+        iconKey: 'item-generic'
+      };
+      markDirty();
+      switchTab('items');
+      selectItem(cleanId);
+      showToast(`Oggetto "${cleanId}" creato con successo!`);
     }
 
     // --- PROP EDITOR ---
@@ -1226,6 +1472,23 @@
               </div>
               <div class="lines-group">
                 ${linesHtml}
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border);">
+              <div>
+                <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎒 Consegna Oggetto Inventario</label>
+                <select class="form-control prop-node-give-item">
+                  <option value="">[Nessun oggetto]</option>
+                  ${Object.values(state.items || {}).map((it) => `
+                    <option value="${it.id}" ${node.giveItem === it.id ? 'selected' : ''}>${escapeHtml(it.name)} (${it.id})</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; padding-top: 16px;">
+                <input type="checkbox" class="prop-node-remove-prop" id="remProp_${nodeId}" ${node.removeProp ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;">
+                <label for="remProp_${nodeId}" style="cursor: pointer; font-size: 12px; color: var(--text-main); text-transform: none; font-weight: 500;">
+                  🗑️ Rimuovi arredo dopo raccolta
+                </label>
               </div>
             </div>
           </div>
@@ -1390,13 +1653,40 @@
             updatePropPreview(index);
           };
         });
+
+        const giveItemSelect = card.querySelector('.prop-node-give-item');
+        if (giveItemSelect) {
+          giveItemSelect.onchange = (e) => {
+            if (e.target.value) {
+              node.giveItem = e.target.value;
+            } else {
+              delete node.giveItem;
+            }
+            markDirty();
+          };
+        }
+
+        const remPropCheck = card.querySelector('.prop-node-remove-prop');
+        if (remPropCheck) {
+          remPropCheck.onchange = (e) => {
+            if (e.target.checked) {
+              node.removeProp = true;
+            } else {
+              delete node.removeProp;
+            }
+            markDirty();
+          };
+        }
       });
     }
 
     function updatePropPreview(index) {
       const room = state.rooms[state.currentRoomId];
-      const prop = room.props[index];
+      const prop = room ? room.props[index] : null;
       if (!prop) return;
+
+      document.getElementById('previewGameBox').style.display = 'flex';
+      document.getElementById('previewInventoryBox').style.display = 'none';
 
       document.getElementById('previewAvatar').src = 'public/favicon.svg';
       document.getElementById('previewSpeaker').textContent = prop.label || prop.type;
@@ -1453,6 +1743,286 @@
           optList.style.display = 'none';
         }
       }
+    }
+
+    // --- INVENTORY ITEM EDITOR ---
+    function findItemReferences(itemId) {
+      const refs = [];
+      // Rooms & Props
+      for (const [roomId, room] of Object.entries(state.rooms || {})) {
+        (room.props || []).forEach((prop, propIndex) => {
+          if (prop.id === itemId) {
+            refs.push({
+              type: 'prop',
+              roomId,
+              roomName: room.name || roomId,
+              propLabel: prop.label || prop.type,
+              propIndex,
+              nodeId: 'arredo'
+            });
+          }
+          if (prop.nodes && typeof prop.nodes === 'object') {
+            for (const [nodeId, node] of Object.entries(prop.nodes)) {
+              if (node.giveItem === itemId) {
+                refs.push({
+                  type: 'prop',
+                  roomId,
+                  roomName: room.name || roomId,
+                  propLabel: prop.label || prop.type,
+                  propIndex,
+                  nodeId
+                });
+              }
+            }
+          }
+        });
+      }
+      // Dialogues
+      for (const [speakerId, dialogue] of Object.entries(state.dialogues || {})) {
+        const charInfo = state.playables[speakerId] || state.npcs[speakerId] || { name: speakerId };
+        for (const [nodeId, node] of Object.entries(dialogue.nodes || {})) {
+          if (node.giveItem === itemId) {
+            refs.push({
+              type: 'dialogue',
+              speakerId,
+              speakerName: charInfo.name || speakerId,
+              nodeId
+            });
+          }
+        }
+      }
+      return refs;
+    }
+
+    window.jumpToProp = function(roomId, propIndex) {
+      state.currentRoomId = roomId;
+      const select = document.getElementById('roomSelect');
+      if (select) select.value = roomId;
+      switchTab('props');
+      selectProp(propIndex);
+    };
+
+    window.jumpToDialogue = function(charId, _nodeId) {
+      switchTab('npcs');
+      selectNpc(charId);
+    };
+
+    function renderItemEditor(itemId) {
+      const item = state.items[itemId];
+      if (!item) return;
+
+      document.getElementById('editorAvatarImg').src = 'public/favicon.svg';
+      document.getElementById('editorTitle').textContent = item.name || item.id;
+      document.getElementById('editorSubtitle').textContent = `Oggetto Inventario (${item.id}) • Categoria: ${item.category || 'Varie'}`;
+
+      const actions = document.getElementById('editorActions');
+      actions.innerHTML = `
+        <button id="btnDeleteItem" class="btn btn-danger btn-sm" title="Elimina oggetto">🗑️ Elimina Oggetto</button>
+      `;
+
+      document.getElementById('btnDeleteItem').onclick = () => {
+        const refs = findItemReferences(itemId);
+        let msg = `Sei sicuro di voler eliminare l'oggetto "${item.name}" (${itemId})?`;
+        if (refs.length > 0) {
+          msg += `\n\nAttenzione: questo oggetto è attualmente assegnato a ${refs.length} elementi di gioco (arredi o dialoghi)!`;
+        }
+        if (confirm(msg)) {
+          delete state.items[itemId];
+          markDirty();
+          state.selectedItemType = null;
+          state.selectedItemId = null;
+          renderSidebarList();
+          renderEmptyEditor();
+          showToast(`Oggetto "${itemId}" eliminato`);
+        }
+      };
+
+      const refs = findItemReferences(itemId);
+      let refsHtml = '';
+      if (refs.length > 0) {
+        refsHtml = refs.map((ref) => {
+          if (ref.type === 'prop') {
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px;">
+                <div>
+                  <strong style="color: var(--gold);">📦 Stanza:</strong> ${escapeHtml(ref.roomName)} &nbsp;→&nbsp;
+                  <strong>Arredo:</strong> ${escapeHtml(ref.propLabel)} 
+                  <span class="tag-badge" style="margin-left: 6px;">nodo: ${escapeHtml(ref.nodeId || 'prop')}</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="jumpToProp('${ref.roomId}', ${ref.propIndex})">Vai all'arredo ↗</button>
+              </div>
+            `;
+          } else {
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px;">
+                <div>
+                  <strong style="color: var(--gold);">👥 Personaggio:</strong> ${escapeHtml(ref.speakerName)} &nbsp;→&nbsp;
+                  <span class="tag-badge">nodo: ${escapeHtml(ref.nodeId)}</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="jumpToDialogue('${ref.speakerId}', '${ref.nodeId}')">Vai al dialogo ↗</button>
+              </div>
+            `;
+          }
+        }).join('');
+      } else {
+        refsHtml = `
+          <div style="background: rgba(240, 194, 122, 0.05); border: 1px dashed var(--border-accent); padding: 12px; border-radius: 6px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+            ℹ️ <strong>Non ancora assegnato:</strong> questo oggetto non è attualmente assegnato a nessun arredo o dialogo.<br>
+            Per renderlo raccoglibile nel gioco:
+            <ul style="margin-left: 20px; margin-top: 6px;">
+              <li>Vai nella scheda <strong>Arredi</strong> di una stanza, seleziona una reazione dell'arredo e scegli questo oggetto in <em>"🎒 Consegna Oggetto"</em>.</li>
+              <li>Oppure vai nella scheda <strong>Personaggi</strong> e assegnalo in un nodo di dialogo con <em>"🎒 Consegna Oggetto al Giocatore"</em>.</li>
+            </ul>
+          </div>
+        `;
+      }
+
+      const body = document.getElementById('editorBody');
+      body.innerHTML = `
+        <div class="box-card">
+          <div class="box-card-header">
+            <span class="box-card-title">🎒 Dati Oggetto Raccoglibile</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Identificativo Univoco (ID)</label>
+              <input type="text" id="itemIdInput" class="form-control" value="${escapeHtml(item.id)}" disabled style="opacity: 0.7; cursor: not-allowed;">
+              <small style="font-size: 11px; color: var(--text-muted);">L'ID è la chiave univoca usata internamente nei salvataggi e nei file JSON.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Icona In-Game (Texture)</label>
+              <select id="itemIconKey" class="form-control">
+                <option value="item-generic" ${item.iconKey === 'item-generic' ? 'selected' : ''}>🎒 Oggetto generico (item-generic)</option>
+                <option value="item-cables" ${item.iconKey === 'item-cables' ? 'selected' : ''}>🔌 Matassa di cavi (item-cables)</option>
+                <option value="item-concy-tuner" ${item.iconKey === 'item-concy-tuner' ? 'selected' : ''}>🎛️ Accordatore a pedale (item-concy-tuner)</option>
+                <option value="item-marco-pick" ${item.iconKey === 'item-marco-pick' ? 'selected' : ''}>🎸 Plettro Jackanal Heavy (item-marco-pick)</option>
+                <option value="item-davide-drumkey" ${item.iconKey === 'item-davide-drumkey' ? 'selected' : ''}>🥁 Chiavetta batteria (item-davide-drumkey)</option>
+                <option value="item-riccardo-popfilter" ${item.iconKey === 'item-riccardo-popfilter' ? 'selected' : ''}>🎤 Filtro antipop (item-riccardo-popfilter)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Nome Completo (Name)</label>
+              <input type="text" id="itemName" class="form-control" value="${escapeHtml(item.name || '')}" placeholder="Es: Matassa di cavi di scorta">
+              <small style="font-size: 11px; color: var(--text-muted);">Nome esteso mostrato nei messaggi a comparsa ("Hai ottenuto: ...") e nella vista dettagli.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Nome Breve (Short Name)</label>
+              <input type="text" id="itemShortName" class="form-control" value="${escapeHtml(item.shortName || '')}" placeholder="Es: Cavi di scorta">
+              <small style="font-size: 11px; color: var(--text-muted);">Nome compatto mostrato nella barra dello zaino sotto agli slot.</small>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Categoria Oggetto (Category)</label>
+            <input type="text" id="itemCategory" list="catList" class="form-control" value="${escapeHtml(item.category || '')}" placeholder="Es: Connessioni, Accessori, Strumenti...">
+            <datalist id="catList">
+              <option value="Connessioni">
+              <option value="Effetti & Pedali">
+              <option value="Accessori Chitarra">
+              <option value="Attrezzi Batteria">
+              <option value="Accessori Voce">
+              <option value="Strumenti">
+              <option value="Varie">
+            </datalist>
+            <small style="font-size: 11px; color: var(--text-muted);">La categoria viene mostrata nel badge dorato in alto nella scheda dell'inventario.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Descrizione Narrativa Dettagliata (Description)</label>
+            <textarea id="itemDesc" class="form-control" rows="4" placeholder="Descrizione dettagliata dell'oggetto e della sua storia...">${escapeHtml(item.description || '')}</textarea>
+            <small style="font-size: 11px; color: var(--text-muted);">Questo testo viene visualizzato quando il giocatore apre lo zaino e clicca sul pulsante 'INFO'.</small>
+          </div>
+        </div>
+
+        <div class="box-card">
+          <div class="box-card-header">
+            <span class="box-card-title">🗺️ Come si Ottiene nel Gioco (Riferimenti)</span>
+            <span class="tag-badge">${refs.length} assegnazioni</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${refsHtml}
+          </div>
+        </div>
+      `;
+
+      // Event bindings for item form
+      document.getElementById('itemName').oninput = (e) => {
+        item.name = e.target.value;
+        document.getElementById('editorTitle').textContent = item.name || item.id;
+        markDirty();
+        renderSidebarList();
+        updateItemPreview(itemId);
+      };
+
+      document.getElementById('itemShortName').oninput = (e) => {
+        item.shortName = e.target.value;
+        markDirty();
+        renderSidebarList();
+        updateItemPreview(itemId);
+      };
+
+      document.getElementById('itemCategory').oninput = (e) => {
+        item.category = e.target.value;
+        document.getElementById('editorSubtitle').textContent = `Oggetto Inventario (${item.id}) • Categoria: ${item.category || 'Varie'}`;
+        markDirty();
+        renderSidebarList();
+        updateItemPreview(itemId);
+      };
+
+      document.getElementById('itemIconKey').onchange = (e) => {
+        item.iconKey = e.target.value;
+        markDirty();
+        renderSidebarList();
+        updateItemPreview(itemId);
+      };
+
+      document.getElementById('itemDesc').oninput = (e) => {
+        item.description = e.target.value;
+        markDirty();
+        updateItemPreview(itemId);
+      };
+    }
+
+    function updateItemPreview(itemId) {
+      const item = state.items[itemId];
+      if (!item) return;
+
+      document.getElementById('previewGameBox').style.display = 'none';
+      const invBox = document.getElementById('previewInventoryBox');
+      invBox.style.display = 'flex';
+
+      const allItemsCount = Object.keys(state.items || {}).length;
+      document.getElementById('invPreviewCount').textContent = `${allItemsCount} Oggetti nel Catalogo`;
+
+      // Render slots
+      const slotsContainer = document.getElementById('invPreviewSlots');
+      slotsContainer.innerHTML = '';
+
+      const icon = getItemEmoji(item.iconKey);
+      // Active slot
+      const activeSlot = document.createElement('div');
+      activeSlot.className = 'inv-preview-slot selected';
+      activeSlot.innerHTML = `<span>${icon}</span>`;
+      slotsContainer.appendChild(activeSlot);
+
+      // Empty decorative slots
+      for (let i = 0; i < 4; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'inv-preview-slot empty';
+        emptySlot.textContent = '+';
+        slotsContainer.appendChild(emptySlot);
+      }
+
+      document.getElementById('invPreviewItemName').textContent = item.shortName || item.name || item.id;
+      document.getElementById('invPreviewCatBadge').textContent = (item.category || 'Varie').toUpperCase();
+      document.getElementById('invPreviewFullName').textContent = item.name || item.id;
+      document.getElementById('invPreviewDesc').textContent = item.description || '(Nessuna descrizione impostata per questo oggetto)';
     }
 
     // --- NPC & DIALOGUE EDITOR ---
@@ -1640,6 +2210,17 @@
             </div>
           </div>
 
+          <!-- GIVE ITEM -->
+          <div style="margin-bottom: 12px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border);">
+            <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎒 Consegna Oggetto al Giocatore (giveItem)</label>
+            <select class="form-control npc-node-give-item">
+              <option value="">[Nessun oggetto consegnato]</option>
+              ${Object.values(state.items || {}).map((it) => `
+                <option value="${it.id}" ${node.giveItem === it.id ? 'selected' : ''}>${escapeHtml(it.name)} (${it.id})</option>
+              `).join('')}
+            </select>
+          </div>
+
           <!-- OPTIONS -->
           <div class="options-group">
             <div class="options-group-title">
@@ -1651,6 +2232,19 @@
             </div>
           </div>
         `;
+
+        // Event: Give Item
+        const npcGiveItem = card.querySelector('.npc-node-give-item');
+        if (npcGiveItem) {
+          npcGiveItem.onchange = (e) => {
+            if (e.target.value) {
+              node.giveItem = e.target.value;
+            } else {
+              delete node.giveItem;
+            }
+            markDirty();
+          };
+        }
 
         // Event: Delete node
         card.querySelector('.btn-del-node').onclick = () => {
@@ -1775,12 +2369,20 @@
         return;
       }
 
+      document.getElementById('previewGameBox').style.display = 'flex';
+      document.getElementById('previewInventoryBox').style.display = 'none';
+
       document.getElementById('previewAvatar').src = getAvatarUrl(charId);
       document.getElementById('previewSpeaker').textContent = charInfo.name || charId;
 
       const lines = Array.isArray(node.lines) ? node.lines : [];
       const lineText = lines[state.preview.currentLineIndex] || lines[0] || '';
-      document.getElementById('previewSpeech').textContent = lineText;
+      let itemNote = '';
+      if (node.giveItem) {
+        const itemObj = state.items[node.giveItem];
+        itemNote = `\n\n[🎁 Consegna oggetto: ${itemObj?.name || node.giveItem}]`;
+      }
+      document.getElementById('previewSpeech').textContent = lineText + itemNote;
 
       const optList = document.getElementById('previewOptionsList');
       const options = Array.isArray(node.options) ? node.options : [];
@@ -1824,31 +2426,57 @@
     function renderEmptyEditor() {
       document.getElementById('editorAvatarImg').src = 'public/favicon.svg';
       document.getElementById('editorTitle').textContent = 'Seleziona un elemento';
-      document.getElementById('editorSubtitle').textContent = 'Scegli un oggetto o un NPC dalla barra a sinistra per modificarlo';
+      document.getElementById('editorSubtitle').textContent = 'Scegli un arredo, un NPC o un oggetto dalla barra a sinistra per modificarlo';
+      const actions = document.getElementById('editorActions');
+      if (actions) actions.innerHTML = '';
+      document.getElementById('previewGameBox').style.display = 'flex';
+      document.getElementById('previewInventoryBox').style.display = 'none';
+      document.getElementById('previewSpeaker').textContent = 'Narratore';
+      document.getElementById('previewSpeech').textContent = 'Seleziona un elemento per vedere l\'anteprima.';
+      const optList = document.getElementById('previewOptionsList');
+      if (optList) optList.style.display = 'none';
       document.getElementById('editorBody').innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">👈</div>
           <h3>Nessun elemento selezionato</h3>
-          <p>Seleziona un arredo o un NPC dalla colonna a sinistra per iniziare a modificare descrizioni e dialoghi.</p>
+          <p>Seleziona un arredo, un NPC o un oggetto dell'inventario dalla colonna a sinistra per iniziare.</p>
         </div>
       `;
     }
 
+    function switchTab(tab) {
+      state.activeTab = tab;
+      document.getElementById('tabProps').classList.toggle('active', tab === 'props');
+      document.getElementById('tabNpcs').classList.toggle('active', tab === 'npcs');
+      document.getElementById('tabItems').classList.toggle('active', tab === 'items');
+
+      const roomWrap = document.getElementById('roomSelectorBox');
+      if (roomWrap) {
+        roomWrap.style.display = tab === 'items' ? 'none' : 'block';
+      }
+
+      renderSidebarList();
+
+      if (tab === 'items') {
+        if (state.selectedItemType !== 'item') {
+          const itemIds = Object.keys(state.items || {});
+          if (itemIds.length > 0) {
+            selectItem(itemIds[0]);
+          } else {
+            renderEmptyEditor();
+          }
+        }
+      }
+    }
+
+    window.switchTab = switchTab;
+
     // --- GLOBAL BINDINGS ---
     function bindGlobalEvents() {
       // Tabs
-      document.getElementById('tabProps').onclick = () => {
-        state.activeTab = 'props';
-        document.getElementById('tabProps').classList.add('active');
-        document.getElementById('tabNpcs').classList.remove('active');
-        renderSidebarList();
-      };
-      document.getElementById('tabNpcs').onclick = () => {
-        state.activeTab = 'npcs';
-        document.getElementById('tabNpcs').classList.add('active');
-        document.getElementById('tabProps').classList.remove('active');
-        renderSidebarList();
-      };
+      document.getElementById('tabProps').onclick = () => switchTab('props');
+      document.getElementById('tabNpcs').onclick = () => switchTab('npcs');
+      document.getElementById('tabItems').onclick = () => switchTab('items');
 
       // Header buttons
       document.getElementById('btnSaveAll').onclick = saveAllData;
@@ -1865,6 +2493,8 @@
         } else if (state.selectedItemType === 'prop') {
           state.preview.propCurrentNodeId = '__root__';
           updatePropPreview(state.selectedPropIndex);
+        } else if (state.selectedItemType === 'item') {
+          updateItemPreview(state.selectedItemId);
         }
       };
 

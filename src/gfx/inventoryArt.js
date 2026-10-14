@@ -232,9 +232,28 @@ function drawRiccardoPopfilter(g) {
   fillRect(g, 35, 42, 4, 2, 0xcbd5e1);
 }
 
+/**
+ * Icona generica per oggetti inventario (48x48)
+ */
+function drawGenericItem(g) {
+  const GOLD_DARK = 0x8b5a2b;
+  const GOLD_LIGHT = 0xf0c27a;
+  const INNER = 0x24160c;
+
+  fillRounded(g, 6, 6, 36, 36, 8, INNER);
+  strokeRounded(g, 6, 6, 36, 36, 8, GOLD_DARK, 2);
+  strokeRounded(g, 8, 8, 32, 32, 6, GOLD_LIGHT, 1);
+
+  // Simbolo centrale stilizzato
+  fillCircle(g, 20, 27, 4, GOLD_LIGHT);
+  fillRect(g, 22, 16, 3, 11, GOLD_LIGHT);
+  fillRect(g, 22, 14, 8, 4, GOLD_LIGHT);
+}
+
 export function createInventoryTextures(scene) {
   const textures = [
     { key: 'ui-backpack', w: 40, h: 40, draw: drawBackpack },
+    { key: 'item-generic', w: 48, h: 48, draw: drawGenericItem },
     { key: 'item-cables', w: 48, h: 48, draw: drawCables },
     { key: 'item-concy-tuner', w: 48, h: 48, draw: drawConcyTuner },
     { key: 'item-marco-pick', w: 48, h: 48, draw: drawMarcoPick },
