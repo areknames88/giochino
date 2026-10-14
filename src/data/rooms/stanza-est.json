@@ -1,0 +1,87 @@
+{
+  "id": "stanza-est",
+  "name": "Regia Audio",
+  "tagline": "Pareti acustiche in velluto bordeaux",
+  "description": "Una sala regia insonorizzata con parquet ciliegio scuro e pareti rivestite in panno bordeaux. L'acustica qui dentro è asciutta e pulita.",
+  "tileSize": 32,
+  "columns": 30,
+  "rows": 20,
+  "seed": 20261016,
+  "palette": {
+    "floor": {
+      "base": "#632d2d",
+      "light": "#7c3939",
+      "dark": "#4a2121",
+      "seam": "#311616"
+    },
+    "wall": {
+      "top": "#7a3838",
+      "light": "#994747",
+      "face": "#542626",
+      "dark": "#391919",
+      "seam": "#220f0f"
+    }
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 19,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    },
+    {
+      "x": 29,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    }
+  ],
+  "openings": [
+    {
+      "x": 0,
+      "y": 14,
+      "w": 1,
+      "h": 2
+    }
+  ],
+  "spawn": {
+    "x": 2.5,
+    "y": 15,
+    "facing": "right"
+  },
+  "props": [
+    {
+      "id": "door-west",
+      "type": "door",
+      "variant": "west",
+      "x": 0.5,
+      "y": 16,
+      "label": "Porta per la Sala Prove",
+      "prompt": "Entra",
+      "description": "La porta conduce di nuovo alla Sala Prove principale.",
+      "targetRoom": "sala-prove",
+      "targetSpawn": {
+        "x": 27,
+        "y": 15,
+        "facing": "left"
+      },
+      "direction": "left",
+      "options": [],
+      "nodes": {}
+    }
+  ],
+  "cables": [],
+  "characters": []
+}

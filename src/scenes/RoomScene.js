@@ -27,6 +27,7 @@ export default class RoomScene extends Phaser.Scene {
 
   init(data) {
     this.roomId = data?.roomId ?? this.registry.get('currentRoomId') ?? DEFAULT_ROOM_ID;
+    this.spawnOverride = data?.spawn ?? null;
     this.registry.set('currentRoomId', this.roomId);
   }
 
@@ -39,6 +40,8 @@ export default class RoomScene extends Phaser.Scene {
     this.drag = null;
     this.dialogueTarget = null;
     this.dialogueMaxDistance = 120;
+    this.isTransitioning = false;
+    this.southDoorWarningCooldown = false;
 
     this.unsubscribeDialogueClosed = on(Events.DIALOGUE_CLOSED, () => {
       this.dialogueTarget = null;
@@ -46,6 +49,25 @@ export default class RoomScene extends Phaser.Scene {
 
     this.unsubscribePropRemoved = on(Events.PROP_REMOVED, ({ prop }) => {
       this.removeProp(prop);
+    });
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      emit(Events.HINT_CHANGED, null);
+      if (this.interactions) {
+        this.interactions.current = null;
+      }
+      if (this.dialogueRunner) {
+        this.dialogueRunner.destroy();
+        this.dialogueRunner = null;
+      }
+      if (this.unsubscribeDialogueClosed) {
+        this.unsubscribeDialogueClosed();
+        this.unsubscribeDialogueClosed = null;
+      }
+      if (this.unsubscribePropRemoved) {
+        this.unsubscribePropRemoved();
+        this.unsubscribePropRemoved = null;
+      }
     });
 
     this.physics.world.setBounds(
@@ -84,10 +106,11 @@ export default class RoomScene extends Phaser.Scene {
         return npc;
       });
 
+    const spawnConfig = this.spawnOverride ?? this.room.spawn;
     const spawn = {
-      x: this.room.spawn.x * this.layout.tileSize,
-      y: this.room.spawn.y * this.layout.tileSize,
-      facing: this.room.spawn.facing
+      x: spawnConfig.x * this.layout.tileSize,
+      y: spawnConfig.y * this.layout.tileSize,
+      facing: spawnConfig.facing ?? 'down'
     };
 
     this.player = new Player(this, spawn, {
@@ -105,7 +128,7 @@ export default class RoomScene extends Phaser.Scene {
 
     this.interactions = new InteractionSystem(
       this,
-      [...this.props.filter((prop) => prop.description), ...this.npcs],
+      [...this.props.filter((prop) => prop.description || prop.targetRoom), ...this.npcs],
       GAME.player.interactRange
     );
     this.dialogueRunner = new DialogueRunner(this);
@@ -119,6 +142,35 @@ export default class RoomScene extends Phaser.Scene {
     this.createInput();
     this.createDebugOverlay();
 
+    this.cameras.main.fadeIn(280, 0, 0, 0);
+
+    if (this.spawnOverride) {
+      this.isTransitioning = true;
+      const facing = spawnConfig.facing ?? 'down';
+      const stepDist = 14;
+      const stepX = facing === 'left' ? -stepDist : facing === 'right' ? stepDist : 0;
+      const stepY = facing === 'up' ? -stepDist : facing === 'down' ? stepDist : 0;
+      this.player.playWalk();
+      this.tweens.add({
+        targets: this.player,
+        x: this.player.x + stepX,
+        y: this.player.y + stepY,
+        duration: 220,
+        ease: 'Linear',
+        onUpdate: () => {
+          this.player.playWalk();
+          this.player.finishStep();
+        },
+        onComplete: () => {
+          this.player.body.setVelocity(0, 0);
+          this.player.playIdle();
+          this.player.finishStep();
+          this.isTransitioning = false;
+        }
+      });
+    }
+
+    emit(Events.HINT_CHANGED, null);
     emit(Events.ROOM_READY, this.room);
   }
 
@@ -192,7 +244,7 @@ export default class RoomScene extends Phaser.Scene {
    * dialogo si apre quando il personaggio gli arriva vicino.
    */
   handlePointerDown(pointer) {
-    if (pointer.rightButtonDown()) {
+    if (this.isTransitioning || pointer.rightButtonDown()) {
       return;
     }
 
@@ -200,10 +252,10 @@ export default class RoomScene extends Phaser.Scene {
       id: pointer.id,
       x: pointer.x,
       y: pointer.y,
-      blocked: uiState.dialogueOpen || uiState.inventoryOpen
+      blocked: uiState.dialogueOpen
     };
 
-    if (uiState.dialogueOpen || uiState.inventoryOpen) {
+    if (uiState.dialogueOpen) {
       return;
     }
 
@@ -212,7 +264,7 @@ export default class RoomScene extends Phaser.Scene {
   }
 
   handlePointerMove(pointer) {
-    if (!this.drag || pointer.id !== this.drag.id || this.drag.blocked || uiState.dialogueOpen || uiState.inventoryOpen) {
+    if (this.isTransitioning || !this.drag || pointer.id !== this.drag.id || this.drag.blocked || uiState.dialogueOpen) {
       return;
     }
 
@@ -227,7 +279,7 @@ export default class RoomScene extends Phaser.Scene {
     const drag = this.drag;
     this.drag = null;
 
-    if (drag.blocked || uiState.dialogueOpen || uiState.inventoryOpen) {
+    if (this.isTransitioning || drag.blocked || uiState.dialogueOpen) {
       return;
     }
 
@@ -288,7 +340,7 @@ export default class RoomScene extends Phaser.Scene {
   }
 
   resolvePending() {
-    if (!this.pendingProp) {
+    if (!this.pendingProp || this.isTransitioning) {
       return;
     }
 
@@ -303,13 +355,18 @@ export default class RoomScene extends Phaser.Scene {
     this.pendingProp = null;
     this.player.stopWalking();
 
+    if (prop.targetRoom) {
+      this.triggerRoomTransition(prop);
+      return;
+    }
+
     if (this.dialogueRunner.start(prop)) {
       this.dialogueTarget = prop;
     }
   }
 
   requestInteract() {
-    if (uiState.inventoryOpen) {
+    if (this.isTransitioning) {
       return;
     }
 
@@ -318,8 +375,14 @@ export default class RoomScene extends Phaser.Scene {
       return;
     }
 
-    if (this.dialogueRunner.start(this.interactions.current)) {
-      this.dialogueTarget = this.interactions.current;
+    const current = this.interactions.current;
+    if (current?.targetRoom) {
+      this.triggerRoomTransition(current);
+      return;
+    }
+
+    if (this.dialogueRunner.start(current)) {
+      this.dialogueTarget = current;
       this.pendingProp = null;
     }
   }
@@ -396,10 +459,93 @@ export default class RoomScene extends Phaser.Scene {
     emit(Events.TOAST, this.debugEnabled ? 'DEBUG ON' : 'DEBUG OFF');
   }
 
+  checkDoorTriggers() {
+    if (this.isTransitioning) {
+      return;
+    }
+
+    for (const prop of this.props) {
+      if (prop.type !== 'door') {
+        continue;
+      }
+
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, prop.x, prop.y);
+
+      if (prop.targetRoom) {
+        if (dist <= 26) {
+          this.triggerRoomTransition(prop);
+          return;
+        }
+      } else if (dist <= 20) {
+        if (!this.southDoorWarningCooldown) {
+          this.southDoorWarningCooldown = true;
+          emit(Events.TOAST, "La porta d'ingresso: le prove devono ancora iniziare!");
+          this.time.delayedCall(2500, () => {
+            this.southDoorWarningCooldown = false;
+          });
+        }
+      }
+    }
+  }
+
+  triggerRoomTransition(door) {
+    if (this.isTransitioning) {
+      return;
+    }
+
+    const targetRoom = door.targetRoom ?? door.propData?.targetRoom;
+    const targetSpawn = door.targetSpawn ?? door.propData?.targetSpawn;
+    const direction = door.direction ?? door.propData?.direction;
+
+    if (!targetRoom) {
+      return;
+    }
+
+    this.isTransitioning = true;
+    this.pendingProp = null;
+    this.player.stopWalking();
+    this.player.body.setVelocity(0, 0);
+
+    emit(Events.HINT_CHANGED, null);
+    if (this.interactions) {
+      this.interactions.current = null;
+    }
+
+    if (direction) {
+      this.player.facing = direction;
+    }
+
+    const stepDist = 14;
+    const stepX = direction === 'left' ? -stepDist : direction === 'right' ? stepDist : 0;
+    const stepY = direction === 'up' ? -stepDist : direction === 'down' ? stepDist : 0;
+
+    this.tweens.add({
+      targets: this.player,
+      x: this.player.x + stepX,
+      y: this.player.y + stepY,
+      duration: 220,
+      ease: 'Linear',
+      onUpdate: () => {
+        this.player.playWalk();
+        this.player.finishStep();
+      }
+    });
+
+    this.cameras.main.fadeOut(260, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.changeRoom(targetRoom, targetSpawn);
+    });
+  }
+
   update() {
+    if (this.isTransitioning) {
+      return;
+    }
+
     this.player.update();
     this.interactions.update(this.player);
     this.resolvePending();
+    this.checkDoorTriggers();
 
     if (this.dialogueTarget && uiState.dialogueOpen) {
       const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.dialogueTarget.x, this.dialogueTarget.y);
@@ -411,8 +557,8 @@ export default class RoomScene extends Phaser.Scene {
     emit(Events.PLAYER_MOVED, { x: this.player.x, y: this.player.y });
   }
 
-  changeRoom(roomId) {
-    this.scene.restart({ roomId });
+  changeRoom(roomId, spawn = null) {
+    this.scene.restart({ roomId, spawn });
   }
 
   destroy() {

@@ -106,8 +106,10 @@ Ordine consigliato. Ogni passo è piccolo e indipendente dagli altri.
    ci sale e ci resta. È il primo test serio per il depth sorting con gli arredi.
 4. **Suonare** — un semplice sistema di minigame/ritmo, o audio statico + animazione, che lega
    l'interazione a un risultato.
-5. **Più stanze e corridoi** — il JSON è già pronto; serve un meccanismo di passaggio fra stanze
-   (`changeRoom` esiste) e una zona di triggers.
+5. **Più stanze e corridoi (FATTO - Sessione 20)** — 4 porte sui 4 lati della stanza di ingresso,
+   3 stanze collegate (Sala Relax a nord, Magazzino Strumenti a ovest, Regia Audio a est) con
+   palette di colore distinte, animazioni di transizione (camminata nella soglia, dissolvenza fadeOut/fadeIn,
+   orientamento verso l'interno e passo in avanti). Supporto multi-input: cammino diretto, click/tap e tasto `[E]`.
 6. **Altre interazioni NPC e dialoghi ramificati** — scelte di risposta o reazioni in base allo
    strumento esaminato.
 7. **Luce e ora del giorno** — un overlay di colore sulla stanza, ora diurna e notturna.

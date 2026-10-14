@@ -1,0 +1,87 @@
+{
+  "id": "stanza-nord",
+  "name": "Sala Relax",
+  "tagline": "Uno spazio silenzioso e accogliente",
+  "description": "Una stanza tranquilla con pavimento in legno ardesia e pareti dai toni blu rilassanti. Nessun frastuono di amplificatori, solo pace per le orecchie.",
+  "tileSize": 32,
+  "columns": 30,
+  "rows": 20,
+  "seed": 20261014,
+  "palette": {
+    "floor": {
+      "base": "#384754",
+      "light": "#4a5d6e",
+      "dark": "#28343e",
+      "seam": "#1a2229"
+    },
+    "wall": {
+      "top": "#4c6173",
+      "light": "#607a91",
+      "face": "#33424f",
+      "dark": "#222c35",
+      "seam": "#151c22"
+    }
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 19,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    },
+    {
+      "x": 29,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    }
+  ],
+  "openings": [
+    {
+      "x": 14,
+      "y": 19,
+      "w": 2,
+      "h": 1
+    }
+  ],
+  "spawn": {
+    "x": 15,
+    "y": 17,
+    "facing": "up"
+  },
+  "props": [
+    {
+      "id": "door-south",
+      "type": "door",
+      "variant": "south",
+      "x": 15,
+      "y": 20,
+      "label": "Porta per la Sala Prove",
+      "prompt": "Entra",
+      "description": "La porta conduce di nuovo alla Sala Prove principale.",
+      "targetRoom": "sala-prove",
+      "targetSpawn": {
+        "x": 15,
+        "y": 2.5,
+        "facing": "down"
+      },
+      "direction": "down",
+      "options": [],
+      "nodes": {}
+    }
+  ],
+  "cables": [],
+  "characters": []
+}

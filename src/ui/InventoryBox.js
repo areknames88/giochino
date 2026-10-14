@@ -5,19 +5,27 @@ import { uiState } from '../core/uiState.js';
 import { inventory } from '../game/inventory.js';
 
 const COLORS = {
-  panelBg: 0x150e08,
+  panelBg: 0x140d07,
   panelBorder: 0x8b5a2b,
   panelBorderGold: 0xc08a4a,
   headerLine: 0x4a301a,
-  slotBg: 0x211508,
-  slotBorder: 0x5a3a1e,
-  slotHoverBg: 0x321e0b,
+  headerGrip: 0x6e4827,
+  slotBg: 0x1c1208,
+  slotBorder: 0x472d16,
+  slotHoverBg: 0x2e1c0c,
   slotHoverBorder: 0x9a652a,
-  slotSelectedBg: 0x3f2710,
+  slotSelectedBg: 0x3d250f,
   slotSelectedBorder: 0xf0c27a,
-  closeBg: 0x2a170b,
-  closeHoverBg: 0x4a240e,
-  closeBorder: 0x8b5a2b
+  emptySlotBg: 0x130b05,
+  emptySlotBorder: 0x2d1a0b,
+  closeBg: 0x241409,
+  closeHoverBg: 0x42200b,
+  closeBorder: 0x7a4820,
+  btnBg: 0x26160a,
+  btnHoverBg: 0x3d220e,
+  btnActiveBg: 0x4a2a10,
+  btnBorder: 0x73441d,
+  btnActiveBorder: 0xf0c27a
 };
 
 export default class InventoryBox extends Phaser.GameObjects.Container {
@@ -26,47 +34,69 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
     scene.add.existing(this);
 
     this.selectedIndex = 0;
+    this.showInfo = false;
     this.slotObjects = [];
     this.visible = false;
+    this.isDragging = false;
+    this.dragOffset = { x: 0, y: 0 };
+    this.customPosition = null;
 
-    // Sfondo e cornice
+    // Sfondo e cornice principale
     this.panelGraphic = scene.add.graphics();
     this.add(this.panelGraphic);
 
-    // Titolo e sottotitolo
-    this.titleText = scene.add.text(0, 0, '🎒 ZAINO DELLA BAND', {
+    // Hit area per bloccare i click e permettere il drag dal background
+    this.bgHitArea = scene.add.zone(0, 0, 100, 100)
+      .setOrigin(0.5, 0.5)
+      .setInteractive({ useHandCursor: false });
+
+    this.bgHitArea.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.startDrag(pointer);
+    });
+    this.addAt(this.bgHitArea, 0);
+
+    // Header bar drag zone
+    this.headerHitArea = scene.add.zone(0, 0, 100, 38)
+      .setOrigin(0.5, 0.5)
+      .setInteractive({ useHandCursor: true });
+
+    this.headerHitArea.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.startDrag(pointer);
+    });
+    this.add(this.headerHitArea);
+
+    // Titolo per il pannello
+    this.titleText = scene.add.text(0, 0, '🎒 ZAINO', {
       fontFamily: GAME.font,
-      fontSize: '20px',
+      fontSize: '15px',
       color: '#f0c27a',
       fontStyle: 'bold'
     });
-    this.subtitleText = scene.add.text(0, 0, 'Attrezzatura e strumenti raccolti', {
-      fontFamily: GAME.font,
-      fontSize: '12px',
-      color: '#a8917a'
-    });
-    this.add([this.titleText, this.subtitleText]);
+
+    this.add(this.titleText);
 
     // Pulsante Chiudi in alto a destra
     this.closeBtnContainer = scene.add.container(0, 0);
     this.closeBtnGraphic = scene.add.graphics();
     this.closeBtnText = scene.add.text(0, 0, '✕', {
       fontFamily: GAME.font,
-      fontSize: '18px',
+      fontSize: '15px',
       color: '#f0c27a',
       fontStyle: 'bold'
     }).setOrigin(0.5, 0.5);
 
-    this.closeBtnHitArea = scene.add.zone(0, 0, 36, 36)
+    this.closeBtnHitArea = scene.add.zone(0, 0, 28, 28)
       .setOrigin(0.5, 0.5)
       .setInteractive({ useHandCursor: true });
 
-    this.closeBtnHitArea.on('pointerover', () => {
-      this.drawCloseButton(true);
-    });
-    this.closeBtnHitArea.on('pointerout', () => {
-      this.drawCloseButton(false);
-    });
+    this.closeBtnHitArea.on('pointerover', () => this.drawCloseButton(true));
+    this.closeBtnHitArea.on('pointerout', () => this.drawCloseButton(false));
     this.closeBtnHitArea.on('pointerdown', (pointer, localX, localY, event) => {
       if (event && event.stopPropagation) {
         event.stopPropagation();
@@ -77,80 +107,160 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
     this.closeBtnContainer.add([this.closeBtnGraphic, this.closeBtnText, this.closeBtnHitArea]);
     this.add(this.closeBtnContainer);
 
-    // Contenitore per gli slot
+    // Contenitore per gli slot (solo icone)
     this.slotsContainer = scene.add.container(0, 0);
     this.add(this.slotsContainer);
 
-    // Pannello di dettaglio oggetto selezionato
-    this.detailContainer = scene.add.container(0, 0);
-    this.detailPanelGraphic = scene.add.graphics();
-    this.detailIcon = scene.add.image(0, 0, 'item-cables').setOrigin(0.5, 0.5);
-    this.detailNameText = scene.add.text(0, 0, '', {
+    // Barra di controllo inferiore: nome oggetto + pulsante info
+    this.controlBar = scene.add.container(0, 0);
+    this.selectedItemName = scene.add.text(0, 0, '', {
       fontFamily: GAME.font,
-      fontSize: '17px',
+      fontSize: '13px',
       color: '#f0c27a',
       fontStyle: 'bold'
-    });
-    this.detailCategoryText = scene.add.text(0, 0, '', {
+    }).setOrigin(0, 0.5);
+
+    // Pulsante Info
+    this.infoBtnContainer = scene.add.container(0, 0);
+    this.infoBtnGraphic = scene.add.graphics();
+    this.infoBtnText = scene.add.text(0, 0, 'ℹ Info', {
       fontFamily: GAME.font,
       fontSize: '12px',
+      color: '#f0c27a',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    this.infoBtnHitArea = scene.add.zone(0, 0, 68, 26)
+      .setOrigin(0.5, 0.5)
+      .setInteractive({ useHandCursor: true });
+
+    this.infoBtnHitArea.on('pointerover', () => this.drawInfoButton(true));
+    this.infoBtnHitArea.on('pointerout', () => this.drawInfoButton(false));
+    this.infoBtnHitArea.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.toggleInfo();
+    });
+
+    this.infoBtnContainer.add([this.infoBtnGraphic, this.infoBtnText, this.infoBtnHitArea]);
+    this.controlBar.add([this.selectedItemName, this.infoBtnContainer]);
+    this.add(this.controlBar);
+
+    // Pannello di dettaglio (visibile solo se showInfo è attivo)
+    this.detailContainer = scene.add.container(0, 0);
+    this.detailPanelGraphic = scene.add.graphics();
+    this.detailCategoryText = scene.add.text(0, 0, '', {
+      fontFamily: GAME.font,
+      fontSize: '11px',
       color: '#c99b6a',
       fontStyle: 'italic'
     });
     this.detailDescText = scene.add.text(0, 0, '', {
       fontFamily: GAME.font,
-      fontSize: '14px',
-      color: '#f2e6d2',
-      lineSpacing: 5,
-      wordWrap: { width: 280 }
-    });
-    this.detailStatusText = scene.add.text(0, 0, '✓ Custodito nello zaino', {
-      fontFamily: GAME.font,
       fontSize: '12px',
-      color: '#8d7a63',
-      fontStyle: 'italic'
+      color: '#f2e6d2',
+      lineSpacing: 4,
+      wordWrap: { width: 300 }
     });
 
     this.detailContainer.add([
       this.detailPanelGraphic,
-      this.detailIcon,
-      this.detailNameText,
       this.detailCategoryText,
-      this.detailDescText,
-      this.detailStatusText
+      this.detailDescText
     ]);
     this.add(this.detailContainer);
 
     // Messaggio inventario vuoto
-    this.emptyText = scene.add.text(0, 0, 'Lo zaino è vuoto.\n\nEsplora la sala prove o parla con i compagni della band\nper raccogliere cavi, accessori e strumenti musicali.', {
+    this.emptyText = scene.add.text(0, 0, 'Lo zaino è vuoto.\nParla con la band o esplora la stanza\nper raccogliere oggetti e cavi.', {
       fontFamily: GAME.font,
-      fontSize: '15px',
+      fontSize: '13px',
       color: '#a8917a',
       align: 'center',
-      lineSpacing: 6
+      lineSpacing: 5
     }).setOrigin(0.5, 0.5);
     this.add(this.emptyText);
 
-    // Gestione click sullo sfondo del pannello per non propagare al canvas
-    this.bgHitArea = scene.add.zone(0, 0, 100, 100)
-      .setOrigin(0.5, 0.5)
-      .setInteractive();
-    this.bgHitArea.on('pointerdown', (pointer, localX, localY, event) => {
-      if (event && event.stopPropagation) {
-        event.stopPropagation();
+    // Ascolto globale del drag sulla scena
+    scene.input.on('pointermove', (pointer) => {
+      if (!this.visible || !this.isDragging) {
+        return;
+      }
+
+      const { width: sw, height: sh } = this.scene.scale;
+      const halfW = this.boxW / 2;
+      const halfH = this.boxH / 2;
+      const pad = 10;
+
+      let nextX = pointer.x - this.dragOffset.x;
+      let nextY = pointer.y - this.dragOffset.y;
+
+      nextX = Phaser.Math.Clamp(nextX, halfW + pad, sw - halfW - pad);
+      nextY = Phaser.Math.Clamp(nextY, halfH + pad, sh - halfH - pad);
+
+      this.setPosition(nextX, nextY);
+      this.customPosition = { x: nextX, y: nextY };
+    });
+
+    const stopDragging = () => {
+      this.isDragging = false;
+    };
+    scene.input.on('pointerup', stopDragging);
+    scene.input.on('pointerupoutside', stopDragging);
+
+    // Frecce tastiera sinistra/destra per cambiare oggetto selezionato
+    scene.input.keyboard.on('keydown-LEFT', () => {
+      if (this.visible && inventory.getItemCount() > 0) {
+        const count = inventory.getItemCount();
+        this.selectedIndex = (this.selectedIndex - 1 + count) % count;
+        this.render();
       }
     });
-    this.addAt(this.bgHitArea, 0);
+
+    scene.input.keyboard.on('keydown-RIGHT', () => {
+      if (this.visible && inventory.getItemCount() > 0) {
+        const count = inventory.getItemCount();
+        this.selectedIndex = (this.selectedIndex + 1) % count;
+        this.render();
+      }
+    });
 
     this.layout();
+  }
+
+  startDrag(pointer) {
+    this.isDragging = true;
+    this.dragOffset = {
+      x: pointer.x - this.x,
+      y: pointer.y - this.y
+    };
   }
 
   drawCloseButton(isHover = false) {
     this.closeBtnGraphic.clear();
     this.closeBtnGraphic.fillStyle(isHover ? COLORS.closeHoverBg : COLORS.closeBg, 1);
-    this.closeBtnGraphic.fillRoundedRect(-18, -18, 36, 36, 6);
+    this.closeBtnGraphic.fillRoundedRect(-14, -14, 28, 28, 5);
     this.closeBtnGraphic.lineStyle(1.5, isHover ? COLORS.slotSelectedBorder : COLORS.closeBorder, 1);
-    this.closeBtnGraphic.strokeRoundedRect(-18, -18, 36, 36, 6);
+    this.closeBtnGraphic.strokeRoundedRect(-14, -14, 28, 28, 5);
+  }
+
+  drawInfoButton(isHover = false) {
+    this.infoBtnGraphic.clear();
+    const bg = this.showInfo
+      ? (isHover ? COLORS.btnActiveBg : COLORS.btnHoverBg)
+      : (isHover ? COLORS.btnHoverBg : COLORS.btnBg);
+    const border = this.showInfo ? COLORS.btnActiveBorder : (isHover ? COLORS.btnActiveBorder : COLORS.btnBorder);
+
+    this.infoBtnGraphic.fillStyle(bg, 1);
+    this.infoBtnGraphic.fillRoundedRect(-34, -13, 68, 26, 5);
+    this.infoBtnGraphic.lineStyle(1.5, border, 1);
+    this.infoBtnGraphic.strokeRoundedRect(-34, -13, 68, 26, 5);
+    this.infoBtnText.setColor(this.showInfo ? '#ffffff' : (isHover ? '#ffffff' : '#f0c27a'));
+  }
+
+  toggleInfo() {
+    this.showInfo = !this.showInfo;
+    this.layout();
   }
 
   open() {
@@ -166,7 +276,7 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
     this.setVisible(true);
     uiState.inventoryOpen = true;
     emit(Events.INVENTORY_OPEN);
-    this.render();
+    this.layout();
   }
 
   close() {
@@ -174,6 +284,7 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
       return;
     }
 
+    this.isDragging = false;
     this.setVisible(false);
     queueMicrotask(() => {
       uiState.inventoryOpen = false;
@@ -190,16 +301,40 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
   }
 
   layout() {
-    const isPortrait = this.scene.scale.height > this.scene.scale.width;
     const { width: sw, height: sh } = this.scene.scale;
+    const isPortrait = sh > sw;
+    const items = inventory.getItems();
 
-    this.boxW = isPortrait ? Math.min(sw - 36, 480) : Math.min(sw - 48, 620);
-    this.boxH = isPortrait ? Math.min(sh - 120, 560) : Math.min(sh - 40, 390);
+    // Larghezza compatta
+    this.boxW = isPortrait ? Math.min(sw - 28, 330) : 340;
 
-    this.setPosition(sw / 2, sh / 2);
+    // Calcolo altezza dinamica
+    const headerH = 42;
+    const slotsRowH = 54;
+    const controlBarH = 34;
+    const detailH = this.showInfo && items.length > 0 ? 116 : 0;
+    const pad = 14;
+
+    if (items.length === 0) {
+      this.boxH = 144;
+    } else {
+      this.boxH = headerH + slotsRowH + controlBarH + detailH + pad;
+    }
+
+    // Posizionamento finestra
+    if (this.customPosition) {
+      const halfW = this.boxW / 2;
+      const halfH = this.boxH / 2;
+      const nextX = Phaser.Math.Clamp(this.customPosition.x, halfW + 10, sw - halfW - 10);
+      const nextY = Phaser.Math.Clamp(this.customPosition.y, halfH + 10, sh - halfH - 10);
+      this.setPosition(nextX, nextY);
+    } else {
+      this.setPosition(sw / 2, Math.max(this.boxH / 2 + 30, sh / 2));
+    }
+
     this.bgHitArea.setSize(this.boxW, this.boxH);
 
-    // Disegna il pannello principale
+    // Disegna il pannello principale in stile legno e profilo dorato
     const g = this.panelGraphic;
     g.clear();
     const halfW = this.boxW / 2;
@@ -207,36 +342,35 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
 
     // Sfondo solido scuro legno
     g.fillStyle(COLORS.panelBg, 0.96);
-    g.fillRoundedRect(-halfW, -halfH, this.boxW, this.boxH, 10);
+    g.fillRoundedRect(-halfW, -halfH, this.boxW, this.boxH, 9);
 
     // Bordo doppio vintage
-    g.lineStyle(3, COLORS.panelBorder, 1);
-    g.strokeRoundedRect(-halfW, -halfH, this.boxW, this.boxH, 10);
-    g.lineStyle(1, COLORS.panelBorderGold, 0.8);
-    g.strokeRoundedRect(-halfW + 4, -halfH + 4, this.boxW - 8, this.boxH - 8, 8);
+    g.lineStyle(2.5, COLORS.panelBorder, 1);
+    g.strokeRoundedRect(-halfW, -halfH, this.boxW, this.boxH, 9);
+    g.lineStyle(1, COLORS.panelBorderGold, 0.75);
+    g.strokeRoundedRect(-halfW + 3, -halfH + 3, this.boxW - 6, this.boxH - 6, 7);
 
     // Divisore header
     g.lineStyle(1.5, COLORS.headerLine, 1);
-    g.lineBetween(-halfW + 16, -halfH + 54, halfW - 16, -halfH + 54);
+    g.lineBetween(-halfW + 12, -halfH + headerH, halfW - 12, -halfH + headerH);
 
-    // Header testo
-    this.titleText.setPosition(-halfW + 20, -halfH + 14);
-    this.subtitleText.setPosition(-halfW + 22, -halfH + 36);
+    // Header testo & pulsanti
+    this.headerHitArea.setSize(this.boxW - 60, headerH);
+    this.headerHitArea.setPosition(-20, -halfH + headerH / 2);
 
-    // Bottone chiudi
-    this.closeBtnContainer.setPosition(halfW - 32, -halfH + 28);
+    this.titleText.setPosition(-halfW + 16, -halfH + 13);
+    this.closeBtnContainer.setPosition(halfW - 22, -halfH + 21);
     this.drawCloseButton(false);
 
     this.render();
   }
 
   render() {
-    const isPortrait = this.scene.scale.height > this.scene.scale.width;
     const halfW = this.boxW / 2;
     const halfH = this.boxH / 2;
     const items = inventory.getItems();
 
-    // Rimuovi gli slot precedenti
+    // Pulisci gli slot precedenti
     for (const slot of this.slotObjects) {
       slot.destroy();
     }
@@ -244,212 +378,133 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
 
     if (items.length === 0) {
       this.emptyText.setVisible(true);
-      this.emptyText.setPosition(0, 20);
-      this.detailContainer.setVisible(false);
+      this.emptyText.setPosition(0, 16);
       this.slotsContainer.setVisible(false);
+      this.controlBar.setVisible(false);
+      this.detailContainer.setVisible(false);
       return;
     }
 
     this.emptyText.setVisible(false);
     this.slotsContainer.setVisible(true);
-    this.detailContainer.setVisible(true);
+    this.controlBar.setVisible(true);
 
     if (this.selectedIndex < 0 || this.selectedIndex >= items.length) {
       this.selectedIndex = 0;
     }
 
-    if (isPortrait) {
-      // Layout Portrait: griglia in alto, dettaglio sotto
-      this.layoutPortrait(items, halfW, halfH);
-    } else {
-      // Layout Landscape: lista/slot a sinistra, dettaglio a destra
-      this.layoutLandscape(items, halfW, halfH);
+    // Griglia compatta di 5 slot (mostrando solo le icone!)
+    const totalSlots = Math.max(5, items.length);
+    const slotSize = 48;
+    const gap = 8;
+    const totalW = totalSlots * slotSize + (totalSlots - 1) * gap;
+    const startX = -totalW / 2;
+    const slotsY = -halfH + 42 + 10;
+
+    for (let i = 0; i < totalSlots; i += 1) {
+      const item = items[i] ?? null;
+      const isSelected = i === this.selectedIndex && item !== null;
+      const slotX = startX + i * (slotSize + gap);
+
+      const slotContainer = this.scene.add.container(slotX, slotsY);
+
+      const bg = this.scene.add.graphics();
+      this.drawSlotBg(bg, slotSize, slotSize, isSelected, item !== null);
+
+      if (item) {
+        // Mostra solo l'icona!
+        const icon = this.scene.add.image(slotSize / 2, slotSize / 2, item.iconKey)
+          .setDisplaySize(34, 34);
+
+        const hit = this.scene.add.zone(slotSize / 2, slotSize / 2, slotSize, slotSize)
+          .setInteractive({ useHandCursor: true });
+
+        hit.on('pointerover', () => {
+          if (i !== this.selectedIndex) {
+            bg.clear();
+            bg.fillStyle(COLORS.slotHoverBg, 1);
+            bg.fillRoundedRect(0, 0, slotSize, slotSize, 6);
+            bg.lineStyle(1.5, COLORS.slotHoverBorder, 1);
+            bg.strokeRoundedRect(0, 0, slotSize, slotSize, 6);
+          }
+        });
+
+        hit.on('pointerout', () => {
+          if (i !== this.selectedIndex) {
+            this.drawSlotBg(bg, slotSize, slotSize, false, true);
+          }
+        });
+
+        hit.on('pointerdown', (pointer, localX, localY, event) => {
+          if (event && event.stopPropagation) {
+            event.stopPropagation();
+          }
+          this.selectItem(i);
+        });
+
+        slotContainer.add([bg, icon, hit]);
+      } else {
+        // Slot vuoto decorativo
+        slotContainer.add(bg);
+      }
+
+      this.slotsContainer.add(slotContainer);
+      this.slotObjects.push(slotContainer);
     }
 
-    this.renderDetails(items[this.selectedIndex]);
+    // Posizionamento Barra di Controllo (Nome + Bottone Info)
+    const controlY = slotsY + slotSize + 20;
+    this.controlBar.setPosition(0, controlY);
+
+    const selectedItem = items[this.selectedIndex];
+    if (selectedItem) {
+      this.selectedItemName.setText(selectedItem.shortName ?? selectedItem.name);
+      this.selectedItemName.setPosition(-halfW + 16, 0);
+
+      this.infoBtnContainer.setPosition(halfW - 50, 0);
+      this.drawInfoButton(false);
+    }
+
+    // Rendering Dettagli (se showInfo è attivo)
+    if (this.showInfo && selectedItem) {
+      this.detailContainer.setVisible(true);
+      const detailTop = controlY + 22;
+      const detailW = this.boxW - 28;
+      const detailH = 104;
+
+      this.detailContainer.setPosition(-halfW + 14, detailTop);
+
+      const dg = this.detailPanelGraphic;
+      dg.clear();
+      dg.fillStyle(0x1a1109, 0.9);
+      dg.fillRoundedRect(0, 0, detailW, detailH, 6);
+      dg.lineStyle(1.5, COLORS.headerLine, 1);
+      dg.strokeRoundedRect(0, 0, detailW, detailH, 6);
+
+      this.detailCategoryText.setText(`CATEGORIA: ${selectedItem.category.toUpperCase()}`);
+      this.detailCategoryText.setPosition(12, 10);
+
+      dg.lineStyle(1, COLORS.headerLine, 0.7);
+      dg.lineBetween(12, 28, detailW - 12, 28);
+
+      this.detailDescText.setText(selectedItem.description);
+      this.detailDescText.setPosition(12, 36);
+      this.detailDescText.setWordWrapWidth(detailW - 24);
+    } else {
+      this.detailContainer.setVisible(false);
+    }
   }
 
-  layoutLandscape(items, halfW, halfH) {
-    const listLeft = -halfW + 20;
-    const listTop = -halfH + 68;
-    const listW = 240;
-    const rowH = 46;
-    const gap = 8;
-
-    items.forEach((item, index) => {
-      const isSelected = index === this.selectedIndex;
-      const slotContainer = this.scene.add.container(listLeft, listTop + index * (rowH + gap));
-
-      const bg = this.scene.add.graphics();
-      this.drawSlotBg(bg, listW, rowH, isSelected);
-
-      const icon = this.scene.add.image(24, rowH / 2, item.iconKey)
-        .setDisplaySize(32, 32);
-
-      const name = this.scene.add.text(48, 8, item.shortName ?? item.name, {
-        fontFamily: GAME.font,
-        fontSize: '14px',
-        color: isSelected ? '#f0c27a' : '#efdfc4',
-        fontStyle: isSelected ? 'bold' : 'normal'
-      });
-
-      const category = this.scene.add.text(48, 26, item.category, {
-        fontFamily: GAME.font,
-        fontSize: '11px',
-        color: '#8d7a63'
-      });
-
-      const hit = this.scene.add.zone(listW / 2, rowH / 2, listW, rowH)
-        .setInteractive({ useHandCursor: true });
-
-      hit.on('pointerover', () => {
-        if (index !== this.selectedIndex) {
-          bg.clear();
-          bg.fillStyle(COLORS.slotHoverBg, 1);
-          bg.fillRoundedRect(0, 0, listW, rowH, 6);
-          bg.lineStyle(1.5, COLORS.slotHoverBorder, 1);
-          bg.strokeRoundedRect(0, 0, listW, rowH, 6);
-        }
-      });
-
-      hit.on('pointerout', () => {
-        if (index !== this.selectedIndex) {
-          this.drawSlotBg(bg, listW, rowH, false);
-        }
-      });
-
-      hit.on('pointerdown', (pointer, localX, localY, event) => {
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-        this.selectItem(index);
-      });
-
-      slotContainer.add([bg, icon, name, category, hit]);
-      this.slotsContainer.add(slotContainer);
-      this.slotObjects.push(slotContainer);
-    });
-
-    // Dettaglio a destra
-    const detailLeft = listLeft + listW + 20;
-    const detailTop = listTop;
-    const detailW = this.boxW - listW - 60;
-    const detailH = this.boxH - 96;
-
-    this.detailContainer.setPosition(detailLeft, detailTop);
-    const dg = this.detailPanelGraphic;
-    dg.clear();
-    dg.fillStyle(0x191009, 0.85);
-    dg.fillRoundedRect(0, 0, detailW, detailH, 8);
-    dg.lineStyle(1.5, COLORS.headerLine, 1);
-    dg.strokeRoundedRect(0, 0, detailW, detailH, 8);
-
-    // Icona in riquadro
-    dg.fillStyle(0x28190d, 1);
-    dg.fillRoundedRect(16, 16, 56, 56, 6);
-    dg.lineStyle(1, COLORS.slotBorder, 1);
-    dg.strokeRoundedRect(16, 16, 56, 56, 6);
-
-    this.detailIcon.setPosition(44, 44).setDisplaySize(44, 44);
-    this.detailNameText.setPosition(84, 18);
-    this.detailCategoryText.setPosition(84, 44);
-
-    dg.lineStyle(1, COLORS.headerLine, 0.8);
-    dg.lineBetween(16, 84, detailW - 16, 84);
-
-    this.detailDescText.setPosition(18, 98);
-    this.detailDescText.setWordWrapWidth(detailW - 36);
-
-    this.detailStatusText.setPosition(18, detailH - 26);
-  }
-
-  layoutPortrait(items, halfW, halfH) {
-    const listLeft = -halfW + 18;
-    const listTop = -halfH + 64;
-    const gridW = this.boxW - 36;
-    const colW = (gridW - 10) / 2;
-    const rowH = 46;
-    const gap = 8;
-
-    items.forEach((item, index) => {
-      const isSelected = index === this.selectedIndex;
-      const col = index % 2;
-      const row = Math.floor(index / 2);
-      const slotX = listLeft + col * (colW + 10);
-      const slotY = listTop + row * (rowH + gap);
-
-      const slotContainer = this.scene.add.container(slotX, slotY);
-
-      const bg = this.scene.add.graphics();
-      this.drawSlotBg(bg, colW, rowH, isSelected);
-
-      const icon = this.scene.add.image(22, rowH / 2, item.iconKey)
-        .setDisplaySize(28, 28);
-
-      const name = this.scene.add.text(42, 8, item.shortName ?? item.name, {
-        fontFamily: GAME.font,
-        fontSize: '13px',
-        color: isSelected ? '#f0c27a' : '#efdfc4',
-        fontStyle: isSelected ? 'bold' : 'normal'
-      });
-
-      const category = this.scene.add.text(42, 26, item.category, {
-        fontFamily: GAME.font,
-        fontSize: '10px',
-        color: '#8d7a63'
-      });
-
-      const hit = this.scene.add.zone(colW / 2, rowH / 2, colW, rowH)
-        .setInteractive({ useHandCursor: true });
-
-      hit.on('pointerdown', (pointer, localX, localY, event) => {
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-        this.selectItem(index);
-      });
-
-      slotContainer.add([bg, icon, name, category, hit]);
-      this.slotsContainer.add(slotContainer);
-      this.slotObjects.push(slotContainer);
-    });
-
-    const gridRows = Math.ceil(items.length / 2);
-    const gridBottom = listTop + gridRows * (rowH + gap) + 6;
-
-    // Dettaglio sotto la griglia
-    const detailW = gridW;
-    const detailH = halfH - (gridBottom - listTop) - 24;
-
-    this.detailContainer.setPosition(listLeft, gridBottom);
-    const dg = this.detailPanelGraphic;
-    dg.clear();
-    dg.fillStyle(0x191009, 0.85);
-    dg.fillRoundedRect(0, 0, detailW, detailH, 8);
-    dg.lineStyle(1.5, COLORS.headerLine, 1);
-    dg.strokeRoundedRect(0, 0, detailW, detailH, 8);
-
-    dg.fillStyle(0x28190d, 1);
-    dg.fillRoundedRect(14, 14, 48, 48, 6);
-    dg.lineStyle(1, COLORS.slotBorder, 1);
-    dg.strokeRoundedRect(14, 14, 48, 48, 6);
-
-    this.detailIcon.setPosition(38, 38).setDisplaySize(38, 38);
-    this.detailNameText.setPosition(72, 16).setFontSize('15px');
-    this.detailCategoryText.setPosition(72, 40).setFontSize('11px');
-
-    dg.lineStyle(1, COLORS.headerLine, 0.8);
-    dg.lineBetween(14, 72, detailW - 14, 72);
-
-    this.detailDescText.setPosition(16, 84);
-    this.detailDescText.setWordWrapWidth(detailW - 32);
-    this.detailDescText.setFontSize('13px');
-
-    this.detailStatusText.setPosition(16, detailH - 22);
-  }
-
-  drawSlotBg(g, w, h, isSelected) {
+  drawSlotBg(g, w, h, isSelected, isOccupied) {
     g.clear();
+    if (!isOccupied) {
+      g.fillStyle(COLORS.emptySlotBg, 0.6);
+      g.fillRoundedRect(0, 0, w, h, 6);
+      g.lineStyle(1, COLORS.emptySlotBorder, 0.8);
+      g.strokeRoundedRect(0, 0, w, h, 6);
+      return;
+    }
+
     if (isSelected) {
       g.fillStyle(COLORS.slotSelectedBg, 1);
       g.fillRoundedRect(0, 0, w, h, 6);
@@ -466,18 +521,5 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
   selectItem(index) {
     this.selectedIndex = index;
     this.render();
-  }
-
-  renderDetails(item) {
-    if (!item) {
-      this.detailContainer.setVisible(false);
-      return;
-    }
-
-    this.detailContainer.setVisible(true);
-    this.detailIcon.setTexture(item.iconKey);
-    this.detailNameText.setText(item.name);
-    this.detailCategoryText.setText(`CATEGORIA: ${item.category.toUpperCase()}`);
-    this.detailDescText.setText(item.description);
   }
 }

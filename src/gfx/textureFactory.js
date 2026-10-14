@@ -222,6 +222,93 @@ function drawDoor(g) {
   fillRect(g, 8, 43, 48, 1, GOLD);
 }
 
+function drawDoorNorth(g) {
+  // Outer frame architrave set into top wall
+  fillRect(g, 0, 0, 64, 36, 0x3a2110);
+  fillRect(g, 3, 2, 58, 34, 0x4a2d15);
+
+  // Dark doorway opening (passage to room above)
+  fillRect(g, 6, 4, 52, 28, 0x140d07);
+  fillRect(g, 8, 6, 48, 26, 0x24170e);
+
+  // Side jamb inner highlights
+  fillRect(g, 6, 4, 2, 28, 0x5b361b);
+  fillRect(g, 56, 4, 2, 28, 0x5b361b);
+  fillRect(g, 6, 4, 52, 2, 0x5b361b);
+
+  // Bottom wooden threshold (soglia)
+  fillRect(g, 4, 31, 56, 5, 0x8b5a2b);
+  fillRect(g, 4, 31, 56, 1, 0xa8703a);
+  fillRect(g, 4, 35, 56, 1, 0x6b4220);
+
+  // Warm light spill on threshold
+  fillRect(g, 12, 31, 40, 3, 0xd4a359, 0.4);
+  fillRect(g, 18, 32, 28, 2, 0xffe4a0, 0.5);
+
+  // Subtle upper exit sign badge
+  fillRect(g, 26, 1, 12, 3, 0x228b22);
+}
+
+function drawDoorWest(g) {
+  // Door on west (left) wall: opening is 32 wide, 64 high
+  fillRect(g, 0, 0, 32, 64, 0x3a2110);
+  fillRect(g, 2, 2, 28, 60, 0x4a2d15);
+
+  // Passage opening into corridor/room to the west
+  fillRect(g, 0, 5, 26, 54, 0x140d07);
+  fillRect(g, 0, 8, 22, 48, 0x24170e);
+
+  // Top lintel
+  fillRect(g, 0, 0, 32, 5, 0x5b361b);
+  fillRect(g, 0, 0, 32, 1, 0xa8703a);
+
+  // Bottom threshold
+  fillRect(g, 0, 58, 32, 6, 0x8b5a2b);
+  fillRect(g, 0, 58, 32, 1, 0xa8703a);
+  fillRect(g, 0, 63, 32, 1, 0x6b4220);
+
+  // Right door jamb facing room
+  fillRect(g, 24, 5, 7, 53, 0x6b4220);
+  fillRect(g, 24, 5, 1, 53, 0xa8703a);
+
+  // Door edge & brass handle
+  fillRect(g, 21, 28, 4, 9, 0x8a6a30);
+  fillCircle(g, 23, 32, 2.5, GOLD);
+
+  // Warm floor light on threshold
+  fillRect(g, 2, 58, 22, 3, 0xd4a359, 0.4);
+}
+
+function drawDoorEast(g) {
+  // Door on east (right) wall: opening is 32 wide, 64 high
+  fillRect(g, 0, 0, 32, 64, 0x3a2110);
+  fillRect(g, 2, 2, 28, 60, 0x4a2d15);
+
+  // Passage opening into corridor/room to the east
+  fillRect(g, 6, 5, 26, 54, 0x140d07);
+  fillRect(g, 10, 8, 22, 48, 0x24170e);
+
+  // Top lintel
+  fillRect(g, 0, 0, 32, 5, 0x5b361b);
+  fillRect(g, 0, 0, 32, 1, 0xa8703a);
+
+  // Bottom threshold
+  fillRect(g, 0, 58, 32, 6, 0x8b5a2b);
+  fillRect(g, 0, 58, 32, 1, 0xa8703a);
+  fillRect(g, 0, 63, 32, 1, 0x6b4220);
+
+  // Left door jamb facing room
+  fillRect(g, 1, 5, 7, 53, 0x6b4220);
+  fillRect(g, 7, 5, 1, 53, 0xa8703a);
+
+  // Door edge & brass handle
+  fillRect(g, 7, 28, 4, 9, 0x8a6a30);
+  fillCircle(g, 9, 32, 2.5, GOLD);
+
+  // Warm floor light on threshold
+  fillRect(g, 8, 58, 22, 3, 0xd4a359, 0.4);
+}
+
 function drawMixer(g) {
   // Support stand legs & feet
   fillRect(g, 10, 50, 8, 3, RUBBER);
@@ -799,6 +886,22 @@ function buildPropsTexture(scene) {
 
   drawDoor(g);
   g.generateTexture('prop-door', 64, 48);
+  g.clear();
+
+  drawDoor(g);
+  g.generateTexture('prop-door-south', 64, 48);
+  g.clear();
+
+  drawDoorNorth(g);
+  g.generateTexture('prop-door-north', 64, 36);
+  g.clear();
+
+  drawDoorWest(g);
+  g.generateTexture('prop-door-west', 32, 64);
+  g.clear();
+
+  drawDoorEast(g);
+  g.generateTexture('prop-door-east', 32, 64);
   g.clear();
 
   drawMixer(g);

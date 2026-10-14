@@ -107,6 +107,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   readKeyboard() {
+    // Con l'inventario aperto la tastiera (frecce / WASD) è disattivata per il movimento
+    // per non creare sovrapposizioni con la navigazione degli oggetti nello zaino:
+    // il movimento resta possibile solo tramite click o touch sul pavimento.
+    if (uiState.inventoryOpen) {
+      return { x: 0, y: 0 };
+    }
+
     const { up, down, left, right } = this.controls;
 
     return {
@@ -154,10 +161,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   update() {
     this.arrived = false;
 
-    // Conversazione con un NPC aperta o inventario aperto: il giocatore resta fermo al proprio
+    // Conversazione con un NPC aperta: il giocatore resta fermo al proprio
     // posto (nessuna tastiera, nessun cammino già impostato). La chiusura
-    // ripristina il controllo al tocco successivo.
-    if (uiState.dialogueLocked || uiState.inventoryOpen) {
+    // ripristina il controllo. L'inventario aperto consente il movimento solo via click o touch.
+    if (uiState.dialogueLocked) {
       this.stopWalking();
       this.body.setVelocity(0, 0);
       this.playIdle();

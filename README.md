@@ -11,20 +11,23 @@ stanza reale, arredi leggibili, personaggio che ci si muove dentro, niente HUD i
 
 ## Stato attuale
 
-Una sola stanza, la **Sala Prove**: parquet e muri in legno, una batteria, tre amplificatori (due chitarra,
+La stanza di partenza è la **Sala Prove**: parquet e muri in legno, una batteria, tre amplificatori (due chitarra,
 uno basso), una chitarra elettrica rossa su stand, un basso Fender Precision sunburst su stand, un banco mixer collegato alla presa elettrica, due casse PA su stativo,
-aste microfoniche per voce e cori, cavi che attraversano il parquet, fascio di cavi e ciabatta multipresa,
-più la porta. Il personaggio si muove, la camera lo segue, gli arredi ostacolano e si possono ispezionare.
+aste microfoniche per voce e cori, cavi che attraversano il parquet, fascio di cavi e ciabatta multipresa.
+La stanza dispone di **porte sui quattro lati**:
+- **Sud**: la porta d'ingresso da cui si entra;
+- **Nord**: porta verso la **Sala Relax** (stanza con parquet ardesia e toni blu);
+- **Ovest**: porta verso il **Magazzino Strumenti** (stanza con doghe in pino verde oliva);
+- **Est**: porta verso la **Regia Audio** (stanza con parquet in ciliegio e velluto bordeaux).
+
+Le porte supportano il passaggio fluido fra le stanze con animazioni dedicate (passo d'ingresso nella soglia, dissolvenza telecamera in uscita `fadeOut`, posizionamento con orientamento verso l'interno e passo in avanti con dissolvenza in entrata `fadeIn`). Ci si può passare attraverso camminando (WASD/frecce o touch), toccando/cliccando la porta, oppure premendo `[E]` all'avvicinarsi della soglia.
 
 Prima di entrare nella stanza c'è una **schermata di scelta del personaggio**: quattro schede, una
 per personaggio, disegnate a runtime dagli stessi dati che userà il gioco. Ogni personaggio è un
 JSON in `src/data/characters/`, quindi aspetto, corporatura, capelli, outfit e accessori si cambiano
 senza toccare il codice.
 
-Non c'è ancora nessuna meccanica di gioco: l'interazione è **sola lettura** (descrizioni testuali),
-come da specifica di partenza. I quattro compagni presenti nella stanza parlano però con dialoghi
-a rami: cosa si dicono dipende da chi stai giocando, e ogni scelta del giocatore è una risposta
-fra due o tre proposte.
+Non c'è ancora nessuna meccanica di gioco complessa: l'interazione con gli arredi è descrittiva, e c'è uno **zaino inventario compatto e draggabile** (`[I]`), con griglia a sole icone e pulsante `[ℹ Info]` per mostrare i dettagli dell'oggetto selezionato, utile per raccogliere cavi e ricevere gli strumenti dai compagni. I quattro componenti della band presenti nella stanza parlano con dialoghi a rami in base a chi sta giocando.
 
 ## Requisiti
 
@@ -139,7 +142,10 @@ La scelta vale per la sessione corrente: non viene salvata nel browser.
     │   ├── input.js              # costruzione dei tasti + riconoscimento del touch
     │   └── uiState.js            # stato della UI letto dal gameplay
     ├── data/rooms/               # una stanza = un JSON
-    │   └── sala-prove.json
+    │   ├── sala-prove.json       # stanza di ingresso principale
+    │   ├── stanza-nord.json      # Sala Relax (ardesia blu)
+    │   ├── stanza-ovest.json     # Magazzino Strumenti (pino oliva)
+    │   └── stanza-est.json       # Regia Audio (ciliegio bordeaux)
     ├── data/characters/          # un personaggio = un JSON
     │   ├── playable/             # scelti nella schermata iniziale
     │   └── npc/                  # personaggi della stanza, non giocabili

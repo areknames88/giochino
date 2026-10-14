@@ -36,7 +36,11 @@ const VARIANT_OVERRIDES = {
     precision: { texture: 'prop-bass-precision', footprint: { w: 22, h: 18 } }
   },
   door: {
-    closed: { texture: 'prop-door', footprint: null }
+    closed: { texture: 'prop-door', footprint: null, shadow: false },
+    south: { texture: 'prop-door-south', footprint: null, shadow: false },
+    north: { texture: 'prop-door-north', footprint: null, shadow: false },
+    west: { texture: 'prop-door-west', footprint: null, shadow: false },
+    east: { texture: 'prop-door-east', footprint: null, shadow: false }
   },
   speaker: {
     pa: { texture: 'prop-speaker-pa', footprint: { w: 32, h: 24 } },
@@ -56,7 +60,8 @@ const VARIANT_OVERRIDES = {
 
 const SHADOW_OVERRIDES = {
   'power-outlet': false,
-  cables: false
+  cables: false,
+  door: false
 };
 
 export function propTexture(type, variant) {

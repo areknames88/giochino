@@ -1,0 +1,87 @@
+{
+  "id": "stanza-ovest",
+  "name": "Magazzino Strumenti",
+  "tagline": "Spazio da riempire e profumo di resina",
+  "description": "Una stanza spaziosa con doghe di pino verde salvia e pareti tinteggiate a calce oliva. Tanto spazio a disposizione per flight case e custodie.",
+  "tileSize": 32,
+  "columns": 30,
+  "rows": 20,
+  "seed": 20261015,
+  "palette": {
+    "floor": {
+      "base": "#485338",
+      "light": "#5c6a47",
+      "dark": "#363f29",
+      "seam": "#242a1b"
+    },
+    "wall": {
+      "top": "#5f6d4a",
+      "light": "#788a5f",
+      "face": "#414b33",
+      "dark": "#2c3322",
+      "seam": "#1a1f14"
+    }
+  },
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 19,
+      "w": 30,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    },
+    {
+      "x": 29,
+      "y": 0,
+      "w": 1,
+      "h": 20
+    }
+  ],
+  "openings": [
+    {
+      "x": 29,
+      "y": 14,
+      "w": 1,
+      "h": 2
+    }
+  ],
+  "spawn": {
+    "x": 27,
+    "y": 15,
+    "facing": "left"
+  },
+  "props": [
+    {
+      "id": "door-east",
+      "type": "door",
+      "variant": "east",
+      "x": 29.5,
+      "y": 16,
+      "label": "Porta per la Sala Prove",
+      "prompt": "Entra",
+      "description": "La porta conduce di nuovo alla Sala Prove principale.",
+      "targetRoom": "sala-prove",
+      "targetSpawn": {
+        "x": 2.5,
+        "y": 15,
+        "facing": "right"
+      },
+      "direction": "right",
+      "options": [],
+      "nodes": {}
+    }
+  ],
+  "cables": [],
+  "characters": []
+}

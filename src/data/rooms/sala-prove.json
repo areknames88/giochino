@@ -54,6 +54,24 @@
       "y": 19,
       "w": 2,
       "h": 1
+    },
+    {
+      "x": 14,
+      "y": 0,
+      "w": 2,
+      "h": 1
+    },
+    {
+      "x": 0,
+      "y": 14,
+      "w": 1,
+      "h": 2
+    },
+    {
+      "x": 29,
+      "y": 14,
+      "w": 1,
+      "h": 2
     }
   ],
   "spawn": {
@@ -279,12 +297,72 @@
       }
     },
     {
+      "id": "door-south",
       "type": "door",
+      "variant": "south",
       "x": 15,
       "y": 20,
-      "label": "Porta della sala",
+      "label": "Porta d'ingresso",
       "prompt": "Esamina",
-      "description": "Una porta di legno massello con maniglia in ottone. Dall'altra parte si sente il rumore del corridoio.",
+      "description": "Una porta di legno massello con maniglia in ottone: è la porta da cui sei entrato per le prove. Dall'altra parte c'è l'ingresso principale.",
+      "direction": "down",
+      "options": [],
+      "nodes": {}
+    },
+    {
+      "id": "door-north",
+      "type": "door",
+      "variant": "north",
+      "x": 15,
+      "y": 1.15,
+      "label": "Porta nord",
+      "prompt": "Entra",
+      "description": "Porta che conduce alla Sala Relax a nord.",
+      "targetRoom": "stanza-nord",
+      "targetSpawn": {
+        "x": 15,
+        "y": 17,
+        "facing": "up"
+      },
+      "direction": "up",
+      "options": [],
+      "nodes": {}
+    },
+    {
+      "id": "door-west",
+      "type": "door",
+      "variant": "west",
+      "x": 0.5,
+      "y": 16,
+      "label": "Porta ovest",
+      "prompt": "Entra",
+      "description": "Porta che conduce al Magazzino Strumenti a ovest.",
+      "targetRoom": "stanza-ovest",
+      "targetSpawn": {
+        "x": 27,
+        "y": 15,
+        "facing": "left"
+      },
+      "direction": "left",
+      "options": [],
+      "nodes": {}
+    },
+    {
+      "id": "door-east",
+      "type": "door",
+      "variant": "east",
+      "x": 29.5,
+      "y": 16,
+      "label": "Porta est",
+      "prompt": "Entra",
+      "description": "Porta che conduce alla Regia Audio a est.",
+      "targetRoom": "stanza-est",
+      "targetSpawn": {
+        "x": 2.5,
+        "y": 15,
+        "facing": "right"
+      },
+      "direction": "right",
       "options": [],
       "nodes": {}
     }

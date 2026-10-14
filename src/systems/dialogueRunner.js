@@ -61,6 +61,10 @@ export default class DialogueRunner {
       return false;
     }
 
+    if (uiState.inventoryOpen) {
+      emit(Events.INVENTORY_CLOSE);
+    }
+
     if (typeof target.faceTowards === 'function' && this.scene.player) {
       target.faceTowards(this.scene.player.x, this.scene.player.y);
     }

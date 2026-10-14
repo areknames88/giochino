@@ -253,6 +253,7 @@ export default class HudScene extends Phaser.Scene {
     this.roomName.setText(room.name);
     this.roomTagline.setText(room.tagline ?? '');
     this.showToast(room.name);
+    this.hint.setVisible(false);
   }
 
   onHint(hint) {

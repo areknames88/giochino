@@ -102,7 +102,7 @@ filtro NEAREST):
 | **Avatar generati a runtime (`createAvatarTextures`)** | Generazione procedurale di texture quadrate (`avatar-<id>`) con iniziale e colore camicia dai dati JSON esistenti, più `avatar-generic`: zero asset statici necessari e coerenza immediata con tutti i personaggi presenti nel registro. |
 | **`speakerId` nei payload dei dialoghi** | Permette al `DialogueBox` di identificare la texture dell'avatar sia per gli interlocutori NPC sia per il giocatore quando parla dopo aver scelto un'opzione. Per gli arredi `speakerId` è omesso e l'avatar non viene mostrato. |
 | **Avatar illustrati da `public/Avatars/`** | Precaricamento in `BootScene` con linear filtering delle illustrazioni dei quattro personaggi (`riccardo`, `concy`, `marco`, `davide`); sostituzione dei placeholder procedurali nei dialoghi e del personaggio pixelato nelle schede di `CharacterSelectScene`, mantenendo il fallback automatico per eventuali NPC senza asset. |
-| **Tipografia responsive e target touch nel DialogueBox** | In smartphone portrait (canvas 540×960 scalato a ~0.67–0.72× su schermi 360–390px CSS), i font desktop risultavano illeggibili (10–11px effettivi) e le righe difficili da toccare. Introdotti valori responsive in `measure()`: nome 22px, testo battuta 21px, opzioni 19px, uscita 17px, badge 14px (box 26×26), hint ESC 13px, freccia 15px; altezza minima righe aumentata a 44px con gap di 8px per facilitare il tocco del pollice. In landscape restano le dimensioni compatte calibrate per desktop. |
+| **Movimento consentito con inventario aperto solo via click/touch** | Lasciare il movimento attivo tramite click/tap o drag touch nel mondo di gioco con lo zaino aperto rende l'esplorazione fluida; i comandi da tastiera (frecce / WASD) vengono disattivati per il movimento durante l'apertura dello zaino per evitare sovrapposizioni e conflitti con la navigazione degli oggetti (frecce sinistra/destra). I clic interni alla finestra dell'inventario usano `stopPropagation()` per non provocare camminate indesiderate sotto la finestra. |
 
 ## Trapphigli di Phaser incontrati (leggere prima di debuggare)
 
@@ -267,6 +267,88 @@ filtro NEAREST):
     qualunque sia il percorso aperto dall'utente o servito da server/file statici, il contenuto è sempre l'ultima build.
 
 ## Log delle sessioni
+
+### 2026-10-14 — Sessione 22: Rimozione label 'TRASCINA' dall'inventario e movimento libero con zaino aperto
+
+Fatto:
+
+- **Pulizia grafica header inventario (`src/ui/InventoryBox.js`)**:
+  - Rimossa la label testuale `⋮⋮ TRASCINA` dall'header dello zaino per un'estetica minimale ed elegante (`🎒 ZAINO` e `✕`).
+  - L'intera barra di testata e lo sfondo del pannello rimangono pienamente interattivi e trascinabili con il cursore a mano (`grab`), garantendo il drag fluido della finestra senza elementi visivi superflui.
+- **Movimento del personaggio con inventario aperto (`src/entities/Player.js` e `src/scenes/RoomScene.js`)**:
+  - Il movimento del personaggio con lo zaino aperto è abilitato esclusivamente via **click o touch/drag** sul pavimento di gioco.
+  - In `Player.readKeyboard()`, i controlli da tastiera per il movimento (`WASD` e frecce direzionali) vengono disattivati quando `uiState.inventoryOpen` è attivo: questo previene qualsiasi conflitto e sovrapposizione con le frecce `Sinistra`/`Destra` impiegate per selezionare gli oggetti all'interno dell'inventario.
+  - In `RoomScene.js`, sbloccati i gesti di click/tap e trascinamento per camminare (`handlePointerDown`, `handlePointerMove`, `handlePointerUp`) e l'interazione con `[E]` quando lo zaino è aperto.
+  - Clic e trascinamenti eseguiti sopra la finestra dell'inventario mantengono `event.stopPropagation()` e continuano a non trasmettersi al mondo di gioco sottostante, evitando movimenti involontari del personaggio durante la gestione dello zaino.
+  - In `DialogueRunner.js`, se si avvia una conversazione o un'ispezione prop mentre l'inventario è aperto, lo zaino viene automaticamente richiuso con `emit(Events.INVENTORY_CLOSE)` per evitare sovrapposizioni visive con il riquadro di dialogo.
+- **Verifiche**:
+  - `npm run lint` pulito (0 errori);
+  - `npm run build` ok (51 moduli);
+  - `npm run build:single` ok (bundle single-file aggiornato e sincronizzato).
+
+### 2026-10-14 — Sessione 21: Inventario compatto con sole icone, pulsante Info e draggabilità finestra
+
+Fatto:
+
+- **Inventario ultra-compatto a sole icone (`src/ui/InventoryBox.js`)**:
+  - Ridotte drasticamente le dimensioni della finestra dello zaino: larghezza ridotta a 340 px (320 px in portrait), altezza base ridotta da 390/560 px a soli 144–154 px.
+  - Rimossa la visualizzazione a lista espansa con testi e il grande pannello fisso di dettaglio.
+  - Griglia pulita di slot quadrati (48×48 px) che mostrano **esclusivamente le icone degli oggetti** (34×34 px), con slot vuoti decorativi sul fondo stile RPG classico.
+  - Selezione intuitiva: cliccando o toccando un'icona viene evidenziata con una brillante cornice dorata (`0xf0c27a`) e il nome dell'oggetto appare nella barra inferiore. Supportata anche la navigazione con le frecce da tastiera `Sinistra`/`Destra`.
+- **Pulsante [ℹ Info] per mostrare/nascondere i dettagli**:
+  - Inserito nella barra di controllo inferiore accanto al nome dell'oggetto selezionato.
+  - Comportamento a levetta / toggle:
+    - Default: finestra compatta a sole icone.
+    - Se premuto: espande in basso una scheda informativa sagomata (altezza totale 274 px) con categoria in corsivo (`CATEGORIA: ...`), nome completo e descrizione narrativa immersiva.
+    - Se ripremuto: richiude la scheda tornando alla visualizzazione ultra-compatta a sole icone.
+    - Se l'utente seleziona un'altra icona mentre Info è aperto, i dettagli si aggiornano all'istante in tempo reale per l'oggetto selezionato.
+- **Finestra inventario liberamente draggabile (trascinabile)**:
+  - Header interattivo con titolo `🎒 ZAINO`, indicatore di grip `⋮⋮ TRASCINA` e cursore a mano (`grab`).
+  - L'intera finestra può essere afferrata e trascinata col mouse o con il touch sul canvas, sia dall'header sia dallo sfondo del pannello.
+  - I clic sui pulsanti (Chiudi `✕`, Info `[ℹ Info]` e slot icone) hanno `event.stopPropagation()` per non innescare il drag indesiderato durante i click.
+  - Clamping intelligente ai bordi dello schermo: la finestra non può essere trascinata fuori dal viewport né nascondersi accidentalmente.
+  - Memoria della posizione: la finestra ricorda dove è stata posizionata dal giocatore durante la sessione, riaprendo nello stesso punto o adattandosi al ridimensionamento dello schermo.
+- **Verifiche**:
+  - `npm run lint` pulito (0 errori);
+  - `npm run build` ok (51 moduli);
+  - `npm run build:single` ok (bundle single-file sincronizzato in `dist-single/index.html` e `docs/dist-single/index.html`).
+
+### 2026-10-14 — Sessione 20: Porte sui quattro lati, transizioni fra stanze e tre nuove stanze vuote colorate
+
+Fatto:
+
+- **Sistema porte e aperture sui 4 lati della stanza di ingresso (`sala-prove.json`)**:
+  - Quattro aperture e porte sui 4 muri:
+    - **Porta Sud (`door-south`)**: la porta d'ingresso da cui il personaggio arriva (x: 15, y: 20), esaminabile con messaggio descrittivo e feedback d'avviso al calpestio ("La porta d'ingresso: le prove devono ancora iniziare!").
+    - **Porta Nord (`door-north`)**: nel muro a nord (x: 15, y: 1.15), apertura x: 14, y: 0 (2×1 tile), conduce a `stanza-nord` ("Sala Relax").
+    - **Porta Ovest (`door-west`)**: nel muro a ovest (x: 0.5, y: 16), apertura x: 0, y: 14 (1×2 tile), conduce a `stanza-ovest` ("Magazzino Strumenti").
+    - **Porta Est (`door-east`)**: nel muro a est (x: 29.5, y: 16), apertura x: 29, y: 14 (1×2 tile), conduce a `stanza-est` ("Regia Audio").
+- **Tre nuove stanze vuote con palette cromatiche dedicate (`src/data/rooms/`)**:
+  - `stanza-nord` (**Sala Relax**): atmosfera fredda e riposante con parquet in legno ardesia blu scuro (`#384754`) e pareti navy/ardesia (`#33424f`); porta sud che riporta alla Sala Prove (x: 15, y: 2.5, facing down).
+  - `stanza-ovest` (**Magazzino Strumenti**): atmosfera verde salvia/oliva con doghe in pino verde oliva (`#485338`) e pareti a calce oliva (`#414b33`); porta est che riporta alla Sala Prove (x: 2.5, y: 15, facing right).
+  - `stanza-est` (**Regia Audio**): atmosfera calda e acustica bordeaux/ciliegio con parquet ciliegio scuro (`#632d2d`) e pareti bordeaux fonoassorbenti (`#542626`); porta ovest che riporta alla Sala Prove (x: 27, y: 15, facing left).
+  - Tutte le stanze registrate in `src/game/rooms.js`.
+- **Grafica procedurale delle porte per tutti e 4 i punti cardinali (`src/gfx/textureFactory.js` e `src/game/propTypes.js`)**:
+  - `prop-door-south` (64×48): prospettiva frontale classica con cornice, pannelli in legno e maniglia in ottone.
+  - `prop-door-north` (64×36): incastonata nel muro superiore con varco scuro in profondità, stipiti laterali sagomati, soglia in legno illuminata da bagliore caldo e spia verde d'uscita.
+  - `prop-door-west` (32×64): vista laterale del varco a sinistra con stipite destro in prospettiva, soglia sagomata e maniglia in ottone.
+  - `prop-door-east` (32×64): vista laterale del varco a destra con stipite sinistro in prospettiva, soglia sagomata e maniglia in ottone.
+  - Ombre dei prop porta disattivate via `SHADOW_OVERRIDES.door = false`.
+- **Animazioni e meccanica di passaggio fra stanze (`RoomScene.js`)**:
+  - Input bloccato durante il cambio stanza (`this.isTransitioning`).
+  - Animazione d'ingresso nella porta: passettino del personaggio verso il vano con clip di camminata (`playWalk`).
+  - Dissolvenza telecamera in uscita: `camera.fadeOut(260, 0, 0, 0)`.
+  - Passaggio parametri di posizionamento: `changeRoom(roomId, spawn)` con `this.spawnOverride` per posizionare il personaggio davanti alla porta corretta nella stanza di destinazione con l'orientamento (`facing`) corretto verso l'interno.
+  - Dissolvenza telecamera in entrata: `camera.fadeIn(280, 0, 0, 0)`.
+  - Passettino d'entrata nella nuova stanza: appena entrato il personaggio compie un passo in avanti nella direzione della stanza prima di tornare in idle, creando una transizione fluida e cinematografica.
+  - Riconoscimento multi-input: la transizione scatta sia camminando direttamente nella soglia (WASD/frecce o touch drag), sia cliccando/toccando la porta (pathfinding A* verso la soglia), sia premendo `[E]` quando compare l'hint `[E] Entra — <Porta>`.
+  - Corretta pulizia listener su evento `SHUTDOWN` di Phaser per evitare duplicati nei riavvii di scena.
+  - **Risolto bug hint residuo al cambio stanza**: quando il giocatore attraversava una porta camminando senza premere il tasto interazione, l'hint `[E] Entra — <Porta>` restava visibile nella nuova stanza perché `HudScene` non riceveva `HINT_CHANGED, null` e la nuova istanza di `InteractionSystem` partiva con `this.current = null`, valutando `found === this.current` (`null === null`) come vero senza emettere l'evento di pulizia. Risolto forzando `emit(Events.HINT_CHANGED, null)` all'inizio di `triggerRoomTransition`, in `create()` e all'evento `SHUTDOWN` di `RoomScene`, oltre a `this.hint.setVisible(false)` in `HudScene.onRoomReady`.
+- **Verifiche**:
+  - `npm run lint` pulito (0 errori);
+  - Test automatico connettività, simmetria e pathfinding (`test_rooms.js`) 100% superato;
+  - `npm run build` ok (51 moduli);
+  - `npm run build:single` ok (bundle single-file sincronizzato).
 
 ### 2026-10-08 — Sessione 19: Sistema Inventario, HUD Zaino, raccolta Cavi ed equipaggiamento NPC
 

@@ -13,6 +13,9 @@ export default class Prop extends Phaser.GameObjects.Container {
     this.prompt = data.prompt ?? 'Esamina';
     this.options = Array.isArray(data.options) ? data.options : null;
     this.nodes = data.nodes && typeof data.nodes === 'object' ? data.nodes : null;
+    this.targetRoom = data.targetRoom ?? null;
+    this.targetSpawn = data.targetSpawn ?? null;
+    this.direction = data.direction ?? null;
     this.footprint = propFootprint(data.type, this.variant);
     this.solid = null;
 
