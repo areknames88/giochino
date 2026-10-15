@@ -23,7 +23,10 @@ export const Events = {
   OBJECTIVES_CLOSE: 'objectives:close',
   OBJECTIVE_ADDED: 'objective:added',
   OBJECTIVE_COMPLETED: 'objective:completed',
-  OBJECTIVE_REMOVED: 'objective:removed'
+  OBJECTIVE_REMOVED: 'objective:removed',
+  HELP_TOGGLE: 'help:toggle',
+  HELP_OPEN: 'help:open',
+  HELP_CLOSE: 'help:close'
 };
 
 export const eventBus = new Phaser.Events.EventEmitter();

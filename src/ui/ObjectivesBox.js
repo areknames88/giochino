@@ -229,6 +229,7 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
   }
 
   startDrag(pointer) {
+    this.scene.bringModalToFront?.(this);
     this.isDragging = true;
     this.dragOffset = {
       x: pointer.x - this.x,
@@ -252,6 +253,7 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
     this.currentPage = 0;
     this.setVisible(true);
     uiState.objectivesOpen = true;
+    this.scene.bringModalToFront?.(this);
     emit(Events.OBJECTIVES_OPEN);
     this.layout();
   }

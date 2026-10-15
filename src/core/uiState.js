@@ -4,5 +4,6 @@ export const uiState = {
   dialogueLocked: false,
   inventoryOpen: false,
   objectivesOpen: false,
+  helpOpen: false,
   ready: false
 };

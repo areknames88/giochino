@@ -229,6 +229,7 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
   }
 
   startDrag(pointer) {
+    this.scene.bringModalToFront?.(this);
     this.isDragging = true;
     this.dragOffset = {
       x: pointer.x - this.x,
@@ -275,6 +276,7 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
 
     this.setVisible(true);
     uiState.inventoryOpen = true;
+    this.scene.bringModalToFront?.(this);
     emit(Events.INVENTORY_OPEN);
     this.layout();
   }

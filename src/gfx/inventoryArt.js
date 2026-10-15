@@ -289,10 +289,52 @@ function drawObjectives(g) {
   fillRect(g, 17, 25, 8, 2, INK);
 }
 
+/**
+ * Icona Guida / Come si gioca per HUD (40x40):
+ * Manuale rilegato in pelle con segnalibro a nastro e punto interrogativo dorato
+ */
+function drawHelp(g) {
+  const LEATHER_DARK = 0x3a2110;
+  const LEATHER_MID = 0x5a341a;
+  const GOLD = 0xc8a94e;
+  const GOLD_LIGHT = 0xf0c27a;
+  const PARCHMENT = 0xe8d7b8;
+  const RIBBON = 0xb8443c;
+
+  // Ombra libro
+  fillRounded(g, 7, 7, 26, 28, 4, 0x140d07, 0.6);
+
+  // Copertina in pelle marrone caldo
+  fillRounded(g, 6, 6, 26, 28, 4, LEATHER_DARK);
+  fillRounded(g, 7, 7, 24, 26, 3, LEATHER_MID);
+
+  // Pagine sul taglio laterale e inferiore
+  fillRect(g, 26, 9, 3, 22, PARCHMENT);
+  fillRect(g, 10, 28, 17, 3, PARCHMENT);
+
+  // Dorso rilegato con borchie
+  fillRect(g, 6, 6, 4, 28, LEATHER_DARK);
+  fillCircle(g, 8, 10, 1.2, GOLD);
+  fillCircle(g, 8, 20, 1.2, GOLD);
+  fillCircle(g, 8, 30, 1.2, GOLD);
+
+  // Nastro segnalibro rosso che spunta in basso
+  fillRect(g, 18, 28, 4, 7, RIBBON);
+  fillCircle(g, 20, 35, 1.5, 0x8a2b24);
+
+  // Simbolo dorato "?" centrale
+  fillRect(g, 14, 11, 8, 2.5, GOLD_LIGHT);
+  fillRect(g, 20, 13.5, 2.5, 3.5, GOLD_LIGHT);
+  fillRect(g, 17, 16.5, 4.5, 2.2, GOLD_LIGHT);
+  fillRect(g, 17, 18.7, 2.5, 3, GOLD_LIGHT);
+  fillRect(g, 17, 23.5, 2.5, 2.5, GOLD_LIGHT);
+}
+
 export function createInventoryTextures(scene) {
   const textures = [
     { key: 'ui-backpack', w: 40, h: 40, draw: drawBackpack },
     { key: 'ui-objectives', w: 40, h: 40, draw: drawObjectives },
+    { key: 'ui-help', w: 40, h: 40, draw: drawHelp },
     { key: 'item-generic', w: 48, h: 48, draw: drawGenericItem },
     { key: 'item-cables', w: 48, h: 48, draw: drawCables },
     { key: 'item-concy-tuner', w: 48, h: 48, draw: drawConcyTuner },

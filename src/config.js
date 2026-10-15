@@ -20,8 +20,7 @@ export const GAME = {
     left: ['A', 'LEFT'],
     right: ['D', 'RIGHT'],
     sprint: ['SHIFT'],
-    interact: ['E', 'ENTER', 'SPACE'],
-    toggleDebug: ['G']
+    interact: ['E', 'ENTER', 'SPACE']
   },
   player: {
     walkSpeed: 132,

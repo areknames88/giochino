@@ -147,7 +147,6 @@ export default class RoomScene extends Phaser.Scene {
     );
 
     this.createInput();
-    this.createDebugOverlay();
 
     this.cameras.main.fadeIn(280, 0, 0, 0);
 
@@ -236,7 +235,6 @@ export default class RoomScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-E', () => this.requestInteract());
     this.input.keyboard.on('keydown-ENTER', () => this.requestInteract());
     this.input.keyboard.on('keydown-SPACE', () => this.requestInteract());
-    this.input.keyboard.on('keydown-G', () => this.toggleDebug());
 
     this.input.on('pointerdown', (pointer) => this.handlePointerDown(pointer));
     this.input.on('pointermove', (pointer) => this.handlePointerMove(pointer));
@@ -464,42 +462,6 @@ export default class RoomScene extends Phaser.Scene {
     }
 
     prop.destroy();
-  }
-
-  createDebugOverlay() {
-    const { tileSize, columns, rows } = this.layout;
-    const graphics = this.add.graphics().setDepth(DEPTHS.GRID).setVisible(false);
-
-    graphics.lineStyle(1, 0xffffff, 0.08);
-
-    for (let x = 0; x <= columns; x += 1) {
-      graphics.lineBetween(x * tileSize, 0, x * tileSize, rows * tileSize);
-    }
-
-    for (let y = 0; y <= rows; y += 1) {
-      graphics.lineBetween(0, y * tileSize, columns * tileSize, y * tileSize);
-    }
-
-    this.debugOverlay = graphics;
-    this.debugEnabled = false;
-  }
-
-  toggleDebug() {
-    this.debugEnabled = !this.debugEnabled;
-    this.debugOverlay.setVisible(this.debugEnabled);
-
-    if (this.debugEnabled) {
-      if (!this.physics.world.debugGraphic) {
-        this.physics.world.createDebugGraphic();
-      }
-
-      this.physics.world.drawDebug = true;
-    } else {
-      this.physics.world.drawDebug = false;
-      this.physics.world.debugGraphic?.clear();
-    }
-
-    emit(Events.TOAST, this.debugEnabled ? 'DEBUG ON' : 'DEBUG OFF');
   }
 
   checkDoorTriggers() {

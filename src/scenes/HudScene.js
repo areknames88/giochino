@@ -6,6 +6,7 @@ import { uiState } from '../core/uiState.js';
 import DialogueBox from '../ui/DialogueBox.js';
 import InventoryBox from '../ui/InventoryBox.js';
 import ObjectivesBox from '../ui/ObjectivesBox.js';
+import HelpBox from '../ui/HelpBox.js';
 import { inventory } from '../game/inventory.js';
 import { objectives } from '../game/objectives.js';
 
@@ -31,11 +32,14 @@ export default class HudScene extends Phaser.Scene {
     this.objectivesBox = new ObjectivesBox(this);
     this.objectivesBox.setDepth(150);
 
+    this.helpBox = new HelpBox(this);
+    this.helpBox.setDepth(150);
+
     this.buildRoomPlate();
     this.buildBackpackButton();
     this.buildObjectivesButton();
+    this.buildHelpButton();
     this.buildHint();
-    this.buildLegend();
     this.buildToast();
     this.layoutElements();
 
@@ -49,12 +53,17 @@ export default class HudScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-B', () => this.toggleInventory());
     this.input.keyboard.on('keydown-O', () => this.toggleObjectives());
     this.input.keyboard.on('keydown-M', () => this.toggleObjectives());
+    this.input.keyboard.on('keydown-H', () => this.toggleHelp());
+    this.input.keyboard.on('keydown-SLASH', () => this.toggleHelp());
     this.input.keyboard.on('keydown-ESC', () => {
-      if (uiState.inventoryOpen) {
-        this.inventoryBox.close();
+      if (uiState.helpOpen) {
+        this.helpBox.close();
       }
       if (uiState.objectivesOpen) {
         this.objectivesBox.close();
+      }
+      if (uiState.inventoryOpen) {
+        this.inventoryBox.close();
       }
     });
 
@@ -65,7 +74,6 @@ export default class HudScene extends Phaser.Scene {
     this.unsubscribe = [
       on(Events.ROOM_READY, (room) => this.onRoomReady(room)),
       on(Events.HINT_CHANGED, (hint) => this.onHint(hint)),
-      on(Events.PLAYER_MOVED, (position) => this.setCoordinates(position.x, position.y)),
       on(Events.TOAST, (message) => this.showToast(message)),
       on(Events.INVENTORY_TOGGLE, () => this.toggleInventory()),
       on(Events.INVENTORY_OPEN, () => this.inventoryBox.open()),
@@ -92,7 +100,10 @@ export default class HudScene extends Phaser.Scene {
         if (this.objectivesBox.visible) {
           this.objectivesBox.render();
         }
-      })
+      }),
+      on(Events.HELP_TOGGLE, () => this.toggleHelp()),
+      on(Events.HELP_OPEN, () => this.helpBox.open()),
+      on(Events.HELP_CLOSE, () => this.helpBox.close())
     ];
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -108,23 +119,31 @@ export default class HudScene extends Phaser.Scene {
     this.updateObjectivesBadge();
   }
 
+  bringModalToFront(modal) {
+    if (!modal) {
+      return;
+    }
+    this.topModalDepth = Math.max(150, (this.topModalDepth || 150) + 1);
+    modal.setDepth(this.topModalDepth);
+  }
+
   layoutElements() {
     const isPortrait = this.scale.height > this.scale.width;
     const { width, height } = this.scale;
-    if (this.coordinates) {
-      this.coordinates.setPosition(width - 18, 16);
-    }
+    const topMargin = isPortrait ? 52 : 46;
+    const btnSpacing = 52;
+
     if (this.backpackButton) {
-      this.backpackButton.setPosition(width - 38, isPortrait ? 60 : 54);
+      this.backpackButton.setPosition(width - 38, topMargin);
     }
     if (this.objectivesButton) {
-      this.objectivesButton.setPosition(width - 38, isPortrait ? 134 : 126);
+      this.objectivesButton.setPosition(width - 38, topMargin + btnSpacing);
+    }
+    if (this.helpButton) {
+      this.helpButton.setPosition(width - 24, height - 24);
     }
     if (this.hint) {
       this.hint.setPosition(width / 2, height - (isPortrait ? 210 : 190));
-    }
-    if (this.legend) {
-      this.legend.setPosition(width - 16, height - 16);
     }
     if (this.toast) {
       this.toast.setPosition(width / 2, 96);
@@ -138,10 +157,12 @@ export default class HudScene extends Phaser.Scene {
     if (this.objectivesBox) {
       this.objectivesBox.layout();
     }
+    if (this.helpBox) {
+      this.helpBox.layout();
+    }
   }
 
   buildRoomPlate() {
-    const { width } = this.scale;
     const graphics = this.add.graphics();
     graphics.fillStyle(0x140d07, 0.86);
     graphics.fillRoundedRect(14, 14, 296, 62, 8);
@@ -155,10 +176,6 @@ export default class HudScene extends Phaser.Scene {
     this.roomTagline = this.add
       .text(30, 52, '', { ...PANEL_STYLE, fontSize: '13px', color: '#a8917a' })
       .setOrigin(0, 0);
-
-    this.coordinates = this.add
-      .text(width - 18, 16, '', { ...PANEL_STYLE, fontSize: '12px', color: '#7d6a56' })
-      .setOrigin(1, 0);
   }
 
   buildBackpackButton() {
@@ -168,13 +185,6 @@ export default class HudScene extends Phaser.Scene {
 
     this.backpackIcon = this.add.image(0, 0, 'ui-backpack')
       .setDisplaySize(30, 30);
-
-    this.backpackKeyHint = this.add.text(0, 24, '[I]', {
-      fontFamily: GAME.font,
-      fontSize: '10px',
-      color: '#a8917a',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0);
 
     this.backpackBadgeContainer = this.add.container(14, -14);
     const badgeBg = this.add.graphics();
@@ -193,7 +203,7 @@ export default class HudScene extends Phaser.Scene {
     this.backpackBadgeContainer.add([badgeBg, this.backpackBadgeText]);
     this.backpackBadgeContainer.setVisible(false);
 
-    const hit = this.add.zone(0, 0, 48, 54)
+    const hit = this.add.zone(0, 0, 44, 44)
       .setInteractive({ useHandCursor: true });
 
     hit.on('pointerover', () => {
@@ -212,7 +222,6 @@ export default class HudScene extends Phaser.Scene {
     this.backpackButton.add([
       this.backpackBg,
       this.backpackIcon,
-      this.backpackKeyHint,
       this.backpackBadgeContainer,
       hit
     ]);
@@ -234,13 +243,6 @@ export default class HudScene extends Phaser.Scene {
     this.objectivesIcon = this.add.image(0, 0, 'ui-objectives')
       .setDisplaySize(30, 30);
 
-    this.objectivesKeyHint = this.add.text(0, 24, '[O]', {
-      fontFamily: GAME.font,
-      fontSize: '10px',
-      color: '#a8917a',
-      fontStyle: 'bold'
-    }).setOrigin(0.5, 0);
-
     this.objectivesBadgeContainer = this.add.container(14, -14);
     const badgeBg = this.add.graphics();
     badgeBg.fillStyle(0x3182ce, 1);
@@ -258,7 +260,7 @@ export default class HudScene extends Phaser.Scene {
     this.objectivesBadgeContainer.add([badgeBg, this.objectivesBadgeText]);
     this.objectivesBadgeContainer.setVisible(false);
 
-    const hit = this.add.zone(0, 0, 48, 54)
+    const hit = this.add.zone(0, 0, 44, 44)
       .setInteractive({ useHandCursor: true });
 
     hit.on('pointerover', () => {
@@ -277,7 +279,6 @@ export default class HudScene extends Phaser.Scene {
     this.objectivesButton.add([
       this.objectivesBg,
       this.objectivesIcon,
-      this.objectivesKeyHint,
       this.objectivesBadgeContainer,
       hit
     ]);
@@ -291,24 +292,79 @@ export default class HudScene extends Phaser.Scene {
     this.objectivesBg.strokeRoundedRect(-22, -22, 44, 44, 8);
   }
 
+  buildHelpButton() {
+    this.helpButton = this.add.container(0, 0);
+    this.helpBg = this.add.graphics();
+    this.drawHelpBg(false);
+
+    this.helpQuestionText = this.add.text(0, 0, '?', {
+      fontFamily: GAME.font,
+      fontSize: '15px',
+      color: '#c99b6a',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    const hit = this.add.zone(0, 0, 32, 32)
+      .setInteractive({ useHandCursor: true });
+
+    hit.on('pointerover', () => {
+      this.drawHelpBg(true);
+      this.helpQuestionText.setColor('#f0c27a');
+    });
+    hit.on('pointerout', () => {
+      this.drawHelpBg(false);
+      this.helpQuestionText.setColor('#c99b6a');
+    });
+    hit.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.toggleHelp();
+    });
+
+    this.helpButton.add([
+      this.helpBg,
+      this.helpQuestionText,
+      hit
+    ]);
+  }
+
+  drawHelpBg(isHover = false) {
+    this.helpBg.clear();
+    this.helpBg.fillStyle(isHover ? 0x2a170b : 0x140d07, isHover ? 0.95 : 0.75);
+    this.helpBg.fillCircle(0, 0, 14);
+    this.helpBg.lineStyle(1.2, isHover ? 0xf0c27a : 0x5a381e, 1);
+    this.helpBg.strokeCircle(0, 0, 14);
+  }
+
   toggleInventory() {
     if (uiState.dialogueLocked) {
       return;
     }
-    if (!this.inventoryBox.visible && uiState.objectivesOpen) {
-      this.objectivesBox.close();
-    }
     this.inventoryBox.toggle();
+    if (this.inventoryBox.visible) {
+      this.bringModalToFront(this.inventoryBox);
+    }
   }
 
   toggleObjectives() {
     if (uiState.dialogueLocked) {
       return;
     }
-    if (!this.objectivesBox.visible && uiState.inventoryOpen) {
-      this.inventoryBox.close();
-    }
     this.objectivesBox.toggle();
+    if (this.objectivesBox.visible) {
+      this.bringModalToFront(this.objectivesBox);
+    }
+  }
+
+  toggleHelp() {
+    if (uiState.dialogueLocked) {
+      return;
+    }
+    this.helpBox.toggle();
+    if (this.helpBox.visible) {
+      this.bringModalToFront(this.helpBox);
+    }
   }
 
   updateBackpackBadge() {
@@ -348,22 +404,6 @@ export default class HudScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 1)
       .setVisible(false);
-  }
-
-  buildLegend() {
-    const lines = this.touchFirst
-      ? ['tocca  muoviti', 'doppio tocco  corri', 'tocca un oggetto / NPC  interagisci', 'tocca zaino / obiettivi per aprire']
-      : ['WASD / frecce  muoviti', 'doppio click / SHIFT  corri', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'I / zaino  inventario', 'O / missioni  obiettivi', 'G  griglia e collisioni'];
-
-    this.legend = this.add
-      .text(this.scale.width - 16, this.scale.height - 16, lines.join('\n'), {
-        ...PANEL_STYLE,
-        fontSize: '12px',
-        color: '#8d7a63',
-        align: 'right',
-        lineSpacing: 3
-      })
-      .setOrigin(1, 1);
   }
 
   buildToast() {
@@ -413,9 +453,5 @@ export default class HudScene extends Phaser.Scene {
       hold: 900,
       onComplete: () => this.toast.setAlpha(0)
     });
-  }
-
-  setCoordinates(x, y) {
-    this.coordinates.setText(`x ${Math.round(x)}  y ${Math.round(y)}`);
   }
 }
