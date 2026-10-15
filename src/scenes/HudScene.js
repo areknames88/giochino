@@ -352,8 +352,8 @@ export default class HudScene extends Phaser.Scene {
 
   buildLegend() {
     const lines = this.touchFirst
-      ? ['tocca dove vuoi andare', 'tocca un oggetto per esaminarlo', 'tocca zaino / obiettivi per aprire']
-      : ['WASD / frecce  muoviti', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'I / zaino  inventario', 'O / missioni  obiettivi', 'G  griglia e collisioni'];
+      ? ['tocca  muoviti', 'doppio tocco  corri', 'tocca un oggetto / NPC  interagisci', 'tocca zaino / obiettivi per aprire']
+      : ['WASD / frecce  muoviti', 'doppio click / SHIFT  corri', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'I / zaino  inventario', 'O / missioni  obiettivi', 'G  griglia e collisioni'];
 
     this.legend = this.add
       .text(this.scale.width - 16, this.scale.height - 16, lines.join('\n'), {

@@ -20,6 +20,12 @@ import { inventory } from '../game/inventory.js';
 /** Quanto può spostarsi il puntatore durante un tocco prima che diventi un trascinamento. */
 const TAP_SLOP = 12;
 
+/** Intervallo massimo (in ms) tra due tocchi/click per considerare l'azione una corsa (doppio tocco). */
+const DOUBLE_TAP_DELAY = 350;
+
+/** Distanza massima a schermo (in pixel) consentita tra due tocchi per attivare la corsa. */
+const DOUBLE_TAP_MAX_DISTANCE = 40;
+
 export default class RoomScene extends Phaser.Scene {
   constructor() {
     super('Room');
@@ -38,6 +44,7 @@ export default class RoomScene extends Phaser.Scene {
     this.props = [];
     this.pendingProp = null;
     this.drag = null;
+    this.lastTap = null;
     this.dialogueTarget = null;
     this.dialogueMaxDistance = 120;
     this.isTransitioning = false;
@@ -248,15 +255,38 @@ export default class RoomScene extends Phaser.Scene {
       return;
     }
 
+    const now = this.time.now;
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    const targetProp = this.interactions.hitTest(point);
+
+    let isDoubleTap = false;
+    if (this.lastTap) {
+      const timeDiff = now - this.lastTap.time;
+      const screenDist = Phaser.Math.Distance.Between(this.lastTap.x, this.lastTap.y, pointer.x, pointer.y);
+      const sameProp = Boolean(targetProp && this.lastTap.prop === targetProp);
+
+      if (timeDiff < DOUBLE_TAP_DELAY && (screenDist < DOUBLE_TAP_MAX_DISTANCE || sameProp)) {
+        isDoubleTap = true;
+      }
+    }
+
     this.drag = {
       id: pointer.id,
       x: pointer.x,
       y: pointer.y,
-      blocked: uiState.dialogueOpen
+      blocked: uiState.dialogueOpen,
+      isDoubleTap
     };
 
     if (uiState.dialogueOpen) {
       return;
+    }
+
+    if (isDoubleTap) {
+      this.player.runningToTarget = true;
+      this.lastTap = null;
+    } else {
+      this.player.runningToTarget = false;
     }
 
     this.pendingProp = null;
@@ -284,15 +314,28 @@ export default class RoomScene extends Phaser.Scene {
     }
 
     const travelled = Phaser.Math.Distance.Between(drag.x, drag.y, pointer.x, pointer.y);
+    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+    const hitProp = this.interactions.hitTest(point);
 
-    if (travelled > TAP_SLOP) {
+    if (travelled > TAP_SLOP && !hitProp) {
+      if (drag.isDoubleTap) {
+        this.player.stopWalking();
+      }
       return;
     }
 
-    const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-    this.pendingProp = this.interactions.hitTest(point);
+    this.pendingProp = hitProp;
     if (this.pendingProp && typeof this.pendingProp.faceTowards === 'function') {
       this.pendingProp.faceTowards(this.player.x, this.player.y);
+    }
+
+    if (!drag.isDoubleTap) {
+      this.lastTap = {
+        time: this.time.now,
+        x: pointer.x,
+        y: pointer.y,
+        prop: this.pendingProp
+      };
     }
   }
 

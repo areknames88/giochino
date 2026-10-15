@@ -57,6 +57,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.playIdle();
 
     this.shadowScale = shadowScale ?? 1;
+    this.runningToTarget = false;
     this.shadow = scene.add
       .image(this.x, this.y + SHADOW_OFFSET_Y, 'soft-shadow')
       .setDisplaySize(20 * this.shadowScale, SHADOW_HEIGHT)
@@ -65,7 +66,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   get isSprinting() {
-    return this.controls.sprint.isDown;
+    return Boolean(this.controls.sprint.isDown || this.runningToTarget);
   }
 
   get hasTarget() {
@@ -104,6 +105,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
   stopWalking() {
     this.path = [];
     this.moveTarget = null;
+    this.runningToTarget = false;
   }
 
   readKeyboard() {
@@ -135,6 +137,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
       if (!this.moveTarget) {
         this.arrived = true;
+        this.runningToTarget = false;
         return null;
       }
 
@@ -195,6 +198,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (!this.moving) {
       this.body.setVelocity(0, 0);
+      this.anims.timeScale = 1.0;
       this.playIdle();
       this.finishStep();
       return;
@@ -206,6 +210,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setVelocity((direction.x / strength) * speed * force, (direction.y / strength) * speed * force);
 
     this.facing = faceFromVector(direction.x, direction.y) ?? this.facing;
+
+    this.anims.timeScale = this.isSprinting ? 1.4 : 1.0;
 
     this.playWalk();
     this.finishStep();
