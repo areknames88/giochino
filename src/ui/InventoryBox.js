@@ -54,7 +54,7 @@ export default class InventoryBox extends Phaser.GameObjects.Container {
       if (event && event.stopPropagation) {
         event.stopPropagation();
       }
-      this.startDrag(pointer);
+      this.scene.bringModalToFront?.(this);
     });
     this.addAt(this.bgHitArea, 0);
 

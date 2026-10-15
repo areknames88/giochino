@@ -49,7 +49,7 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
       if (event && event.stopPropagation) {
         event.stopPropagation();
       }
-      this.startDrag(pointer);
+      this.scene.bringModalToFront?.(this);
     });
     this.addAt(this.bgHitArea, 0);
 
@@ -62,6 +62,7 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
       if (event && event.stopPropagation) {
         event.stopPropagation();
       }
+      this.scene.bringModalToFront?.(this);
       this.startDrag(pointer);
     });
     this.add(this.headerHitArea);
@@ -109,9 +110,13 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
     this.closeBtnContainer.add([this.closeBtnGraphic, this.closeBtnText, this.closeBtnHitArea]);
     this.add(this.closeBtnContainer);
 
-    // Contenitore per le card degli obiettivi
+    // Contenitore per le card degli obiettivi con maschera per prevenire qualsiasi overflow
     this.cardsContainer = scene.add.container(0, 0);
     this.add(this.cardsContainer);
+
+    this.maskGraphic = scene.make.graphics();
+    this.contentMask = this.maskGraphic.createGeometryMask();
+    this.cardsContainer.setMask(this.contentMask);
 
     // Barra paginazione (visibile quando ci sono più pagine)
     this.paginationContainer = scene.add.container(0, 0);
@@ -304,7 +309,31 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
     }
 
     this.drawPanel();
+    this.updateMask();
     this.render();
+  }
+
+  setPosition(x, y) {
+    super.setPosition(x, y);
+    this.updateMask();
+    return this;
+  }
+
+  updateMask() {
+    if (!this.maskGraphic) {
+      return;
+    }
+    const halfW = this.boxW ? this.boxW / 2 : 200;
+    const halfH = this.boxH ? this.boxH / 2 : 150;
+
+    this.maskGraphic.clear();
+    this.maskGraphic.fillStyle(0xffffff, 1);
+    this.maskGraphic.fillRect(
+      this.x - halfW + 10,
+      this.y - halfH + 42,
+      Math.max(10, (this.boxW || 400) - 20),
+      Math.max(10, (this.boxH || 300) - 82)
+    );
   }
 
   drawPanel() {
@@ -433,8 +462,9 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
       wordWrap: { width: width - 50 }
     });
 
-    // Descrizione narrativa scritta
-    const descText = this.scene.add.text(12, 48, obj.description || '', {
+    // Descrizione narrativa scritta (posizionata dinamicamente sotto il titolo)
+    const descY = 27 + title.height + 4;
+    const descText = this.scene.add.text(12, descY, obj.description || '', {
       fontFamily: GAME.font,
       fontSize: '12px',
       color: isCompleted ? '#718096' : '#f2e6d2',
@@ -446,7 +476,7 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
     const elements = [bg, statusText, catBadge, title, descText];
 
     if (obj.target) {
-      const targetY = Math.min(height - 20, 48 + descText.height + 6);
+      const targetY = Math.min(height - 18, descY + descText.height + 4);
       const targetLabel = isCompleted ? `✓ Completato: ${obj.target}` : `📍 Prossimo passo: ${obj.target}`;
       const targetText = this.scene.add.text(12, targetY, targetLabel, {
         fontFamily: GAME.font,
@@ -460,5 +490,13 @@ export default class ObjectivesBox extends Phaser.GameObjects.Container {
 
     card.add(elements);
     return card;
+  }
+
+  destroy(fromScene) {
+    if (this.maskGraphic) {
+      this.maskGraphic.destroy();
+      this.maskGraphic = null;
+    }
+    super.destroy(fromScene);
   }
 }
