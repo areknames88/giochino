@@ -13,7 +13,8 @@ const DATA_PATHS = {
   playables: path.join(ROOT_DIR, 'src', 'data', 'characters', 'playable'),
   npcs: path.join(ROOT_DIR, 'src', 'data', 'characters', 'npc'),
   dialogues: path.join(ROOT_DIR, 'src', 'data', 'dialogues'),
-  items: path.join(ROOT_DIR, 'src', 'data', 'items')
+  items: path.join(ROOT_DIR, 'src', 'data', 'items'),
+  objectives: path.join(ROOT_DIR, 'src', 'data', 'objectives')
 };
 
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
@@ -124,7 +125,8 @@ const server = http.createServer(async (req, res) => {
         playables: readJsonDir(DATA_PATHS.playables),
         npcs: readJsonDir(DATA_PATHS.npcs),
         dialogues: readJsonDir(DATA_PATHS.dialogues),
-        items: readJsonDir(DATA_PATHS.items)
+        items: readJsonDir(DATA_PATHS.items),
+        objectives: readJsonDir(DATA_PATHS.objectives)
       };
       sendJson(res, 200, { success: true, data });
     } catch (err) {
@@ -170,6 +172,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/save/objective' && req.method === 'POST') {
+    try {
+      const { objectiveId, data } = await parseBody(req);
+      if (!objectiveId || typeof objectiveId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(objectiveId)) {
+        sendJson(res, 400, { success: false, error: 'objectiveId non valido' });
+        return;
+      }
+      if (!fs.existsSync(DATA_PATHS.objectives)) {
+        fs.mkdirSync(DATA_PATHS.objectives, { recursive: true });
+      }
+      const target = path.join(DATA_PATHS.objectives, `${objectiveId}.json`);
+      fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
+      console.log(`[editor] Salvato obiettivo: ${objectiveId}.json`);
+      sendJson(res, 200, { success: true, message: `Obiettivo ${objectiveId} salvato` });
+    } catch (err) {
+      sendJson(res, 500, { success: false, error: err.message });
+    }
+    return;
+  }
+
   if (pathname === '/api/save/dialogue' && req.method === 'POST') {
     try {
       const { dialogueId, data } = await parseBody(req);
@@ -189,7 +211,7 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/save/all' && req.method === 'POST') {
     try {
-      const { rooms = {}, dialogues = {}, items = {} } = await parseBody(req);
+      const { rooms = {}, dialogues = {}, items = {}, objectives = {} } = await parseBody(req);
       let count = 0;
 
       for (const [roomId, data] of Object.entries(rooms)) {
@@ -221,6 +243,24 @@ const server = http.createServer(async (req, res) => {
       for (const [itemId, data] of Object.entries(items)) {
         if (/^[a-zA-Z0-9_-]+$/.test(itemId)) {
           const target = path.join(DATA_PATHS.items, `${itemId}.json`);
+          fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
+          count += 1;
+        }
+      }
+
+      if (!fs.existsSync(DATA_PATHS.objectives)) {
+        fs.mkdirSync(DATA_PATHS.objectives, { recursive: true });
+      }
+      const existingObjectiveFiles = fs.readdirSync(DATA_PATHS.objectives).filter((f) => f.endsWith('.json'));
+      for (const file of existingObjectiveFiles) {
+        const id = path.basename(file, '.json');
+        if (!objectives[id]) {
+          fs.unlinkSync(path.join(DATA_PATHS.objectives, file));
+        }
+      }
+      for (const [objectiveId, data] of Object.entries(objectives)) {
+        if (/^[a-zA-Z0-9_-]+$/.test(objectiveId)) {
+          const target = path.join(DATA_PATHS.objectives, `${objectiveId}.json`);
           fs.writeFileSync(target, JSON.stringify(data, null, 2) + '\n', 'utf8');
           count += 1;
         }

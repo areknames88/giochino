@@ -98,7 +98,14 @@ function buildNode(character, nodeId, node) {
     return null;
   }
 
-  return { nodeId, lines, options: normalizeOptions(node.options), giveItem: node.giveItem ?? null };
+  return {
+    nodeId,
+    lines,
+    options: normalizeOptions(node.options),
+    giveItem: node.giveItem ?? null,
+    giveObjective: node.giveObjective ?? node.giveQuest ?? null,
+    completeObjective: node.completeObjective ?? null
+  };
 }
 
 function validateDialogue(dialogue) {

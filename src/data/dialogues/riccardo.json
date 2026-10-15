@@ -96,7 +96,8 @@
       "lines": [
         "Sì per favore, sto sistemando il volume dei microfoni, vedo che tu hai già finito di sistemarti il basso."
       ],
-      "options": []
+      "options": [],
+      "giveObjective": "cerca-asciugamano"
     },
     "asciugamano-usato-concy": {
       "lines": [

@@ -17,7 +17,13 @@ export const Events = {
   INVENTORY_CLOSE: 'inventory:close',
   ITEM_COLLECTED: 'item:collected',
   ITEM_REMOVED: 'item:removed',
-  PROP_REMOVED: 'prop:removed'
+  PROP_REMOVED: 'prop:removed',
+  OBJECTIVES_TOGGLE: 'objectives:toggle',
+  OBJECTIVES_OPEN: 'objectives:open',
+  OBJECTIVES_CLOSE: 'objectives:close',
+  OBJECTIVE_ADDED: 'objective:added',
+  OBJECTIVE_COMPLETED: 'objective:completed',
+  OBJECTIVE_REMOVED: 'objective:removed'
 };
 
 export const eventBus = new Phaser.Events.EventEmitter();

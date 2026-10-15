@@ -181,7 +181,7 @@
     .app-container {
       flex: 1;
       display: grid;
-      grid-template-columns: 320px 1fr 380px;
+      grid-template-columns: 400px 1fr 380px;
       height: calc(100vh - 61px);
       overflow: hidden;
     }
@@ -193,6 +193,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-width: 0;
     }
 
     .sidebar-section-header {
@@ -230,19 +231,32 @@
       display: flex;
       border-bottom: 1px solid var(--border);
       background: rgba(0,0,0,0.15);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tabs-bar::-webkit-scrollbar {
+      height: 3px;
     }
 
     .tab-btn {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: max-content;
       padding: 10px 8px;
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       border-bottom: 2px solid transparent;
       transition: all 0.15s;
+      white-space: nowrap;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
 
     .tab-btn:hover {
@@ -916,6 +930,78 @@
       color: #cbb8a2;
     }
 
+    /* IN-GAME OBJECTIVES SIMULATION BOX */
+    .objectives-box-preview {
+      background: #170f09;
+      border: 2px solid #8b5a2b;
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .obj-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #8b5a2b;
+      padding-bottom: 8px;
+    }
+
+    .obj-preview-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f0c27a;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .obj-preview-count {
+      font-size: 11px;
+      color: #a68c74;
+      background: rgba(0,0,0,0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #4a301a;
+    }
+
+    .obj-preview-card {
+      background: #1e130a;
+      border: 1.5px solid #54381e;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .obj-preview-title-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f0c27a;
+    }
+
+    .obj-preview-desc {
+      font-size: 12px;
+      color: #f2e6d2;
+      line-height: 1.5;
+    }
+
+    .obj-preview-target {
+      font-size: 11px;
+      color: #a8917a;
+      font-style: italic;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(139, 90, 43, 0.4);
+    }
+
     /* TOAST NOTIFICATION */
     .toast {
       position: fixed;
@@ -982,6 +1068,69 @@
       font-size: 48px;
       opacity: 0.5;
     }
+
+    /* RESPONSIVE LAYOUT */
+    @media (max-width: 1400px) {
+      .app-container {
+        grid-template-columns: 380px 1fr 340px;
+      }
+      .tab-btn {
+        padding: 10px 6px;
+        font-size: 11.5px;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .app-container {
+        grid-template-columns: 350px 1fr 300px;
+      }
+      .tab-btn {
+        padding: 9px 5px;
+        font-size: 11px;
+        gap: 3px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 340px 1fr;
+      }
+      .preview-pane {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 10px 16px;
+        gap: 8px;
+      }
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+      }
+      .sidebar {
+        height: 360px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .editor-pane {
+        min-height: 500px;
+        height: auto;
+        overflow: visible;
+      }
+      .preview-pane {
+        display: flex;
+        min-height: 400px;
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+    }
   </style>
 </head>
 <body>
@@ -1024,7 +1173,8 @@
       <div class="tabs-bar">
         <button id="tabProps" class="tab-btn active">📦 Arredi (<span id="propsCount">0</span>)</button>
         <button id="tabNpcs" class="tab-btn">👥 Personaggi (<span id="npcsCount">0</span>)</button>
-        <button id="tabItems" class="tab-btn">🎒 Inventario (<span id="itemsCount">0</span>)</button>
+        <button id="tabItems" class="tab-btn">🎒 Oggetti (<span id="itemsCount">0</span>)</button>
+        <button id="tabObjectives" class="tab-btn">🎯 Obiettivi (<span id="objectivesCount">0</span>)</button>
       </div>
 
       <div id="sidebarList" class="sidebar-list">
@@ -1107,6 +1257,28 @@
             <div id="invPreviewDesc" class="inv-preview-desc">Descrizione...</div>
           </div>
         </div>
+
+        <!-- OBJECTIVES BOX SIMULATION -->
+        <div id="previewObjectivesBox" class="objectives-box-preview" style="display: none;">
+          <div class="obj-preview-header">
+            <div class="obj-preview-title">
+              <span>🎯 OBIETTIVI ATTIVI</span>
+            </div>
+            <div id="objPreviewCount" class="obj-preview-count">1 Obiettivo</div>
+          </div>
+          <div class="obj-preview-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 15px;">🎯</span>
+                <span id="objPreviewCatBadge" class="inv-preview-cat-badge">PRINCIPALE</span>
+              </div>
+              <span style="font-size: 11px; color: var(--gold); font-weight: 600;">In corso</span>
+            </div>
+            <div id="objPreviewTitle" class="obj-preview-title-text">Titolo Obiettivo</div>
+            <div id="objPreviewDesc" class="obj-preview-desc">Descrizione narrativa dell'obiettivo...</div>
+            <div id="objPreviewTarget" class="obj-preview-target">📍 Prossimo passo...</div>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -1125,12 +1297,14 @@
       npcs: {},
       dialogues: {},
       items: {},
+      objectives: {},
       currentRoomId: null,
-      activeTab: 'props', // 'props' | 'npcs' | 'items'
-      selectedItemType: null, // 'prop' | 'npc' | 'item'
+      activeTab: 'props', // 'props' | 'npcs' | 'items' | 'objectives'
+      selectedItemType: null, // 'prop' | 'npc' | 'item' | 'objective'
       selectedPropIndex: null,
       selectedNpcId: null,
       selectedItemId: null,
+      selectedObjectiveId: null,
       selectedListenerId: 'default',
       isDirty: false,
       preview: {
@@ -1198,6 +1372,7 @@
         state.npcs = json.data.npcs || {};
         state.dialogues = json.data.dialogues || {};
         state.items = json.data.items || {};
+        state.objectives = json.data.objectives || {};
 
         const roomIds = Object.keys(state.rooms);
         if (roomIds.length > 0) {
@@ -1218,7 +1393,8 @@
         const payload = {
           rooms: state.rooms,
           dialogues: state.dialogues,
-          items: state.items
+          items: state.items,
+          objectives: state.objectives
         };
         const res = await fetch('/api/save/all', {
           method: 'POST',
@@ -1268,10 +1444,12 @@
       const props = room ? (room.props || []) : [];
       const characters = room ? (room.characters || []) : [];
       const items = Object.values(state.items || {});
+      const objectivesList = Object.values(state.objectives || {});
 
       document.getElementById('propsCount').textContent = props.length;
       document.getElementById('npcsCount').textContent = characters.length;
       document.getElementById('itemsCount').textContent = items.length;
+      document.getElementById('objectivesCount').textContent = objectivesList.length;
 
       const list = document.getElementById('sidebarList');
       list.innerHTML = '';
@@ -1357,6 +1535,36 @@
           empty.textContent = 'Nessun oggetto presente. Clicca su "+ Nuovo Oggetto Inventario" per iniziare.';
           list.appendChild(empty);
         }
+      } else if (state.activeTab === 'objectives') {
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-primary btn-sm';
+        addBtn.style.cssText = 'width: 100%; justify-content: center; margin-bottom: 8px;';
+        addBtn.innerHTML = '+ Nuovo Obiettivo';
+        addBtn.onclick = createNewObjective;
+        list.appendChild(addBtn);
+
+        objectivesList.forEach((obj) => {
+          const card = document.createElement('div');
+          card.className = `item-card ${state.selectedItemType === 'objective' && state.selectedObjectiveId === obj.id ? 'active' : ''}`;
+
+          card.innerHTML = `
+            <div class="item-icon" style="background: #24160c; border-color: #8b5a2b; font-size: 20px;">🎯</div>
+            <div class="item-info">
+              <div class="item-title">${escapeHtml(obj.title || obj.id)}</div>
+              <div class="item-subtitle">${escapeHtml(obj.category || 'Principale')} • <code>${escapeHtml(obj.id)}</code></div>
+            </div>
+            <span class="tag-badge" style="border-color: #8b5a2b; color: var(--gold);">${escapeHtml(obj.category || 'Missione')}</span>
+          `;
+          card.onclick = () => selectObjective(obj.id);
+          list.appendChild(card);
+        });
+
+        if (objectivesList.length === 0) {
+          const empty = document.createElement('div');
+          empty.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;';
+          empty.textContent = 'Nessun obiettivo presente. Clicca su "+ Nuovo Obiettivo" per crearne uno.';
+          list.appendChild(empty);
+        }
       }
     }
 
@@ -1412,6 +1620,38 @@
       switchTab('items');
       selectItem(cleanId);
       showToast(`Oggetto "${cleanId}" creato con successo!`);
+    }
+
+    function selectObjective(objectiveId) {
+      state.selectedItemType = 'objective';
+      state.selectedObjectiveId = objectiveId;
+      state.selectedPropIndex = null;
+      state.selectedNpcId = null;
+      state.selectedItemId = null;
+      renderSidebarList();
+      renderObjectiveEditor(objectiveId);
+      updateObjectivePreview(objectiveId);
+    }
+
+    function createNewObjective() {
+      const id = prompt('Inserisci un ID univoco per il nuovo obiettivo (es. accorda-basso, recupera-cavi, scaletta-live):');
+      if (!id || !id.trim()) return;
+      const cleanId = id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      if (state.objectives[cleanId]) {
+        alert('Esiste già un obiettivo con questo ID!');
+        return;
+      }
+      state.objectives[cleanId] = {
+        id: cleanId,
+        title: 'Nuovo Obiettivo',
+        category: 'Principale',
+        description: 'Descrizione dell\'obiettivo che guiderà il giocatore nella missione.',
+        target: 'Parla con un membro della band'
+      };
+      markDirty();
+      switchTab('objectives');
+      selectObjective(cleanId);
+      showToast(`Obiettivo "${cleanId}" creato con successo!`);
     }
 
     // --- PROP EDITOR ---
@@ -1484,7 +1724,16 @@
                   `).join('')}
                 </select>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px; padding-top: 16px;">
+              <div>
+                <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎯 Dai un Obiettivo / Missione</label>
+                <select class="form-control prop-node-give-objective">
+                  <option value="">[Nessun obiettivo]</option>
+                  ${Object.values(state.objectives || {}).map((ob) => `
+                    <option value="${ob.id}" ${(node.giveObjective || node.giveQuest) === ob.id ? 'selected' : ''}>${escapeHtml(ob.title || ob.id)} (${ob.id})</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding-top: 4px;">
                 <input type="checkbox" class="prop-node-remove-prop" id="remProp_${nodeId}" ${node.removeProp ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;">
                 <label for="remProp_${nodeId}" style="cursor: pointer; font-size: 12px; color: var(--text-main); text-transform: none; font-weight: 500;">
                   🗑️ Rimuovi arredo dopo raccolta
@@ -1666,6 +1915,19 @@
           };
         }
 
+        const giveObjSelect = card.querySelector('.prop-node-give-objective');
+        if (giveObjSelect) {
+          giveObjSelect.onchange = (e) => {
+            if (e.target.value) {
+              node.giveObjective = e.target.value;
+            } else {
+              delete node.giveObjective;
+              delete node.giveQuest;
+            }
+            markDirty();
+          };
+        }
+
         const remPropCheck = card.querySelector('.prop-node-remove-prop');
         if (remPropCheck) {
           remPropCheck.onchange = (e) => {
@@ -1687,6 +1949,8 @@
 
       document.getElementById('previewGameBox').style.display = 'flex';
       document.getElementById('previewInventoryBox').style.display = 'none';
+      const objBox = document.getElementById('previewObjectivesBox');
+      if (objBox) objBox.style.display = 'none';
 
       document.getElementById('previewAvatar').src = 'public/favicon.svg';
       document.getElementById('previewSpeaker').textContent = prop.label || prop.type;
@@ -1736,7 +2000,18 @@
         if (node) {
           const lines = Array.isArray(node.lines) ? node.lines : [];
           const text = typeof lines[0] === 'string' ? lines[0] : (lines[0]?.text || '');
-          document.getElementById('previewSpeech').textContent = text;
+          let itemNote = '';
+          if (node.giveItem) {
+            const itemObj = state.items[node.giveItem];
+            itemNote = `\n\n[🎁 Consegna oggetto: ${itemObj?.name || node.giveItem}]`;
+          }
+          let objNote = '';
+          const questId = node.giveObjective || node.giveQuest;
+          if (questId) {
+            const obj = state.objectives[questId];
+            objNote = `\n\n[🎯 Assegna obiettivo: ${obj?.title || questId}]`;
+          }
+          document.getElementById('previewSpeech').textContent = text + itemNote + objNote;
           optList.style.display = 'none';
         } else {
           document.getElementById('previewSpeech').textContent = '— Fine interazione —';
@@ -2025,6 +2300,238 @@
       document.getElementById('invPreviewDesc').textContent = item.description || '(Nessuna descrizione impostata per questo oggetto)';
     }
 
+    // --- OBJECTIVES / QUESTS EDITOR ---
+    function findObjectiveReferences(objectiveId) {
+      const refs = [];
+      // Rooms & Props
+      for (const [roomId, room] of Object.entries(state.rooms || {})) {
+        (room.props || []).forEach((prop, propIndex) => {
+          if ((prop.giveObjective || prop.giveQuest) === objectiveId) {
+            refs.push({
+              type: 'prop',
+              roomId,
+              roomName: room.name || roomId,
+              propLabel: prop.label || prop.type,
+              propIndex,
+              nodeId: 'arredo'
+            });
+          }
+          if (prop.nodes && typeof prop.nodes === 'object') {
+            for (const [nodeId, node] of Object.entries(prop.nodes)) {
+              if ((node.giveObjective || node.giveQuest) === objectiveId) {
+                refs.push({
+                  type: 'prop',
+                  roomId,
+                  roomName: room.name || roomId,
+                  propLabel: prop.label || prop.type,
+                  propIndex,
+                  nodeId
+                });
+              }
+            }
+          }
+        });
+      }
+      // Dialogues
+      for (const [speakerId, dialogue] of Object.entries(state.dialogues || {})) {
+        const charInfo = state.playables[speakerId] || state.npcs[speakerId] || { name: speakerId };
+        for (const [nodeId, node] of Object.entries(dialogue.nodes || {})) {
+          if ((node.giveObjective || node.giveQuest) === objectiveId) {
+            refs.push({
+              type: 'dialogue',
+              speakerId,
+              speakerName: charInfo.name || speakerId,
+              nodeId
+            });
+          }
+        }
+      }
+      return refs;
+    }
+
+    function renderObjectiveEditor(objectiveId) {
+      const obj = state.objectives[objectiveId];
+      if (!obj) return;
+
+      document.getElementById('editorAvatarImg').src = 'public/favicon.svg';
+      document.getElementById('editorTitle').textContent = obj.title || obj.id;
+      document.getElementById('editorSubtitle').textContent = `Obiettivo / Missione (${obj.id}) • Categoria: ${obj.category || 'Principale'}`;
+
+      const actions = document.getElementById('editorActions');
+      actions.innerHTML = `
+        <button id="btnDeleteObjective" class="btn btn-danger btn-sm" title="Elimina obiettivo">🗑️ Elimina Obiettivo</button>
+      `;
+
+      document.getElementById('btnDeleteObjective').onclick = () => {
+        const refs = findObjectiveReferences(objectiveId);
+        let msg = `Sei sicuro di voler eliminare l'obiettivo "${obj.title || objectiveId}" (${objectiveId})?`;
+        if (refs.length > 0) {
+          msg += `\n\nAttenzione: questo obiettivo è attualmente assegnato a ${refs.length} elementi di gioco (dialoghi o arredi)!`;
+        }
+        if (confirm(msg)) {
+          delete state.objectives[objectiveId];
+          markDirty();
+          state.selectedItemType = null;
+          state.selectedObjectiveId = null;
+          renderSidebarList();
+          renderEmptyEditor();
+          showToast(`Obiettivo "${objectiveId}" eliminato`);
+        }
+      };
+
+      const refs = findObjectiveReferences(objectiveId);
+      let refsHtml = '';
+      if (refs.length > 0) {
+        refsHtml = refs.map((ref) => {
+          if (ref.type === 'prop') {
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px;">
+                <div>
+                  <strong style="color: var(--gold);">📦 Stanza:</strong> ${escapeHtml(ref.roomName)} &nbsp;→&nbsp;
+                  <strong>Arredo:</strong> ${escapeHtml(ref.propLabel)} 
+                  <span class="tag-badge" style="margin-left: 6px;">nodo: ${escapeHtml(ref.nodeId || 'prop')}</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="jumpToProp('${ref.roomId}', ${ref.propIndex})">Vai all'arredo ↗</button>
+              </div>
+            `;
+          } else {
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px;">
+                <div>
+                  <strong style="color: var(--gold);">👥 Personaggio:</strong> ${escapeHtml(ref.speakerName)} &nbsp;→&nbsp;
+                  <span class="tag-badge">nodo: ${escapeHtml(ref.nodeId)}</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="jumpToDialogue('${ref.speakerId}', '${ref.nodeId}')">Vai al dialogo ↗</button>
+              </div>
+            `;
+          }
+        }).join('');
+      } else {
+        refsHtml = `
+          <div style="background: rgba(240, 194, 122, 0.05); border: 1px dashed var(--border-accent); padding: 12px; border-radius: 6px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+            ℹ️ <strong>Non ancora assegnato:</strong> questo obiettivo non è attualmente assegnato a nessun dialogo o arredo.<br>
+            Per assegnarlo come missione nel gioco:
+            <ul style="margin-left: 20px; margin-top: 6px;">
+              <li>Vai nella scheda <strong>Personaggi</strong>, seleziona un interlocutore e scegli questo obiettivo nel campo <em>"🎯 Dai un Obiettivo (giveObjective)"</em>.</li>
+              <li>Oppure vai nella scheda <strong>Arredi</strong> e consegnalo in una reazione dell'arredo.</li>
+            </ul>
+          </div>
+        `;
+      }
+
+      const body = document.getElementById('editorBody');
+      body.innerHTML = `
+        <div class="box-card">
+          <div class="box-card-header">
+            <span class="box-card-title">🎯 Dati Obiettivo / Missione</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Identificativo Univoco (ID)</label>
+              <input type="text" id="objIdInput" class="form-control" value="${escapeHtml(obj.id)}" disabled style="opacity: 0.7; cursor: not-allowed;">
+              <small style="font-size: 11px; color: var(--text-muted);">L'ID univoco usato nei file JSON e nelle assegnazioni dei dialoghi.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Categoria Missione (Category)</label>
+              <input type="text" id="objCategory" list="objCatList" class="form-control" value="${escapeHtml(obj.category || '')}" placeholder="Es: Principale, Preparazione, Band, Sala Prove...">
+              <datalist id="objCatList">
+                <option value="Principale">
+                <option value="Preparazione">
+                <option value="Allestimento">
+                <option value="Band">
+                <option value="Sala Prove">
+                <option value="Secondaria">
+              </datalist>
+              <small style="font-size: 11px; color: var(--text-muted);">Mostrata nel badge superiore della card dell'obiettivo.</small>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Titolo Missione / Obiettivo (Title)</label>
+            <input type="text" id="objTitle" class="form-control" value="${escapeHtml(obj.title || '')}" placeholder="Es: Recupera la matassa di cavi">
+            <small style="font-size: 11px; color: var(--text-muted);">Titolo mostrato in grassetto nella lista degli obiettivi del giocatore e nei messaggi a comparsa.</small>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Descrizione Narrativa Dettagliata (Description)</label>
+            <textarea id="objDesc" class="form-control" rows="4" placeholder="Descrizione dettagliata dell'obiettivo e del contesto narrativo...">${escapeHtml(obj.description || '')}</textarea>
+            <small style="font-size: 11px; color: var(--text-muted);">Il testo scritto dell'obiettivo visualizzato nel riquadro trascinabile in-game.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Prossimo Passo / Suggerimento (Target)</label>
+            <input type="text" id="objTarget" class="form-control" value="${escapeHtml(obj.target || '')}" placeholder="Es: Esplora la stanza o parla con Marco">
+            <small style="font-size: 11px; color: var(--text-muted);">Indicazione concisa mostrata in basso con l'icona 📍 per orientare il giocatore.</small>
+          </div>
+        </div>
+
+        <div class="box-card">
+          <div class="box-card-header">
+            <span class="box-card-title">🗺️ Come si Ottiene nel Gioco (Riferimenti)</span>
+            <span class="tag-badge">${refs.length} assegnazioni</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${refsHtml}
+          </div>
+        </div>
+      `;
+
+      // Event bindings for objective form
+      document.getElementById('objTitle').oninput = (e) => {
+        obj.title = e.target.value;
+        document.getElementById('editorTitle').textContent = obj.title || obj.id;
+        markDirty();
+        renderSidebarList();
+        updateObjectivePreview(objectiveId);
+      };
+
+      document.getElementById('objCategory').oninput = (e) => {
+        obj.category = e.target.value;
+        document.getElementById('editorSubtitle').textContent = `Obiettivo / Missione (${obj.id}) • Categoria: ${obj.category || 'Principale'}`;
+        markDirty();
+        renderSidebarList();
+        updateObjectivePreview(objectiveId);
+      };
+
+      document.getElementById('objDesc').oninput = (e) => {
+        obj.description = e.target.value;
+        markDirty();
+        updateObjectivePreview(objectiveId);
+      };
+
+      document.getElementById('objTarget').oninput = (e) => {
+        obj.target = e.target.value;
+        markDirty();
+        updateObjectivePreview(objectiveId);
+      };
+    }
+
+    function updateObjectivePreview(objectiveId) {
+      const obj = state.objectives[objectiveId];
+      if (!obj) return;
+
+      document.getElementById('previewGameBox').style.display = 'none';
+      document.getElementById('previewInventoryBox').style.display = 'none';
+      const objBox = document.getElementById('previewObjectivesBox');
+      objBox.style.display = 'flex';
+
+      const allObjsCount = Object.keys(state.objectives || {}).length;
+      document.getElementById('objPreviewCount').textContent = `${allObjsCount} Obiettivi nel Catalogo`;
+      document.getElementById('objPreviewCatBadge').textContent = (obj.category || 'Principale').toUpperCase();
+      document.getElementById('objPreviewTitle').textContent = obj.title || obj.id;
+      document.getElementById('objPreviewDesc').textContent = obj.description || '(Nessuna descrizione impostata per questo obiettivo)';
+      
+      const targetEl = document.getElementById('objPreviewTarget');
+      if (obj.target) {
+        targetEl.textContent = `📍 Prossimo passo: ${obj.target}`;
+        targetEl.style.display = 'block';
+      } else {
+        targetEl.style.display = 'none';
+      }
+    }
+
     // --- NPC & DIALOGUE EDITOR ---
     function renderNpcEditor(charId) {
       const charInfo = state.playables[charId] || state.npcs[charId] || { name: charId };
@@ -2210,15 +2717,26 @@
             </div>
           </div>
 
-          <!-- GIVE ITEM -->
-          <div style="margin-bottom: 12px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border);">
-            <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎒 Consegna Oggetto al Giocatore (giveItem)</label>
-            <select class="form-control npc-node-give-item">
-              <option value="">[Nessun oggetto consegnato]</option>
-              ${Object.values(state.items || {}).map((it) => `
-                <option value="${it.id}" ${node.giveItem === it.id ? 'selected' : ''}>${escapeHtml(it.name)} (${it.id})</option>
-              `).join('')}
-            </select>
+          <!-- GIVE ITEM & GIVE OBJECTIVE -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div style="padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border);">
+              <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎒 Consegna Oggetto al Giocatore (giveItem)</label>
+              <select class="form-control npc-node-give-item">
+                <option value="">[Nessun oggetto consegnato]</option>
+                ${Object.values(state.items || {}).map((it) => `
+                  <option value="${it.id}" ${node.giveItem === it.id ? 'selected' : ''}>${escapeHtml(it.name)} (${it.id})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div style="padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border);">
+              <label style="font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; display: block; margin-bottom: 4px;">🎯 Dai un Obiettivo / Missione (giveObjective)</label>
+              <select class="form-control npc-node-give-objective">
+                <option value="">[Nessun obiettivo assegnato]</option>
+                ${Object.values(state.objectives || {}).map((ob) => `
+                  <option value="${ob.id}" ${(node.giveObjective || node.giveQuest) === ob.id ? 'selected' : ''}>${escapeHtml(ob.title || ob.id)} (${ob.id})</option>
+                `).join('')}
+              </select>
+            </div>
           </div>
 
           <!-- OPTIONS -->
@@ -2243,6 +2761,22 @@
               delete node.giveItem;
             }
             markDirty();
+            initNpcPreview(charId);
+          };
+        }
+
+        // Event: Give Objective
+        const npcGiveObjective = card.querySelector('.npc-node-give-objective');
+        if (npcGiveObjective) {
+          npcGiveObjective.onchange = (e) => {
+            if (e.target.value) {
+              node.giveObjective = e.target.value;
+            } else {
+              delete node.giveObjective;
+              delete node.giveQuest;
+            }
+            markDirty();
+            initNpcPreview(charId);
           };
         }
 
@@ -2371,6 +2905,8 @@
 
       document.getElementById('previewGameBox').style.display = 'flex';
       document.getElementById('previewInventoryBox').style.display = 'none';
+      const objBox = document.getElementById('previewObjectivesBox');
+      if (objBox) objBox.style.display = 'none';
 
       document.getElementById('previewAvatar').src = getAvatarUrl(charId);
       document.getElementById('previewSpeaker').textContent = charInfo.name || charId;
@@ -2382,7 +2918,13 @@
         const itemObj = state.items[node.giveItem];
         itemNote = `\n\n[🎁 Consegna oggetto: ${itemObj?.name || node.giveItem}]`;
       }
-      document.getElementById('previewSpeech').textContent = lineText + itemNote;
+      let objNote = '';
+      const questId = node.giveObjective || node.giveQuest;
+      if (questId) {
+        const obj = state.objectives[questId];
+        objNote = `\n\n[🎯 Assegna obiettivo: ${obj?.title || questId}]`;
+      }
+      document.getElementById('previewSpeech').textContent = lineText + itemNote + objNote;
 
       const optList = document.getElementById('previewOptionsList');
       const options = Array.isArray(node.options) ? node.options : [];
@@ -2431,6 +2973,8 @@
       if (actions) actions.innerHTML = '';
       document.getElementById('previewGameBox').style.display = 'flex';
       document.getElementById('previewInventoryBox').style.display = 'none';
+      const objBox = document.getElementById('previewObjectivesBox');
+      if (objBox) objBox.style.display = 'none';
       document.getElementById('previewSpeaker').textContent = 'Narratore';
       document.getElementById('previewSpeech').textContent = 'Seleziona un elemento per vedere l\'anteprima.';
       const optList = document.getElementById('previewOptionsList');
@@ -2449,10 +2993,11 @@
       document.getElementById('tabProps').classList.toggle('active', tab === 'props');
       document.getElementById('tabNpcs').classList.toggle('active', tab === 'npcs');
       document.getElementById('tabItems').classList.toggle('active', tab === 'items');
+      document.getElementById('tabObjectives').classList.toggle('active', tab === 'objectives');
 
       const roomWrap = document.getElementById('roomSelectorBox');
       if (roomWrap) {
-        roomWrap.style.display = tab === 'items' ? 'none' : 'block';
+        roomWrap.style.display = (tab === 'items' || tab === 'objectives') ? 'none' : 'block';
       }
 
       renderSidebarList();
@@ -2462,6 +3007,15 @@
           const itemIds = Object.keys(state.items || {});
           if (itemIds.length > 0) {
             selectItem(itemIds[0]);
+          } else {
+            renderEmptyEditor();
+          }
+        }
+      } else if (tab === 'objectives') {
+        if (state.selectedItemType !== 'objective') {
+          const objIds = Object.keys(state.objectives || {});
+          if (objIds.length > 0) {
+            selectObjective(objIds[0]);
           } else {
             renderEmptyEditor();
           }
@@ -2477,6 +3031,7 @@
       document.getElementById('tabProps').onclick = () => switchTab('props');
       document.getElementById('tabNpcs').onclick = () => switchTab('npcs');
       document.getElementById('tabItems').onclick = () => switchTab('items');
+      document.getElementById('tabObjectives').onclick = () => switchTab('objectives');
 
       // Header buttons
       document.getElementById('btnSaveAll').onclick = saveAllData;
@@ -2495,6 +3050,8 @@
           updatePropPreview(state.selectedPropIndex);
         } else if (state.selectedItemType === 'item') {
           updateItemPreview(state.selectedItemId);
+        } else if (state.selectedItemType === 'objective') {
+          updateObjectivePreview(state.selectedObjectiveId);
         }
       };
 

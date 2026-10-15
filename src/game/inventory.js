@@ -1,39 +1,26 @@
 import { Events, emit } from '../core/eventBus.js';
-import cables from '../data/items/cables.json';
-import concyTuner from '../data/items/concy-tuner.json';
-import marcoPick from '../data/items/marco-pick.json';
-import davideDrumkey from '../data/items/davide-drumkey.json';
-import riccardoPopfilter from '../data/items/riccardo-popfilter.json';
 
 /**
  * Catalogo degli oggetti dell'inventario.
  * Ciascun oggetto ha un identificativo univoco, nome, categoria, icona procedurale
  * e descrizione narrativa dettagliata.
- * Gli oggetti vengono caricati da `src/data/items/*.json`.
+ * Gli oggetti vengono caricati dinamicamente da `src/data/items/*.json` via `import.meta.glob`.
+ * L'aggiunta o rimozione di oggetti dall'editor viene gestita automaticamente.
  */
-const staticItems = {
-  [cables.id]: cables,
-  [concyTuner.id]: concyTuner,
-  [marcoPick.id]: marcoPick,
-  [davideDrumkey.id]: davideDrumkey,
-  [riccardoPopfilter.id]: riccardoPopfilter
-};
+export const ITEMS = {};
 
-let dynamicItems = {};
 try {
   const itemModules = import.meta.glob('../data/items/*.json', { eager: true });
   for (const itemPath in itemModules) {
     const mod = itemModules[itemPath];
     const item = mod?.default ?? mod;
     if (item && item.id) {
-      dynamicItems[item.id] = item;
+      ITEMS[item.id] = item;
     }
   }
-} catch {
-  // In caso di ambiente non-Vite, ripiega su staticItems
+} catch (err) {
+  console.warn('[inventory] Impossibile caricare gli oggetti dinamici:', err);
 }
-
-export const ITEMS = Object.keys(dynamicItems).length > 0 ? dynamicItems : staticItems;
 
 /**
  * Gestione dello stato dell'inventario (singleton).

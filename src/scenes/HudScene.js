@@ -5,7 +5,9 @@ import { isTouchPrimary } from '../core/input.js';
 import { uiState } from '../core/uiState.js';
 import DialogueBox from '../ui/DialogueBox.js';
 import InventoryBox from '../ui/InventoryBox.js';
+import ObjectivesBox from '../ui/ObjectivesBox.js';
 import { inventory } from '../game/inventory.js';
+import { objectives } from '../game/objectives.js';
 
 const PANEL_STYLE = {
   fontFamily: GAME.font,
@@ -26,8 +28,12 @@ export default class HudScene extends Phaser.Scene {
     this.inventoryBox = new InventoryBox(this);
     this.inventoryBox.setDepth(150);
 
+    this.objectivesBox = new ObjectivesBox(this);
+    this.objectivesBox.setDepth(150);
+
     this.buildRoomPlate();
     this.buildBackpackButton();
+    this.buildObjectivesButton();
     this.buildHint();
     this.buildLegend();
     this.buildToast();
@@ -41,9 +47,14 @@ export default class HudScene extends Phaser.Scene {
 
     this.input.keyboard.on('keydown-I', () => this.toggleInventory());
     this.input.keyboard.on('keydown-B', () => this.toggleInventory());
+    this.input.keyboard.on('keydown-O', () => this.toggleObjectives());
+    this.input.keyboard.on('keydown-M', () => this.toggleObjectives());
     this.input.keyboard.on('keydown-ESC', () => {
       if (uiState.inventoryOpen) {
         this.inventoryBox.close();
+      }
+      if (uiState.objectivesOpen) {
+        this.objectivesBox.close();
       }
     });
 
@@ -60,7 +71,28 @@ export default class HudScene extends Phaser.Scene {
       on(Events.INVENTORY_OPEN, () => this.inventoryBox.open()),
       on(Events.INVENTORY_CLOSE, () => this.inventoryBox.close()),
       on(Events.ITEM_COLLECTED, () => this.updateBackpackBadge()),
-      on(Events.ITEM_REMOVED, () => this.updateBackpackBadge())
+      on(Events.ITEM_REMOVED, () => this.updateBackpackBadge()),
+      on(Events.OBJECTIVES_TOGGLE, () => this.toggleObjectives()),
+      on(Events.OBJECTIVES_OPEN, () => this.objectivesBox.open()),
+      on(Events.OBJECTIVES_CLOSE, () => this.objectivesBox.close()),
+      on(Events.OBJECTIVE_ADDED, () => {
+        this.updateObjectivesBadge();
+        if (this.objectivesBox.visible) {
+          this.objectivesBox.render();
+        }
+      }),
+      on(Events.OBJECTIVE_COMPLETED, () => {
+        this.updateObjectivesBadge();
+        if (this.objectivesBox.visible) {
+          this.objectivesBox.render();
+        }
+      }),
+      on(Events.OBJECTIVE_REMOVED, () => {
+        this.updateObjectivesBadge();
+        if (this.objectivesBox.visible) {
+          this.objectivesBox.render();
+        }
+      })
     ];
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -73,6 +105,7 @@ export default class HudScene extends Phaser.Scene {
 
     uiState.ready = true;
     this.updateBackpackBadge();
+    this.updateObjectivesBadge();
   }
 
   layoutElements() {
@@ -83,6 +116,9 @@ export default class HudScene extends Phaser.Scene {
     }
     if (this.backpackButton) {
       this.backpackButton.setPosition(width - 38, isPortrait ? 60 : 54);
+    }
+    if (this.objectivesButton) {
+      this.objectivesButton.setPosition(width - 38, isPortrait ? 134 : 126);
     }
     if (this.hint) {
       this.hint.setPosition(width / 2, height - (isPortrait ? 210 : 190));
@@ -98,6 +134,9 @@ export default class HudScene extends Phaser.Scene {
     }
     if (this.inventoryBox) {
       this.inventoryBox.layout();
+    }
+    if (this.objectivesBox) {
+      this.objectivesBox.layout();
     }
   }
 
@@ -187,11 +226,89 @@ export default class HudScene extends Phaser.Scene {
     this.backpackBg.strokeRoundedRect(-22, -22, 44, 44, 8);
   }
 
+  buildObjectivesButton() {
+    this.objectivesButton = this.add.container(0, 0);
+    this.objectivesBg = this.add.graphics();
+    this.drawObjectivesBg(false);
+
+    this.objectivesIcon = this.add.image(0, 0, 'ui-objectives')
+      .setDisplaySize(30, 30);
+
+    this.objectivesKeyHint = this.add.text(0, 24, '[O]', {
+      fontFamily: GAME.font,
+      fontSize: '10px',
+      color: '#a8917a',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0);
+
+    this.objectivesBadgeContainer = this.add.container(14, -14);
+    const badgeBg = this.add.graphics();
+    badgeBg.fillStyle(0x3182ce, 1);
+    badgeBg.fillCircle(0, 0, 9);
+    badgeBg.lineStyle(1.5, 0xf0c27a, 1);
+    badgeBg.strokeCircle(0, 0, 9);
+
+    this.objectivesBadgeText = this.add.text(0, 0, '0', {
+      fontFamily: GAME.font,
+      fontSize: '11px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5, 0.5);
+
+    this.objectivesBadgeContainer.add([badgeBg, this.objectivesBadgeText]);
+    this.objectivesBadgeContainer.setVisible(false);
+
+    const hit = this.add.zone(0, 0, 48, 54)
+      .setInteractive({ useHandCursor: true });
+
+    hit.on('pointerover', () => {
+      this.drawObjectivesBg(true);
+    });
+    hit.on('pointerout', () => {
+      this.drawObjectivesBg(false);
+    });
+    hit.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+      this.toggleObjectives();
+    });
+
+    this.objectivesButton.add([
+      this.objectivesBg,
+      this.objectivesIcon,
+      this.objectivesKeyHint,
+      this.objectivesBadgeContainer,
+      hit
+    ]);
+  }
+
+  drawObjectivesBg(isHover = false) {
+    this.objectivesBg.clear();
+    this.objectivesBg.fillStyle(isHover ? 0x2a170b : 0x140d07, 0.9);
+    this.objectivesBg.fillRoundedRect(-22, -22, 44, 44, 8);
+    this.objectivesBg.lineStyle(1.5, isHover ? 0xf0c27a : 0x6b4220, 1);
+    this.objectivesBg.strokeRoundedRect(-22, -22, 44, 44, 8);
+  }
+
   toggleInventory() {
     if (uiState.dialogueLocked) {
       return;
     }
+    if (!this.inventoryBox.visible && uiState.objectivesOpen) {
+      this.objectivesBox.close();
+    }
     this.inventoryBox.toggle();
+  }
+
+  toggleObjectives() {
+    if (uiState.dialogueLocked) {
+      return;
+    }
+    if (!this.objectivesBox.visible && uiState.inventoryOpen) {
+      this.inventoryBox.close();
+    }
+    this.objectivesBox.toggle();
   }
 
   updateBackpackBadge() {
@@ -204,6 +321,19 @@ export default class HudScene extends Phaser.Scene {
       this.backpackBadgeContainer.setVisible(true);
     } else {
       this.backpackBadgeContainer.setVisible(false);
+    }
+  }
+
+  updateObjectivesBadge() {
+    if (!this.objectivesBadgeContainer || !this.objectivesBadgeText) {
+      return;
+    }
+    const count = objectives.getActiveCount();
+    if (count > 0) {
+      this.objectivesBadgeText.setText(String(count));
+      this.objectivesBadgeContainer.setVisible(true);
+    } else {
+      this.objectivesBadgeContainer.setVisible(false);
     }
   }
 
@@ -222,8 +352,8 @@ export default class HudScene extends Phaser.Scene {
 
   buildLegend() {
     const lines = this.touchFirst
-      ? ['tocca dove vuoi andare', 'tocca un oggetto per esaminarlo', 'tocca lo zaino per l\'inventario']
-      : ['WASD / frecce  muoviti', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'I / zaino  inventario', 'G  griglia e collisioni'];
+      ? ['tocca dove vuoi andare', 'tocca un oggetto per esaminarlo', 'tocca zaino / obiettivi per aprire']
+      : ['WASD / frecce  muoviti', 'click  muoviti a destinazione', 'E / INVIO  interagisci', 'I / zaino  inventario', 'O / missioni  obiettivi', 'G  griglia e collisioni'];
 
     this.legend = this.add
       .text(this.scale.width - 16, this.scale.height - 16, lines.join('\n'), {

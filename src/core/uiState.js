@@ -3,5 +3,6 @@ export const uiState = {
   dialogueOptionsOpen: false,
   dialogueLocked: false,
   inventoryOpen: false,
+  objectivesOpen: false,
   ready: false
 };

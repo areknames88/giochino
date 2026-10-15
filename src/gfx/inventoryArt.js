@@ -250,9 +250,49 @@ function drawGenericItem(g) {
   fillRect(g, 22, 14, 8, 4, GOLD_LIGHT);
 }
 
+/**
+ * Icona Obiettivi / Missioni per HUD (40x40)
+ */
+function drawObjectives(g) {
+  const WOOD_DARK = 0x3a2110;
+  const PARCHMENT = 0xf5ebd7;
+  const PARCHMENT_BORDER = 0xd2ba95;
+  const GOLD = 0xf0c27a;
+  const GOLD_DARK = 0x8b5a2b;
+  const INK = 0x3d2514;
+  const CHECK_GREEN = 0x38a169;
+  const BULLET_GOLD = 0xd49b43;
+
+  // Tavoletta / Clipboard di supporto in legno scuro
+  fillRounded(g, 6, 4, 28, 32, 4, WOOD_DARK);
+  strokeRounded(g, 6, 4, 28, 32, 4, GOLD_DARK, 1);
+
+  // Foglio di pergamena
+  fillRounded(g, 8, 7, 24, 27, 3, PARCHMENT_BORDER);
+  fillRounded(g, 9, 8, 22, 25, 2, PARCHMENT);
+
+  // Clip superiore in ottone
+  fillRounded(g, 13, 2, 14, 6, 2, GOLD_DARK);
+  fillRounded(g, 14, 3, 12, 4, 1, GOLD);
+  fillCircle(g, 20, 5, 1.2, 0x1f140a);
+
+  // Riga 1: quadratino con spunta verde + riga di testo
+  fillRect(g, 11, 12, 4, 4, CHECK_GREEN);
+  fillRect(g, 17, 13, 11, 2, INK);
+
+  // Riga 2: quadratino con spunta dorata + riga di testo
+  fillRect(g, 11, 18, 4, 4, BULLET_GOLD);
+  fillRect(g, 17, 19, 10, 2, INK);
+
+  // Riga 3: quadratino vuoto da spuntare + riga di testo
+  strokeRounded(g, 11, 24, 4, 4, 1, GOLD_DARK, 1);
+  fillRect(g, 17, 25, 8, 2, INK);
+}
+
 export function createInventoryTextures(scene) {
   const textures = [
     { key: 'ui-backpack', w: 40, h: 40, draw: drawBackpack },
+    { key: 'ui-objectives', w: 40, h: 40, draw: drawObjectives },
     { key: 'item-generic', w: 48, h: 48, draw: drawGenericItem },
     { key: 'item-cables', w: 48, h: 48, draw: drawCables },
     { key: 'item-concy-tuner', w: 48, h: 48, draw: drawConcyTuner },

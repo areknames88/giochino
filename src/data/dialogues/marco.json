@@ -98,6 +98,7 @@
       ]
     },
     "riparte": {
+      "giveObjective": "trova-cavi",
       "lines": [
         "Si riparte quando il jack di destra decide di restare nel jack. Ci vogliono pazienza e nastro adesivo."
       ]

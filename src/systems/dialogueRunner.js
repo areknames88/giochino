@@ -4,6 +4,7 @@ import { uiState } from '../core/uiState.js';
 import { getCharacter } from '../game/characters.js';
 import { MAX_OPTIONS, resolveEntry, resolveNext } from '../game/dialogue.js';
 import { inventory } from '../game/inventory.js';
+import { objectives } from '../game/objectives.js';
 
 /**
  * Guida una conversazione.
@@ -65,6 +66,10 @@ export default class DialogueRunner {
       emit(Events.INVENTORY_CLOSE);
     }
 
+    if (uiState.objectivesOpen) {
+      emit(Events.OBJECTIVES_CLOSE);
+    }
+
     if (typeof target.faceTowards === 'function' && this.scene.player) {
       target.faceTowards(this.scene.player.x, this.scene.player.y);
     }
@@ -86,6 +91,14 @@ export default class DialogueRunner {
     }
 
     this.subscribe();
+
+    if (entry.giveObjective) {
+      objectives.addObjective(entry.giveObjective);
+    }
+    if (entry.completeObjective) {
+      objectives.completeObjective(entry.completeObjective);
+    }
+
     const options = this.filterOptions(entry.options, false, character, null);
     this.state = { isProp: false, character, listenerId, nodeId: entry.nodeId, options };
     uiState.dialogueLocked = true;
@@ -138,6 +151,12 @@ export default class DialogueRunner {
       if (nextNode.giveItem) {
         inventory.addItem(nextNode.giveItem);
       }
+      if (nextNode.giveObjective) {
+        objectives.addObjective(nextNode.giveObjective);
+      }
+      if (nextNode.completeObjective) {
+        objectives.completeObjective(nextNode.completeObjective);
+      }
       if (nextNode.removeProp || nextNode.giveItem) {
         emit(Events.PROP_REMOVED, { prop: state.prop });
         emit(Events.DIALOGUE_CLOSED);
@@ -183,6 +202,12 @@ export default class DialogueRunner {
 
     if (next.giveItem) {
       inventory.addItem(next.giveItem);
+    }
+    if (next.giveObjective) {
+      objectives.addObjective(next.giveObjective);
+    }
+    if (next.completeObjective) {
+      objectives.completeObjective(next.completeObjective);
     }
 
     const player = getCharacter(this.listenerId());

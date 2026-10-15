@@ -65,7 +65,8 @@ function editorApiPlugin() {
         playables: path.join(__dirname, 'src', 'data', 'characters', 'playable'),
         npcs: path.join(__dirname, 'src', 'data', 'characters', 'npc'),
         dialogues: path.join(__dirname, 'src', 'data', 'dialogues'),
-        items: path.join(__dirname, 'src', 'data', 'items')
+        items: path.join(__dirname, 'src', 'data', 'items'),
+        objectives: path.join(__dirname, 'src', 'data', 'objectives')
       };
 
       function readJsonDir(dirPath) {
@@ -93,7 +94,8 @@ function editorApiPlugin() {
             playables: readJsonDir(DATA_PATHS.playables),
             npcs: readJsonDir(DATA_PATHS.npcs),
             dialogues: readJsonDir(DATA_PATHS.dialogues),
-            items: readJsonDir(DATA_PATHS.items)
+            items: readJsonDir(DATA_PATHS.items),
+            objectives: readJsonDir(DATA_PATHS.objectives)
           };
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(JSON.stringify({ success: true, data }));
@@ -105,7 +107,7 @@ function editorApiPlugin() {
           req.on('data', (c) => { body += c; });
           req.on('end', () => {
             try {
-              const { rooms = {}, dialogues = {}, items = {} } = JSON.parse(body);
+              const { rooms = {}, dialogues = {}, items = {}, objectives = {} } = JSON.parse(body);
               let count = 0;
               for (const [roomId, data] of Object.entries(rooms)) {
                 if (/^[a-zA-Z0-9_-]+$/.test(roomId)) {
@@ -132,6 +134,22 @@ function editorApiPlugin() {
               for (const [itemId, data] of Object.entries(items)) {
                 if (/^[a-zA-Z0-9_-]+$/.test(itemId)) {
                   fs.writeFileSync(path.join(DATA_PATHS.items, `${itemId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
+                  count += 1;
+                }
+              }
+              if (!fs.existsSync(DATA_PATHS.objectives)) {
+                fs.mkdirSync(DATA_PATHS.objectives, { recursive: true });
+              }
+              const existingObjectiveFiles = fs.readdirSync(DATA_PATHS.objectives).filter((f) => f.endsWith('.json'));
+              for (const file of existingObjectiveFiles) {
+                const id = path.basename(file, '.json');
+                if (!objectives[id]) {
+                  fs.unlinkSync(path.join(DATA_PATHS.objectives, file));
+                }
+              }
+              for (const [objectiveId, data] of Object.entries(objectives)) {
+                if (/^[a-zA-Z0-9_-]+$/.test(objectiveId)) {
+                  fs.writeFileSync(path.join(DATA_PATHS.objectives, `${objectiveId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8');
                   count += 1;
                 }
               }
