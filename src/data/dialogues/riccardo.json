@@ -29,21 +29,17 @@
     },
     "saluto-concy": {
       "lines": [
-        "Concy! Dimmi che oggi il basso sta un po' sotto la mia voce.",
-        "Lo so, lo so: è il tuo momento. Però dimmelo lo stesso."
+        "Concy! Hai visto il mio asciugamano? Non lo trovo da nessuna parte.",
+        "Non mi aggredire, questa volta non sta sull'ampli."
       ],
       "options": [
         {
-          "text": "Sta già sotto, guarda",
-          "next": "basso"
+          "text": "Seh vabbè, non ci credo.",
+          "next": "credimi-concy"
         },
         {
-          "text": "Hai qualcosa per non far rimbombare il microfono?",
-          "next": "dono-riccardo"
-        },
-        {
-          "text": "Sentiamo chi arriva prima",
-          "next": "sfida"
+          "text": "Forse l'hai lasciato a casa",
+          "next": "asciugamano-usato-concy"
         }
       ]
     },
@@ -85,58 +81,32 @@
         }
       ]
     },
-    "prova": {
+    "credimi-concy": {
       "lines": [
-        "La prova va da cannone: voce calda, ritmo saldo. Stasera attacchiamo tutto il pezzo, senza fermarci a metà."
+        "Se te lo dice l'ispettore Clouseau ci devi credere!"
       ],
       "options": [
         {
-          "text": "E allora quando si riparte?",
-          "next": "riparte"
+          "text": "Ok ispettore Clouseau, vuoi che lo cerco per te?",
+          "next": "cerca-sala-est"
         }
       ]
     },
-    "riparte": {
+    "cerca-sala-est": {
       "lines": [
-        "Si riparte quando siamo tutti d'accordo. Tradotto: quando decido io."
-      ]
+        "Sì per favore, sto sistemando il volume dei microfoni, vedo che tu hai già finito di sistemarti il basso."
+      ],
+      "options": []
     },
-    "sala": {
+    "asciugamano-usato-concy": {
       "lines": [
-        "La sala è di tutti, ma il microfono è mio. Scherzo... forse."
-      ]
-    },
-    "sfida": {
-      "lines": [
-        "Sfida accettata. Ultimo al ritmo compra il caffè per tutti."
-      ]
-    },
-    "basso": {
-      "lines": [
-        "Eccolo qui. Perfetto: stasera il basso sta sotto, il resto è storia."
-      ]
-    },
-    "volume": {
-      "lines": [
-        "Tranquillo, è già al massimo. Così la sente la band e il vicinato: due in uno."
-      ]
-    },
-    "dono-riccardo": {
-      "giveItem": "riccardo-popfilter",
-      "lines": [
-        "Guarda nello scomparto: c'è il mio filtro antipop tascabile con morsetto.",
-        "Basta agganciarlo all'asta del microfono e salva la capsula dai soffi sulle 'p' e le 'b'. Mettilo nello zaino!"
+        "L'ho usato poco fa... Sai per cosa?"
       ],
       "options": [
         {
-          "text": "Ottimo Riccardo, me lo porto via!",
-          "next": "ringraziamento-riccardo"
+          "text": "Non lo voglio sapere. Te lo devo cercare?",
+          "next": "cerca-sala-est"
         }
-      ]
-    },
-    "ringraziamento-riccardo": {
-      "lines": [
-        "Salva le orecchie del fonico e la registrazione, ricordatelo sempre!"
       ]
     }
   }
